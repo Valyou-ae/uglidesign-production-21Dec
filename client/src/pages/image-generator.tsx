@@ -326,19 +326,28 @@ export default function ImageGenerator() {
                 <div className="self-end mb-0.5 shrink-0">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground rounded-lg">
-                        <ImagePlus className="h-5 w-5" />
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
+                      >
+                        <ImagePlus className="h-6 w-6" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent align="start" className="w-48 p-1">
-                      <div className="space-y-1">
-                        <Button variant="ghost" className="w-full justify-start h-9 text-sm font-normal">
-                          <Upload className="mr-2 h-4 w-4" />
-                          Upload Reference
+                    <PopoverContent align="start" className="w-auto p-2">
+                      <div className="flex gap-2">
+                        <Button variant="ghost" className="flex flex-col items-center justify-center h-20 w-24 gap-2 text-xs hover:bg-muted hover:text-foreground border border-transparent hover:border-border/50 rounded-xl transition-all">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <Upload className="h-4 w-4" />
+                          </div>
+                          Reference
                         </Button>
-                        <Button variant="ghost" className="w-full justify-start h-9 text-sm font-normal">
-                          <RefreshCcw className="mr-2 h-4 w-4" />
-                          Remix Image
+                        <div className="w-px bg-border/50 my-2" />
+                        <Button variant="ghost" className="flex flex-col items-center justify-center h-20 w-24 gap-2 text-xs hover:bg-muted hover:text-foreground border border-transparent hover:border-border/50 rounded-xl transition-all">
+                          <div className="h-8 w-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
+                            <RefreshCcw className="h-4 w-4" />
+                          </div>
+                          Remix
                         </Button>
                       </div>
                     </PopoverContent>
@@ -353,7 +362,7 @@ export default function ImageGenerator() {
                     onChange={(e) => setPrompt(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Describe what you want to create..."
-                    className="w-full bg-transparent border-0 focus:ring-0 p-0 text-sm sm:text-base text-foreground placeholder:text-muted-foreground resize-none min-h-[24px] max-h-[120px] leading-relaxed outline-none ring-0"
+                    className="w-full bg-transparent border-0 focus:ring-0 px-0 pt-[3px] text-sm sm:text-base text-foreground placeholder:text-muted-foreground/50 placeholder:italic resize-none min-h-[24px] max-h-[120px] leading-relaxed outline-none ring-0"
                     rows={1}
                   />
                 </div>
