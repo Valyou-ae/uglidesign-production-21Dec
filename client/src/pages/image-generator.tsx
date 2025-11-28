@@ -414,11 +414,11 @@ export default function ImageGenerator() {
                   exit={{ height: 0, opacity: 0, y: -10 }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-muted/30 border border-border rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 shadow-inner">
+                  <div className="bg-muted/30 border border-border rounded-xl p-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 shadow-inner">
                     
                     {/* Quality */}
-                    <div className="space-y-3">
-                      <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Quality</label>
+                    <div className="space-y-4">
+                      <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">Quality</label>
                       <div className="flex gap-2">
                         {QUALITY_PRESETS.map(q => (
                           <TooltipProvider key={q.id}>
@@ -445,8 +445,8 @@ export default function ImageGenerator() {
                     </div>
 
                     {/* Aspect Ratio */}
-                    <div className="space-y-3">
-                      <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Ratio</label>
+                    <div className="space-y-4">
+                      <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">Ratio</label>
                       <div className="flex gap-2">
                         {ASPECT_RATIOS.map(r => (
                           <TooltipProvider key={r.id}>
@@ -472,64 +472,66 @@ export default function ImageGenerator() {
                       </div>
                     </div>
 
-                    {/* Style & Variations */}
-                    <div className="space-y-3">
-                      <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Style & Previews</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-full justify-between h-12 text-xs bg-background/50 border-transparent hover:bg-background">
-                              <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                                <span className="text-[10px] text-muted-foreground font-medium">Style Preset</span>
-                                <span className="flex items-center gap-1.5 font-semibold truncate w-full">
-                                  {STYLE_PRESETS.find(s => s.id === settings.style)?.icon && (
-                                     <Sparkles className="h-3 w-3 text-primary" />
-                                  )}
-                                  {STYLE_PRESETS.find(s => s.id === settings.style)?.name}
-                                </span>
-                              </div>
-                              <ChevronDown className="h-3 w-3 opacity-50 flex-shrink-0" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-[200px] max-h-[300px] overflow-y-auto">
-                            {STYLE_PRESETS.map(style => (
-                              <DropdownMenuItem 
-                                key={style.id}
-                                onClick={() => setSettings({...settings, style: style.id})}
-                                className="text-xs cursor-pointer"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <style.icon className="h-3.5 w-3.5" />
-                                  {style.name}
-                                </div>
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <div className="flex bg-background/50 rounded-lg p-1 h-12 items-center">
-                          {["1", "2", "4"].map(v => (
-                            <button
-                              key={v}
-                              onClick={() => setSettings({...settings, variations: v})}
-                              className={cn(
-                                "flex-1 h-full rounded flex items-center justify-center text-xs font-medium transition-all",
-                                settings.variations === v 
-                                  ? "bg-background shadow-sm text-primary font-bold" 
-                                  : "text-muted-foreground hover:text-foreground"
-                              )}
+                    {/* Style */}
+                    <div className="space-y-4">
+                      <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">Style</label>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-full justify-between h-12 text-xs bg-background/50 border-transparent hover:bg-background">
+                            <div className="flex flex-col items-start gap-0.5 overflow-hidden">
+                              <span className="text-[10px] text-muted-foreground font-medium">Style Preset</span>
+                              <span className="flex items-center gap-1.5 font-semibold truncate w-full">
+                                {STYLE_PRESETS.find(s => s.id === settings.style)?.icon && (
+                                   <Sparkles className="h-3 w-3 text-primary" />
+                                )}
+                                {STYLE_PRESETS.find(s => s.id === settings.style)?.name}
+                              </span>
+                            </div>
+                            <ChevronDown className="h-3 w-3 opacity-50 flex-shrink-0" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-[200px] max-h-[300px] overflow-y-auto">
+                          {STYLE_PRESETS.map(style => (
+                            <DropdownMenuItem 
+                              key={style.id}
+                              onClick={() => setSettings({...settings, style: style.id})}
+                              className="text-xs cursor-pointer"
                             >
-                              {v}
-                            </button>
+                              <div className="flex items-center gap-2">
+                                <style.icon className="h-3.5 w-3.5" />
+                                {style.name}
+                              </div>
+                            </DropdownMenuItem>
                           ))}
-                        </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* Previews (Variations) */}
+                    <div className="space-y-4">
+                      <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">Previews</label>
+                      <div className="flex bg-background/50 rounded-lg p-1 h-12 items-center">
+                        {["1", "2", "4"].map(v => (
+                          <button
+                            key={v}
+                            onClick={() => setSettings({...settings, variations: v})}
+                            className={cn(
+                              "flex-1 h-full rounded flex items-center justify-center text-xs font-medium transition-all",
+                              settings.variations === v 
+                                ? "bg-background shadow-sm text-primary font-bold" 
+                                : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {v}
+                          </button>
+                        ))}
                       </div>
                     </div>
 
                     {/* Master Refiner */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Master Refiner</label>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between h-[17px]"> {/* Fixed height to match label line */}
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">Master Refiner</label>
                         <Switch 
                           checked={settings.refiner}
                           onCheckedChange={(c) => setSettings({...settings, refiner: c})}
@@ -538,7 +540,7 @@ export default function ImageGenerator() {
                       </div>
                       
                       <div className={cn(
-                        "grid grid-cols-2 gap-2 transition-all duration-300",
+                        "grid grid-cols-2 gap-2 transition-all duration-300 h-12",
                         settings.refiner ? "opacity-100" : "opacity-40 pointer-events-none grayscale"
                       )}>
                         {REFINER_PRESETS.slice(0, 4).map(preset => (
@@ -547,14 +549,14 @@ export default function ImageGenerator() {
                             onClick={() => setSettings({...settings, refinerPreset: preset.id})}
                             disabled={!settings.refiner}
                             className={cn(
-                              "h-8 rounded-md flex items-center gap-2 px-2 text-[10px] font-medium transition-all border",
+                              "h-full rounded-md flex items-center justify-center gap-1.5 px-1 text-[9px] font-medium transition-all border",
                               settings.refinerPreset === preset.id 
                                 ? "bg-primary/10 border-primary/30 text-primary" 
                                 : "bg-background/30 border-transparent text-muted-foreground hover:bg-background/50"
                             )}
                           >
-                            <preset.icon className="h-3 w-3" />
-                            {preset.name}
+                            <preset.icon className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{preset.name}</span>
                           </button>
                         ))}
                       </div>
