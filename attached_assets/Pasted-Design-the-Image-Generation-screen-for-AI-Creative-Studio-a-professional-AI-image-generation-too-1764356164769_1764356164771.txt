@@ -1,0 +1,315 @@
+Design the Image Generation screen for "AI Creative Studio" - a professional AI image generation tool with 5 intelligent agents. Follow the sidebar + bento grid layout established in the dashboard. Dark/light theme support. Premium, professional UI.
+
+=== PAGE STRUCTURE ===
+Full viewport, no main scroll
+Layout: Fixed left sidebar (280px, same as dashboard) + Main content area
+Background: #FAFAFA (light) / #09090B (dark)
+
+=== LEFT SIDEBAR (Same as Dashboard) ===
+Width: 280px, full height, fixed
+Background: #FFFFFF (light) / #18181B (dark)
+Border-right: 1px solid #E4E4E7 (light) / #27272A (dark)
+
+Sidebar content same as dashboard BUT:
+- "Image Generator" nav item is now ACTIVE (purple highlight, left border)
+- Credits widget shows usage updating in real-time
+
+=== MAIN CONTENT AREA ===
+Padding: 32px 40px
+Layout: Two-column (Left 55% input panel + Right 45% preview/output)
+Gap: 32px
+
+=== LEFT COLUMN: INPUT & CONTROLS ===
+
+--- Header Section ---
+Breadcrumb: "Home / Image Generator" - 13px, #71717A
+Title: "Image Generator" - 32px, bold, with animated sparkle icon
+Subtitle: "Create stunning AI images with 5 intelligent agents" - 15px, #71717A
+
+--- Main Prompt Input Card ---
+Background: #FFFFFF (dark: #18181B)
+Border: 1px solid #E4E4E7 (dark: #27272A)
+Border-radius: 20px
+Padding: 24px
+
+Prompt textarea:
+- Large textarea, min-height 140px
+- Placeholder: "Describe your image... e.g., 'A neon-lit coffee shop sign saying OPEN 24/7 in a rainy Tokyo alley'"
+- Font: 16px, #18181B (dark: #FAFAFA)
+- Background: #FAFAFA (dark: #27272A)
+- Border: 1px solid #E4E4E7 (dark: #3F3F46)
+- Border-radius: 14px
+- Focus: Ring 2px #7C3AED
+
+Character counter: Bottom-right, "0 / 2000", 12px, #A1A1AA
+
+Reference image upload zone (below textarea, margin-top 16px):
+- Dashed border box, 80px height
+- Icon: Upload cloud, 24px
+- Text: "Drop reference image or click to upload" - 13px
+- Background on hover: #F4F4F5 (dark: #27272A)
+
+--- Quick Style Selector ---
+Horizontal scrolling row, margin-top 24px
+Label: "Style Preset", 13px, semibold, #52525B
+
+Style pills (horizontal scroll, 10px gap):
+Each pill: 
+- Padding 10px 18px, rounded-full
+- Border: 1px solid #E4E4E7 (dark: #3F3F46)
+- Inactive: #52525B text, transparent bg
+- Active: #7C3AED bg, white text, glow effect
+- Hover: Border #7C3AED
+
+Styles list (show 8, scroll for more):
+1. "Auto ✨" (default selected)
+2. "Photorealistic 📸"
+3. "Cinematic 🎬"
+4. "Anime/Manga 🎌"
+5. "Oil Painting 🖼️"
+6. "Watercolor 🎨"
+7. "Digital Art 💻"
+8. "Minimalist ⚪"
+9. "Retrowave 🌆"
+10. "Dark Fantasy ⚔️"
+11. "Pop Art 🎪"
+12. "Isometric 3D 📦"
+
+--- Advanced Settings Accordion ---
+Collapsible section, margin-top 20px
+Header: "Advanced Settings" + ChevronDown icon
+Background: #F4F4F5 (dark: #27272A)
+Border-radius: 14px
+Padding: 16px (collapsed), 20px (expanded)
+
+Expanded content (2-column grid, 16px gap):
+
+Column 1:
+Quality Level dropdown:
+- Label: "Quality", 12px, #71717A
+- Options with icons:
+  - "⚡ Draft" - Fast preview
+  - "✨ Standard" - Balanced (default)
+  - "💎 Premium" - Maximum quality
+  - "🔮 Ultra" - Extreme detail
+- Dropdown style: Rounded-12px, white bg, shadow
+
+Aspect Ratio selector:
+- Label: "Aspect Ratio", 12px
+- 5 square buttons in a row:
+  - "1:1" ⬜ (default)
+  - "16:9" 🖼️
+  - "9:16" 📱
+  - "4:3" 🖥️
+  - "3:4" 📄
+- Active: Purple border, light purple bg
+
+Column 2:
+Variations slider:
+- Label: "Variations", 12px
+- Segmented control: "1" "2" "4"
+- Active segment: Purple bg
+
+Refiner toggle:
+- Label: "Master Refiner", 12px
+- Toggle switch (purple when on)
+- Subtext: "Enhance output quality"
+
+Refiner preset dropdown (visible when refiner on):
+- Options: "Cinematic", "Sharp Detail", "Soft Glow", "Vibrant", "Moody"
+
+--- AI Enhancement Options ---
+Row of toggle chips, margin-top 16px
+Each chip: Rounded-full, border, icon + label
+
+Chips:
+1. "🧠 AI Curation" - toggle on/off
+2. "🎯 Auto Optimize" - toggle on/off  
+3. "📚 Knowledge Base" - opens modal
+
+--- Generate Button ---
+Full width, margin-top 24px
+Height: 56px
+Background: Gradient #7C3AED to #9333EA
+Text: "✨ Generate Image" - 16px, bold, white
+Border-radius: 14px
+Hover: Brightness 1.1, translateY(-2px)
+Active: Scale 0.98
+
+Loading state:
+- Background: #7C3AED (solid)
+- Text: "Generating..." with spinning loader
+- Progress bar underneath showing stage
+
+--- Keyboard Shortcut Hint ---
+Center text below button
+"Press ⌘ + Enter to generate" - 12px, #A1A1AA
+
+=== RIGHT COLUMN: AGENTS & OUTPUT ===
+
+--- AI Agents Status Panel ---
+Background: #FFFFFF (dark: #18181B)
+Border: 1px solid #E4E4E7 (dark: #27272A)
+Border-radius: 20px
+Padding: 20px
+Margin-bottom: 24px
+
+Header:
+- "🤖 AI Agents Pipeline" - 16px, bold
+- "5 agents" badge - 11px, #7C3AED bg, white text
+
+Agent cards grid (5 cards, 2 columns + 1 spanning):
+
+Each agent card:
+- Background: #FAFAFA (dark: #27272A)
+- Border-radius: 12px
+- Padding: 14px
+- Border-left: 3px (color based on status)
+
+Card content:
+- Icon + Agent name (14px, semibold)
+- Status message (12px, #71717A)
+- Output preview (when completed, monospace, 11px)
+
+Agent 1 - Text Sentinel:
+- Icon: 🔤 Bot icon
+- Status colors: Idle #71717A, Working #7C3AED (pulse), Done #16A34A, Error #DC2626
+- Message: "Ready to check spelling" / "Analyzing text..." / "Found: 'OPEN 24/7'"
+
+Agent 2 - Style Architect:
+- Icon: 🎨 Sparkles
+- Message: "Ready to enhance style" / "Applying cinematic style..."
+
+Agent 3 - Visual Synthesizer:
+- Icon: 🖼️ Palette
+- Message: "Ready to generate" / "Creating image..."
+
+Agent 4 - Master Refiner:
+- Icon: ⚙️ Sliders
+- Message: "Ready to refine" / "Enhancing details..."
+
+Agent 5 - Quality Analyst:
+- Icon: 🧠 Brain
+- Message: "Ready to learn" / "Analyzing quality..."
+
+Progress indicator:
+- Horizontal line connecting all agents
+- Dots on line light up as each completes
+- Active agent has pulsing glow
+
+--- Output Preview Area ---
+Background: #FFFFFF (dark: #18181B)
+Border: 1px solid #E4E4E7 (dark: #27272A)
+Border-radius: 20px
+Flex: 1 (fill remaining space)
+Min-height: 400px
+Overflow: hidden
+
+Empty state (before generation):
+- Dashed border inner container
+- Large image icon, 64px, #D4D4D8
+- "Generated artwork will appear here" - 15px, #A1A1AA
+- "Enter a prompt and click Generate" - 13px, #71717A
+
+Loading state (during generation):
+- Dark overlay with blur
+- Animated gradient background (purple/pink shifting)
+- Spinning loader icon
+- "Creating your masterpiece..." text
+- Stage indicator: "Stage 2/5: Style Architect working..."
+
+Preview mode (4 variations grid):
+- 2x2 grid of generated previews
+- Each preview: Rounded-12px, aspect-ratio based on selection
+- Hover overlay on each:
+  - Zoom icon button
+  - Edit Text button (Type icon)
+  - Edit Background button (Eraser icon)
+  - "⚡ Enhance" button (green, prominent)
+
+Final output (single selected image):
+- Large preview, centered
+- Aspect ratio maintained
+- Subtle ring glow effect
+
+Below image - Rating section:
+- "Rate this result to improve AI" - 13px
+- 5 star buttons (outline, fill on click)
+- "AI Quality Score: 8.5/10" badge
+
+--- Action Bar (below preview) ---
+Background: #F4F4F5 (dark: #27272A)
+Padding: 16px
+Border-radius: 0 0 20px 20px
+
+Left side - Edit mode buttons:
+- "✏️ Edit Text" - pill button
+- "🖼️ Change Background" - pill button
+
+Right side - Export buttons:
+- "⬇️ Download" - dropdown with PNG/JPEG/WebP options
+- "🔗 Share" - copy link
+- "↻ Regenerate" - secondary button
+
+=== MODALS & OVERLAYS ===
+
+--- Zoomed Preview Modal ---
+Full screen overlay, bg black/95, backdrop-blur
+Close button top-right
+Centered image with max constraints
+Bottom action bar: Download Original button
+
+--- Knowledge Base Modal ---
+Slide-in from right, 480px width
+Header: "📚 Style Knowledge Base" + close X
+Search input at top
+Categorized list:
+- "Historical Styles" - expandable
+- "Modern Movements" - expandable
+- "Digital & Contemporary" - expandable
+- "Illustration Styles" - expandable
+- "Cultural Styles" - expandable
+Each style: Name + preview thumbnail + "Apply" button
+
+--- Edit Mode Panel ---
+Appears at bottom when Edit Text/Background selected
+Input field: "What text should it say now?" or "Describe the new background"
+Apply button + Cancel link
+
+=== KEYBOARD SHORTCUTS ===
+⌘ + Enter: Generate
+⌘ + S: Save/Download
+⌘ + Z: Undo
+⌘ + 1-4: Select variation
+Esc: Cancel/Close modal
+?: Show shortcuts help
+
+=== ANIMATIONS & MICRO-INTERACTIONS ===
+- Agent cards pulse when active
+- Progress line animates between agents
+- Generate button has shimmer effect on idle
+- Preview images fade in with scale
+- Style pills have spring animation on select
+- Star rating has pop animation
+- Dropdown menus slide down with ease
+- Toast notifications slide in from top-right
+
+=== RESPONSIVE BEHAVIOR ===
+Desktop (1440px+): Full two-column layout
+Laptop (1024-1439px): Collapsed sidebar, narrower panels
+Tablet (768-1023px): Stacked layout (input above, output below), hidden sidebar
+Mobile (<768px): Full-width stacked, bottom sheet for advanced settings
+
+=== COLOR TOKENS ===
+Agent Idle: #71717A
+Agent Working: #7C3AED (with glow animation)
+Agent Complete: #16A34A
+Agent Error: #DC2626
+Primary Gradient: #7C3AED → #9333EA
+Success: #16A34A
+Warning: #F59E0B
+
+=== TYPOGRAPHY ===
+Headings: Inter, bold, tight tracking
+Body: Inter, regular
+Monospace (agent output): JetBrains Mono, 11px
