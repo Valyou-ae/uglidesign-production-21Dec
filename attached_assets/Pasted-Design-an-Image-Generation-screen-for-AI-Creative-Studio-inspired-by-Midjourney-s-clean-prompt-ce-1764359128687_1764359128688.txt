@@ -1,0 +1,589 @@
+Design an Image Generation screen for "AI Creative Studio" inspired by Midjourney's clean, prompt-centric interface. The design should feel minimal yet powerful, with the prompt bar as the hero element. Combine Midjourney's simplicity with the advanced 5-agent AI system. Dark theme primary with light mode support.
+
+=== PAGE STRUCTURE ===
+Full viewport height
+Layout: Fixed left sidebar (72px collapsed / 280px expanded) + Main content area
+Background: #09090B (dark) / #FAFAFA (light)
+No traditional navbar - clean immersive experience
+
+=== LEFT SIDEBAR (Collapsed by Default) ===
+Width: 72px collapsed, 280px expanded on hover/click
+Background: #18181B (dark) / #FFFFFF (light)
+Border-right: 1px solid #27272A (dark) / #E4E4E7 (light)
+Transition: width 300ms ease
+
+Collapsed state (72px):
+- Logo icon only: Sparkles, 28px, gradient purple-pink
+- Vertical icon buttons:
+  - Home (grid icon)
+  - Create (plus-circle) - ACTIVE
+  - My Projects (folder)
+  - Favorites (star)
+  - Settings (gear)
+- Bottom: User avatar (36px circle)
+- Tooltip on hover showing label
+
+Expanded state (280px):
+- Full logo: "AI Creative Studio"
+- Navigation with labels
+- User profile card at bottom
+- Collapse button
+
+=== MAIN CONTENT AREA ===
+Display: flex
+Flex-direction: column
+Height: 100vh
+Padding: 0
+
+=== TOP SECTION: GENERATION GALLERY ===
+Flex: 1
+Overflow-y: auto
+Padding: 24px 40px
+Background: #09090B (dark) / #FAFAFA (light)
+
+--- Empty State (No generations yet) ---
+Centered content, max-width 600px
+
+Visual:
+- Large gradient orb animation (subtle floating)
+- Or: Abstract AI art placeholder
+
+Text:
+- "What will you imagine?" - 32px, bold, gradient text #A855F7 to #EC4899
+- "Describe anything and watch AI bring it to life" - 16px, #71717A
+- "Try: 'A cozy coffee shop in Tokyo at night, rain on windows, warm lighting, anime style'" - 14px, #52525B, italic
+
+Quick start suggestions (horizontal scroll):
+- Pill buttons with example prompts
+- "🌆 Cyberpunk city", "🎨 Oil painting portrait", "🏔️ Fantasy landscape", "🚀 Sci-fi spaceship"
+- Click to populate prompt bar
+
+--- Gallery View (After generations) ---
+Masonry grid layout (Pinterest style):
+- 4 columns desktop, 3 tablet, 2 mobile
+- Gap: 16px
+- Images of varying heights based on aspect ratio
+
+Each image card:
+- Border-radius: 12px
+- Overflow: hidden
+- Position: relative
+- Cursor: pointer
+- Transition: transform 200ms, box-shadow 200ms
+
+Hover state:
+- Transform: scale(1.02)
+- Box-shadow: 0 20px 40px rgba(0,0,0,0.4)
+
+Hover overlay:
+- Gradient from transparent to rgba(0,0,0,0.8) at bottom
+- Content appears on hover:
+
+Top-left badges:
+- Style badge: "Cinematic" - 10px, bg white/20, backdrop-blur
+- Quality badge: "Premium 💎" - 10px
+
+Bottom content (on hover):
+- Truncated prompt text (2 lines max), 12px, white
+- Action buttons row:
+  - ⬇️ Download
+  - 🔄 Variations
+  - ⭐ Favorite
+  - 🗑️ Delete
+  - ⋯ More
+
+Click action: Opens image in lightbox/detail view
+
+--- Generation In Progress ---
+New card appears at top of grid
+Pulsing gradient border animation (purple → pink → purple)
+Inside card:
+- Blurred preview or gradient placeholder
+- AI Agents status mini-view:
+  - 5 small dots representing agents
+  - Dots light up sequentially as agents work
+  - Current agent name: "Style Architect working..."
+- Progress bar underneath
+- "Cancel" button (subtle)
+
+=== BOTTOM SECTION: PROMPT BAR (Hero Element) ===
+Position: sticky bottom
+Background: #18181B (dark) / #FFFFFF (light)
+Border-top: 1px solid #27272A (dark) / #E4E4E7 (light)
+Padding: 20px 40px 24px
+Box-shadow: 0 -10px 40px rgba(0,0,0,0.3)
+
+--- Main Prompt Container ---
+Background: #27272A (dark) / #F4F4F5 (light)
+Border: 1px solid #3F3F46 (dark) / #E4E4E7 (light)
+Border-radius: 16px
+Padding: 4px
+Display: flex
+Align-items: center
+Gap: 8px
+Transition: border-color 200ms, box-shadow 200ms
+
+Focus state:
+- Border-color: #7C3AED
+- Box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2)
+
+--- Left Side: Attachment Button ---
+Button: 44px square
+Background: transparent
+Border-radius: 12px
+Icon: Paperclip or Image, 20px, #71717A
+Hover: bg #3F3F46 (dark) / #E4E4E7 (light)
+Tooltip: "Add reference image"
+
+Click opens:
+- File picker for reference image
+- Or dropdown: "Upload Image" / "Paste URL" / "Use from Projects"
+
+Reference image attached state:
+- Small thumbnail (40px) replaces icon
+- X button to remove
+- Border: 2px solid #7C3AED
+
+--- Center: Prompt Input ---
+Flex: 1
+Input type: textarea (auto-expanding)
+Min-height: 44px
+Max-height: 120px (then scroll)
+Background: transparent
+Border: none
+Font: 15px, #FAFAFA (dark) / #18181B (light)
+Placeholder: "What will you imagine?" - #71717A
+Resize: none
+Line-height: 1.5
+
+Features:
+- Auto-grows as user types
+- Shift+Enter for new line
+- Enter to submit (when not Shift)
+
+--- Right Side: Controls Row ---
+Display: flex
+Align-items: center
+Gap: 8px
+
+Settings button:
+- Icon: Sliders/adjustments, 20px
+- 44px square
+- Border-radius: 12px
+- Background: transparent
+- Hover: bg #3F3F46
+- Tooltip: "Generation settings"
+- Click: Opens settings panel (slide up)
+
+Version dropdown:
+- "V5" displayed (or model version)
+- Small chevron-down
+- Dropdown: "V5 (Latest)", "V4", "Fast", "Pro"
+- 36px height, rounded-lg
+
+Imagine button:
+- Background: gradient #7C3AED to #9333EA
+- Text: "Imagine" or just arrow icon →
+- Padding: 12px 24px (with text) or 44px square (icon only)
+- Border-radius: 12px
+- Font: 15px, bold, white
+- Hover: brightness 1.1, scale 1.02
+- Active: scale 0.98
+
+Loading state:
+- Spinner replaces text/icon
+- "Creating..." text
+- Button disabled
+
+--- Settings Panel (Expandable) ---
+Slides up from prompt bar when settings clicked
+Background: #18181B (dark) / #FFFFFF (light)
+Border-top: 1px solid #27272A
+Border-radius: 20px 20px 0 0
+Padding: 24px 40px
+Max-height: 400px
+Overflow-y: auto
+
+Panel header:
+- "Generation Settings" - 16px, bold
+- Close X button
+
+Settings grid (3 columns on desktop):
+
+Column 1 - Style Preset:
+Label: "Style", 12px, #71717A, uppercase
+Dropdown or visual selector:
+- "Auto ✨" (default)
+- "Photorealistic 📸"
+- "Cinematic 🎬"
+- "Anime/Manga 🎌"
+- "Oil Painting 🖼️"
+- "Watercolor 🎨"
+- "Digital Art 💻"
+- "Minimalist ⚪"
+- "Retrowave 🌆"
+- "Dark Fantasy ⚔️"
+- "Pop Art 🎪"
+- "Isometric 3D 📦"
+- "Pencil Sketch ✏️"
+
+Visual style selector (alternative):
+- Grid of style preview thumbnails
+- 4x3 grid of small style previews
+- Selected has purple ring
+
+Column 2 - Quality Level:
+Label: "Quality", 12px, #71717A
+Segmented control or cards:
+
+Quality options:
+- "⚡ Draft" - Fast preview
+- "✨ Standard" - Balanced (default)
+- "💎 Premium" - Maximum quality
+- "🔮 Ultra" - Extreme detail
+
+Each option shows:
+- Icon + Name
+- Brief description on hover
+- Estimated time
+
+Column 3 - Aspect Ratio:
+Label: "Aspect Ratio", 12px, #71717A
+Visual ratio buttons:
+
+Ratio options (icon representations):
+- ⬜ 1:1 (Square) - default
+- 🖼️ 16:9 (Landscape)
+- 📱 9:16 (Portrait)
+- 🖥️ 4:3 (Classic)
+- 📄 3:4 (Tall)
+
+Each button:
+- Shows aspect ratio shape
+- Label below
+- Selected: purple border, filled bg
+
+Row 2 - Advanced Options:
+
+Variations count:
+- Label: "Variations"
+- Segmented: "1" "2" "4"
+- Default: 4 (like Midjourney)
+
+Refiner toggle:
+- Label: "Master Refiner"
+- Toggle switch
+- Subtext: "Enhance quality (slower)"
+- When on: Show refiner preset dropdown
+
+Refiner presets (when enabled):
+- "Cinematic"
+- "Sharp Detail"
+- "Soft Glow"
+- "Vibrant"
+- "Moody"
+
+Row 3 - AI Features:
+
+Toggle chips:
+- "🧠 AI Curation" - Auto-select best result
+- "🎯 Auto Optimize" - Learn from feedback
+- "📚 Knowledge Base" - Opens style library modal
+
+=== AI AGENTS STATUS BAR ===
+Position: Above prompt bar when generating
+Background: #27272A (dark) / #F4F4F5 (light)
+Border-radius: 12px
+Margin: 0 40px 12px
+Padding: 16px 20px
+Animation: Slide down on generation start
+
+--- Agents Pipeline View ---
+Horizontal layout showing 5 agents
+
+Each agent node:
+- Circle: 40px
+- Icon inside: 18px
+- Connected by line (like a pipeline)
+
+Agent details:
+1. 🔤 Text Sentinel - "Checking spelling..."
+2. 🎨 Style Architect - "Enhancing style..."
+3. 🖼️ Visual Synthesizer - "Generating image..."
+4. ⚙️ Master Refiner - "Refining details..."
+5. 🧠 Quality Analyst - "Analyzing quality..."
+
+Agent states:
+- Idle: bg #3F3F46, icon #71717A
+- Working: bg #7C3AED, icon white, pulsing glow animation
+- Complete: bg #16A34A, checkmark icon, white
+- Error: bg #DC2626, X icon
+
+Current agent expanded:
+- Shows message: "Analyzing text for spelling..."
+- Mini output preview if available
+
+Compact mode (optional):
+- Single line: "Agent 2/5: Style Architect enhancing..."
+- Progress bar underneath
+
+=== IMAGE DETAIL LIGHTBOX ===
+Triggered by clicking any image in gallery
+
+Overlay: rgba(0,0,0,0.95), backdrop-blur
+Close: X button top-right, or click outside, or Esc
+
+Layout: Image left (65%), Details right (35%)
+
+--- Left: Image View ---
+Image centered with max dimensions
+Background: Subtle checkered for transparency
+Zoom controls: + / - / Fit / Actual size
+Navigation: Left/Right arrows to browse gallery
+
+--- Right: Details Panel ---
+Background: #18181B
+Padding: 32px
+Height: 100%
+Overflow-y: auto
+
+Content sections:
+
+1. Actions row:
+   - ⬇️ Download (dropdown: PNG, JPEG, WebP)
+   - 🔄 Create Variations
+   - ✂️ Edit (Text/Background)
+   - ⭐ Add to Favorites
+   - 🗑️ Delete
+
+2. Prompt section:
+   - "Prompt" label
+   - Full prompt text (expandable if long)
+   - Copy button
+
+3. Settings used:
+   - Style: "Cinematic"
+   - Quality: "Premium"
+   - Aspect Ratio: "16:9"
+   - Refiner: "Enabled - Sharp Detail"
+
+4. AI Analysis:
+   - Quality Score: 8.5/10
+   - Composition, Detail, Lighting, Color scores
+
+5. Rate this result:
+   - 5 star rating
+   - "Help AI learn from your feedback"
+
+6. Generation info:
+   - Created: "2 hours ago"
+   - Generation time: "12.3s"
+   - Seed: "1234567890" (copy button)
+
+7. Use this prompt:
+   - "Remix" button - Opens in prompt bar with modifications
+   - "Use exact" button - Copies exact prompt
+
+=== VARIATION MODAL ===
+Triggered by "Create Variations" button
+
+Modal: 600px width, centered
+Background: #18181B
+Border-radius: 20px
+Padding: 32px
+
+Content:
+- Original image thumbnail (centered, 200px)
+- "Create Variations" title
+
+Options:
+- Variation strength slider: "Subtle" to "Strong"
+- Number of variations: 1, 2, 4
+- Lock seed toggle
+
+- "Generate Variations" button (primary)
+- "Cancel" link
+
+=== EDIT MODE PANEL ===
+Triggered by Edit button on image
+
+Slides up from bottom, 200px height
+Background: #18181B
+Border-top: 1px solid #27272A
+
+Tab selector:
+- "✏️ Edit Text" tab
+- "🖼️ Change Background" tab
+
+Edit Text content:
+- Input: "What text should it say now?"
+- Placeholder: "e.g., 'CLOSED' or 'SALE 50% OFF'"
+- "Apply Edit" button
+
+Change Background content:
+- Input: "Describe the new background"
+- Placeholder: "e.g., 'on a tropical beach at sunset'"
+- Quick suggestions: "Studio white", "Nature", "Urban", "Abstract"
+- "Apply Edit" button
+
+Processing state:
+- Shows overlay on image
+- "Editing pixels..." with spinner
+
+=== KNOWLEDGE BASE MODAL ===
+Triggered by "📚 Knowledge Base" chip
+
+Full screen overlay or large modal (80% viewport)
+Background: #18181B
+Border-radius: 20px (if modal)
+
+Header:
+- "📚 Style Knowledge Base" - 24px, bold
+- Search input: "Search 180+ styles..."
+- Close X button
+
+Sidebar categories (left, 240px):
+- "All Styles"
+- "Historical & Classical"
+- "Modern Movements"
+- "Digital & Contemporary"
+- "Illustration & Comics"
+- "Cultural & Traditional"
+- "Architecture"
+- "Fashion & Costume"
+- "Gaming & Animation"
+- "Photography Styles"
+
+Main content (right):
+Grid of style cards (3 columns)
+
+Each style card:
+- Preview image/gradient, 100px height
+- Style name: "Impressionism"
+- Brief description
+- "Apply" button on hover
+
+Click style: Shows detailed view with:
+- Larger preview
+- Full description
+- Keywords used
+- Example prompts
+- "Use This Style" button (applies to current prompt bar)
+
+=== KEYBOARD SHORTCUTS ===
+- Enter: Generate (when in prompt bar)
+- Shift + Enter: New line in prompt
+- Esc: Close modals/panels
+- ⌘/Ctrl + K: Focus prompt bar
+- ⌘/Ctrl + Enter: Generate from anywhere
+- ⌘/Ctrl + S: Save/Download focused image
+- Arrow keys: Navigate gallery
+- Space: Open lightbox for selected image
+- 1-5: Rate image (in lightbox)
+- V: Create variations (in lightbox)
+- E: Edit mode (in lightbox)
+- F: Toggle favorite (in lightbox)
+- ?: Show all shortcuts
+
+=== FLOATING ELEMENTS ===
+
+--- Credits Display ---
+Position: Top-right of main content, 24px from edges
+Background: #27272A (dark)
+Border-radius: 10px
+Padding: 10px 16px
+
+Content:
+- Lightning icon, 16px, #F59E0B
+- "1,523 credits" - 13px, semibold, white
+
+Click: Opens usage modal
+
+--- Keyboard Shortcut Hint ---
+Position: Bottom-right, 24px from edges
+Subtle display:
+- "Press ⌘K to focus" - 12px, #52525B
+- Fades out after 5 seconds
+
+--- Toast Notifications ---
+Position: Top-center
+Slide down animation
+
+Types:
+- Success: Green accent - "Image generated successfully!"
+- Error: Red accent - "Generation failed. Please try again."
+- Info: Purple accent - "Processing your request..."
+
+=== MICRO-INTERACTIONS ===
+- Prompt bar focus: Border glow animation
+- Settings panel: Slide up with spring physics
+- Agent nodes: Ripple effect on state change
+- Image cards: Parallax tilt on hover
+- Generate button: Pulse animation when ready
+- Rating stars: Pop animation on select
+- Gallery images: Stagger fade-in on load
+- Variations: Cards fan out animation
+
+=== RESPONSIVE BEHAVIOR ===
+
+Desktop (1440px+):
+- Expanded sidebar option
+- 4-column masonry
+- Full settings panel
+
+Laptop (1024-1439px):
+- Collapsed sidebar (72px)
+- 3-column masonry
+- Settings in modal instead of panel
+
+Tablet (768-1023px):
+- No sidebar (bottom nav instead)
+- 2-column masonry
+- Prompt bar: Simplified controls
+- Full-screen settings modal
+
+Mobile (<768px):
+- Bottom navigation: Home, Create, Projects, Profile
+- Single column gallery
+- Prompt bar: Minimal (input + generate)
+- Settings: Full-screen bottom sheet
+- Floating "+" FAB to start new generation
+
+=== COLOR TOKENS ===
+Background Dark: #09090B
+Surface Dark: #18181B
+Surface Dark Elevated: #27272A
+Border Dark: #3F3F46
+Text Primary Dark: #FAFAFA
+Text Secondary Dark: #A1A1AA
+Text Muted Dark: #71717A
+
+Primary: #7C3AED (Purple)
+Primary Gradient: #7C3AED → #9333EA
+Secondary: #EC4899 (Pink)
+Accent: #F59E0B (Amber)
+
+Agent Colors:
+- Text Sentinel: #3B82F6 (Blue)
+- Style Architect: #8B5CF6 (Violet)
+- Visual Synthesizer: #EC4899 (Pink)
+- Master Refiner: #F59E0B (Amber)
+- Quality Analyst: #10B981 (Emerald)
+
+=== TYPOGRAPHY ===
+Font Family: Inter, SF Pro Display, system-ui
+
+Hero text: 32px, bold, gradient
+Page titles: 24px, bold
+Section headers: 16px, semibold
+Body: 15px, regular
+Labels: 12px, medium, uppercase
+Captions: 12px, regular
+Badges: 10px, bold
+
+=== ANIMATIONS ===
+- Ease: cubic-bezier(0.4, 0, 0.2, 1)
+- Duration fast: 150ms
+- Duration normal: 200ms
+- Duration slow: 300ms
+- Spring: cubic-bezier(0.34, 1.56, 0.64, 1)
