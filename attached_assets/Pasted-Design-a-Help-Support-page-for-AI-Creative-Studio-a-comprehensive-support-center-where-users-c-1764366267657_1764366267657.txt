@@ -1,0 +1,1070 @@
+Design a Help & Support page for "AI Creative Studio" - a comprehensive support center where users can find answers, browse documentation, contact support, and access resources. Follow the sidebar layout from dashboard. Dark/light theme support. Clean, welcoming UI with purple accent color. Use Lucide icons throughout - NO emojis.
+
+=== PAGE STRUCTURE ===
+Full viewport height
+Layout: Fixed left sidebar (280px) + Main content area
+Background: #0A0A0B (dark) / #F8F8F8 (light)
+Main content: Scrollable
+
+=== LEFT SIDEBAR ===
+Width: 280px, full height, fixed
+Background: #111113 (dark) / #FFFFFF (light)
+Border-right: 1px solid #1F1F23 (dark) / #E4E4E7 (light)
+
+Same structure as dashboard BUT:
+- "Help & Support" nav item is ACTIVE (purple highlight #7C3AED)
+- HelpCircle icon highlighted
+
+Sidebar navigation:
+
+Main section:
+- Home (LayoutGrid icon)
+- Image Generator (Wand2 icon)
+- Mockup Generator (ShoppingBag icon)
+- Background Remover (Scissors icon)
+- My Projects (FolderOpen icon)
+- Favorites (Star icon)
+
+Account section:
+- Settings (Settings icon)
+- Billing (CreditCard icon)
+- Help & Support (HelpCircle icon) - ACTIVE
+
+=== MAIN CONTENT AREA ===
+Padding: 0
+Overflow-y: auto
+Height: 100vh
+
+=== HERO SECTION ===
+Background: linear-gradient 180deg #111113 0% to #0A0A0B 100%
+Padding: 60px 48px 48px
+Text-align: center
+Position: relative
+
+Decorative background:
+- Subtle grid pattern, opacity 0.03
+- Or: Radial gradient glow behind search, #7C3AED at 5% opacity
+
+--- Hero Content ---
+Max-width: 640px
+Margin: 0 auto
+
+Title:
+- "How can we help?" - 36px, bold, #FAFAFA
+- Letter-spacing: -0.5px
+
+Subtitle:
+- "Search our knowledge base or browse categories below" - 16px, #71717A
+- Margin-top: 12px
+
+--- Search Bar ---
+Margin-top: 32px
+Position: relative
+Max-width: 560px
+Margin-left: auto
+Margin-right: auto
+
+Search input container:
+- Background: #1A1A1F (dark) / #FFFFFF (light)
+- Border: 1px solid #2A2A30 (dark) / #E4E4E7 (light)
+- Border-radius: 16px
+- Padding: 4px
+- Display: flex
+- Align-items: center
+- Transition: all 200ms
+
+Focus state:
+- Border-color: #7C3AED
+- Box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15)
+
+Search icon:
+- Search icon, 22px, #52525B
+- Margin-left: 16px
+
+Input field:
+- Flex: 1
+- Background: transparent
+- Border: none
+- Padding: 16px 12px
+- Font: 16px, #FAFAFA
+- Placeholder: "Search for help articles, tutorials, FAQs..." - #52525B
+
+Keyboard hint:
+- Position: absolute
+- Right: 16px
+- bg #1F1F25
+- border: 1px solid #2A2A30
+- border-radius: 6px
+- padding: 4px 8px
+- font: 11px, mono, #52525B
+- "Cmd + K"
+
+--- Quick Links ---
+Margin-top: 24px
+Display: flex
+Justify-content: center
+Gap: 24px
+
+Each quick link:
+- Display: flex
+- Align-items: center
+- Gap: 6px
+- Font: 13px, #71717A
+- Cursor: pointer
+- Transition: color 150ms
+- Hover: color #FAFAFA
+
+Links:
+1. BookOpen icon, 14px - "Getting Started"
+2. Zap icon, 14px - "Quick Tips"
+3. MessageCircle icon, 14px - "Contact Us"
+4. FileText icon, 14px - "API Docs"
+
+=== CATEGORIES SECTION ===
+Padding: 48px
+Max-width: 1200px
+Margin: 0 auto
+
+--- Section Header ---
+Margin-bottom: 32px
+
+Title:
+- "Browse by Category" - 22px, semibold, #FAFAFA
+
+Subtitle:
+- "Find answers organized by topic" - 14px, #71717A
+- Margin-top: 4px
+
+--- Categories Grid ---
+Display: grid
+Grid-template-columns: repeat(3, 1fr)
+Gap: 20px
+
+Responsive:
+- 1200px+: 3 columns
+- 900px: 2 columns
+- 600px: 1 column
+
+--- Category Card ---
+Background: #111113 (dark) / #FFFFFF (light)
+Border: 1px solid #1F1F23 (dark) / #E4E4E7 (light)
+Border-radius: 16px
+Padding: 28px
+Cursor: pointer
+Transition: all 250ms ease
+
+Hover state:
+- Border-color: #2A2A30
+- Transform: translateY(-4px)
+- Box-shadow: 0 12px 32px rgba(0,0,0,0.3)
+
+Card content:
+
+Icon container:
+- Width: 48px
+- Height: 48px
+- Background: #7C3AED/10
+- Border-radius: 12px
+- Display: flex
+- Align-items: center
+- Justify-content: center
+
+Icon:
+- 24px, #7C3AED
+
+Title:
+- 17px, semibold, #FAFAFA
+- Margin-top: 16px
+
+Description:
+- 14px, #71717A
+- Margin-top: 6px
+- Line-height: 1.5
+
+Article count:
+- 12px, #52525B
+- Margin-top: 12px
+- "12 articles"
+
+Arrow indicator:
+- ArrowRight icon, 16px, #52525B
+- Position: absolute, top-right, 24px from edges
+- Opacity: 0 (default) / 1 (hover)
+- Transform: translateX(0) (default) / translateX(4px) (hover)
+
+--- Category Cards Content ---
+
+Card 1 - Getting Started:
+- Rocket icon, #7C3AED
+- "Getting Started"
+- "Learn the basics and set up your account"
+- "8 articles"
+
+Card 2 - Image Generation:
+- Wand2 icon, #7C3AED
+- "Image Generation"
+- "Create stunning AI-generated images"
+- "15 articles"
+
+Card 3 - Mockup Generator:
+- ShoppingBag icon, #4F46E5
+- "Mockup Generator"
+- "Create product mockups for your designs"
+- "12 articles"
+
+Card 4 - Background Remover:
+- Scissors icon, #EC4899
+- "Background Removal"
+- "Remove and replace image backgrounds"
+- "6 articles"
+
+Card 5 - AI Agents:
+- BrainCircuit icon, #10B981
+- "AI Agents"
+- "Understand the 5 AI agents and how they work"
+- "10 articles"
+
+Card 6 - Billing & Credits:
+- CreditCard icon, #F59E0B
+- "Billing & Credits"
+- "Manage subscriptions, payments, and credits"
+- "9 articles"
+
+Card 7 - Account & Security:
+- Shield icon, #3B82F6
+- "Account & Security"
+- "Secure your account and manage settings"
+- "7 articles"
+
+Card 8 - API & Integrations:
+- Code icon, #8B5CF6
+- "API & Integrations"
+- "Connect apps and use our API"
+- "14 articles"
+
+Card 9 - Troubleshooting:
+- AlertCircle icon, #DC2626
+- "Troubleshooting"
+- "Fix common issues and errors"
+- "11 articles"
+
+=== POPULAR ARTICLES SECTION ===
+Padding: 0 48px 48px
+Max-width: 1200px
+Margin: 0 auto
+
+--- Section Header ---
+Display: flex
+Justify-content: space-between
+Align-items: center
+Margin-bottom: 24px
+
+Left:
+- TrendingUp icon, 22px, #F59E0B
+- "Popular Articles" - 22px, semibold, #FAFAFA
+- Gap: 12px
+
+Right:
+- "View all" link - 14px, #7C3AED
+- ArrowRight icon, 16px
+- Hover: underline
+
+--- Articles List ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 16px
+Overflow: hidden
+
+Each article row:
+- Display: flex
+- Align-items: center
+- Padding: 20px 24px
+- Border-bottom: 1px solid #1F1F23
+- Cursor: pointer
+- Transition: background 150ms
+- Hover: bg #1A1A1F
+
+Last row:
+- Border-bottom: none
+
+Article content:
+
+Left side:
+- Flex: 1
+- Display: flex
+- Align-items: center
+- Gap: 16px
+
+Article icon:
+- FileText icon, 20px, #52525B
+
+Article info:
+Title:
+- 15px, medium, #FAFAFA
+- Hover: text #7C3AED
+
+Category badge:
+- 11px, #71717A
+- bg #1F1F25
+- border-radius: 6px
+- padding: 4px 8px
+- Margin-top: 4px
+
+Right side:
+- Display: flex
+- Align-items: center
+- Gap: 16px
+
+Read time:
+- Clock icon, 14px, #52525B
+- "3 min read" - 12px, #52525B
+
+Arrow:
+- ChevronRight icon, 18px, #3A3A40
+- Hover: #71717A
+
+--- Popular Articles List ---
+
+1. "How to write effective prompts for image generation" - "Image Generation" - "5 min"
+2. "Understanding the 5 AI agents" - "AI Agents" - "8 min"
+3. "How credits work and how to get more" - "Billing" - "3 min"
+4. "Creating seamless patterns for All-Over Print" - "Mockups" - "6 min"
+5. "Troubleshooting failed generations" - "Troubleshooting" - "4 min"
+6. "Best practices for background removal" - "Background Removal" - "4 min"
+
+=== VIDEO TUTORIALS SECTION ===
+Padding: 0 48px 48px
+Max-width: 1200px
+Margin: 0 auto
+
+--- Section Header ---
+Display: flex
+Justify-content: space-between
+Align-items: center
+Margin-bottom: 24px
+
+Left:
+- PlayCircle icon, 22px, #7C3AED
+- "Video Tutorials" - 22px, semibold, #FAFAFA
+- Gap: 12px
+
+Right:
+- "View all videos" link - 14px, #7C3AED
+
+--- Videos Grid ---
+Display: grid
+Grid-template-columns: repeat(4, 1fr)
+Gap: 20px
+
+Responsive:
+- 1200px+: 4 columns
+- 900px: 3 columns
+- 600px: 2 columns
+
+--- Video Card ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 14px
+Overflow: hidden
+Cursor: pointer
+Transition: all 200ms
+
+Hover:
+- Border-color: #2A2A30
+- Transform: translateY(-2px)
+
+Thumbnail container:
+- Aspect-ratio: 16/9
+- Background: #1A1A1F
+- Position: relative
+- Overflow: hidden
+
+Thumbnail image:
+- Object-fit: cover
+- Width/height: 100%
+
+Play button overlay:
+- Position: absolute
+- Inset: 0
+- Display: flex
+- Align-items: center
+- Justify-content: center
+- Background: rgba(0,0,0,0.4)
+- Opacity: 0 (default) / 1 (hover)
+- Transition: opacity 200ms
+
+Play icon:
+- PlayCircle icon, 48px, white
+- Drop-shadow
+
+Duration badge:
+- Position: absolute
+- Bottom: 8px
+- Right: 8px
+- bg rgba(0,0,0,0.8)
+- padding: 4px 8px
+- border-radius: 6px
+- font: 11px, semibold, white
+- "3:45"
+
+Video info:
+- Padding: 16px
+
+Title:
+- 14px, semibold, #FAFAFA
+- Max 2 lines, truncate
+
+Views:
+- 12px, #52525B
+- Margin-top: 6px
+- Eye icon, 12px + "2.3K views"
+
+--- Video Cards Content ---
+
+1. Thumbnail: Prompt writing - "Mastering Prompt Writing" - "5:23" - "4.5K views"
+2. Thumbnail: Style presets - "Using Style Presets Effectively" - "3:12" - "2.8K views"
+3. Thumbnail: Mockup workflow - "Complete Mockup Workflow" - "8:45" - "3.1K views"
+4. Thumbnail: AI agents - "Understanding AI Agents" - "6:30" - "5.2K views"
+
+=== FAQ SECTION ===
+Padding: 0 48px 48px
+Max-width: 1200px
+Margin: 0 auto
+
+--- Section Header ---
+Margin-bottom: 24px
+
+Left:
+- HelpCircle icon, 22px, #7C3AED
+- "Frequently Asked Questions" - 22px, semibold, #FAFAFA
+- Gap: 12px
+
+--- FAQ Accordion ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 16px
+Overflow: hidden
+
+Each FAQ item:
+- Border-bottom: 1px solid #1F1F23
+
+Last item:
+- Border-bottom: none
+
+--- FAQ Item (Collapsed) ---
+Padding: 20px 24px
+Cursor: pointer
+Display: flex
+Justify-content: space-between
+Align-items: center
+Transition: background 150ms
+Hover: bg #1A1A1F
+
+Question:
+- 15px, medium, #FAFAFA
+- Flex: 1
+
+Toggle icon:
+- ChevronDown icon, 20px, #52525B
+- Transition: transform 200ms
+- Rotates 180deg when expanded
+
+--- FAQ Item (Expanded) ---
+Background: #1A1A1F
+
+Question row:
+- Same as collapsed
+
+Answer:
+- Padding: 0 24px 20px
+- Font: 14px, #A1A1AA
+- Line-height: 1.7
+- Max-width: 90%
+
+Answer with link:
+- Inline links: #7C3AED, underline on hover
+
+--- FAQ Content ---
+
+1. Q: "How many credits do I get with each plan?"
+   A: "The Free plan includes 100 credits per month. The Pro plan includes 2,000 credits per month. Business plans include 10,000 credits per month. You can also purchase additional credit packs anytime from the Billing page."
+
+2. Q: "What's the difference between quality levels?"
+   A: "Draft is fastest and good for quick previews. Standard offers balanced quality and speed. Premium provides maximum quality with more detail. Ultra is our highest quality with extreme detail, best for final outputs."
+
+3. Q: "How do the 5 AI agents work together?"
+   A: "Each agent has a specific role: Text Sentinel checks spelling and text, Style Architect enhances your prompt with style keywords, Visual Synthesizer generates the image, Master Refiner improves quality, and Quality Analyst scores and learns from your feedback."
+
+4. Q: "Can I use generated images commercially?"
+   A: "Yes, all images generated on paid plans can be used commercially. Free plan users have limited commercial rights. See our Terms of Service for full details."
+
+5. Q: "Why did my generation fail?"
+   A: "Generations can fail due to content policy violations, server issues, or connectivity problems. Check our Troubleshooting guide for specific error codes and solutions."
+
+6. Q: "How do I cancel my subscription?"
+   A: "You can cancel your subscription anytime from Settings > Billing > Cancel Subscription. Your plan will remain active until the end of your current billing period."
+
+7. Q: "What file formats can I download?"
+   A: "You can download generated images in PNG, JPEG, or WebP formats. Mockups can be downloaded as PNG or JPEG. Background-removed images are available as PNG with transparency."
+
+8. Q: "How do I get a refund?"
+   A: "We offer refunds within 7 days of purchase for unused credits. Contact our support team with your order details to request a refund."
+
+"Load more questions" button:
+- Ghost style
+- ChevronDown icon
+- Centered below FAQ list
+- Margin-top: 16px
+
+=== CONTACT SUPPORT SECTION ===
+Padding: 0 48px 48px
+Max-width: 1200px
+Margin: 0 auto
+
+--- Section Header ---
+Margin-bottom: 24px
+
+Title:
+- "Still need help?" - 22px, semibold, #FAFAFA
+
+Subtitle:
+- "Our support team is here for you" - 14px, #71717A
+- Margin-top: 4px
+
+--- Contact Options Grid ---
+Display: grid
+Grid-template-columns: repeat(3, 1fr)
+Gap: 20px
+
+--- Contact Card ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 16px
+Padding: 28px
+Text-align: center
+Cursor: pointer
+Transition: all 200ms
+
+Hover:
+- Border-color: #7C3AED
+- Transform: translateY(-2px)
+
+Icon container:
+- Width: 56px
+- Height: 56px
+- Background: varies by card
+- Border-radius: 14px
+- Display: flex
+- Align-items: center
+- Justify-content: center
+- Margin: 0 auto
+
+Icon:
+- 28px, white
+
+Title:
+- 17px, semibold, #FAFAFA
+- Margin-top: 20px
+
+Description:
+- 14px, #71717A
+- Margin-top: 8px
+- Line-height: 1.5
+
+Response time:
+- 12px, #52525B
+- Margin-top: 12px
+- Clock icon, 12px inline
+
+CTA button:
+- Margin-top: 20px
+- Full width
+- padding: 12px 20px
+- border-radius: 10px
+- font: 14px, semibold
+
+--- Contact Cards Content ---
+
+Card 1 - Live Chat:
+- Icon container: bg #16A34A
+- MessageCircle icon
+- "Live Chat"
+- "Chat with our support team in real-time"
+- "Usually responds in 2 minutes"
+- Button: "Start Chat" - bg #16A34A, text white
+
+Card 2 - Email Support:
+- Icon container: bg #3B82F6
+- Mail icon
+- "Email Support"
+- "Send us a detailed message and we'll help"
+- "Usually responds in 4 hours"
+- Button: "Send Email" - bg #3B82F6, text white
+
+Card 3 - Community Forum:
+- Icon container: bg #8B5CF6
+- Users icon
+- "Community Forum"
+- "Ask questions and share tips with other users"
+- "Active community"
+- Button: "Visit Forum" - bg #8B5CF6, text white
+
+--- Additional Contact Info ---
+Margin-top: 24px
+Text-align: center
+
+Support email:
+- "Or email us directly at" - 14px, #71717A
+- "support@aicreativestudio.com" - 14px, #7C3AED
+- Copy icon button
+
+Support hours:
+- "Support hours: Monday - Friday, 9AM - 6PM PST" - 13px, #52525B
+- Margin-top: 8px
+
+=== RESOURCES SECTION ===
+Padding: 0 48px 48px
+Max-width: 1200px
+Margin: 0 auto
+
+--- Section Header ---
+Margin-bottom: 24px
+
+Title:
+- "Resources" - 22px, semibold, #FAFAFA
+
+--- Resources Grid ---
+Display: grid
+Grid-template-columns: repeat(4, 1fr)
+Gap: 16px
+
+Responsive:
+- 1200px+: 4 columns
+- 900px: 2 columns
+- 600px: 1 column
+
+--- Resource Card ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 14px
+Padding: 20px
+Display: flex
+Align-items: center
+Gap: 16px
+Cursor: pointer
+Transition: all 200ms
+
+Hover:
+- Border-color: #2A2A30
+- bg #1A1A1F
+
+Icon container:
+- Width: 44px
+- Height: 44px
+- Background: #1F1F25
+- Border-radius: 10px
+- Display: flex
+- Align-items: center
+- Justify-content: center
+- Flex-shrink: 0
+
+Icon:
+- 22px, #71717A
+
+Content:
+- Flex: 1
+
+Title:
+- 14px, semibold, #FAFAFA
+
+Description:
+- 12px, #71717A
+- Margin-top: 2px
+
+External link indicator:
+- ExternalLink icon, 14px, #52525B
+- Shows for external links
+
+--- Resource Cards Content ---
+
+1. FileText icon - "Documentation" - "Complete product docs"
+2. Code icon - "API Reference" - "Developer documentation"
+3. BookOpen icon - "Blog" - "Tips, updates & tutorials" - External
+4. Github icon - "GitHub" - "Sample code & SDKs" - External
+5. Youtube icon - "YouTube" - "Video tutorials" - External
+6. Twitter icon - "Twitter/X" - "Latest updates" - External
+7. MessageSquare icon - "Discord" - "Join our community" - External
+8. FileQuestion icon - "Release Notes" - "What's new"
+
+=== STATUS SECTION ===
+Padding: 0 48px 48px
+Max-width: 1200px
+Margin: 0 auto
+
+--- System Status Banner ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 14px
+Padding: 20px 24px
+Display: flex
+Justify-content: space-between
+Align-items: center
+
+Left side:
+- Display: flex
+- Align-items: center
+- Gap: 12px
+
+Status indicator:
+- Width: 10px
+- Height: 10px
+- Border-radius: 9999px
+- Background: #16A34A (operational) / #F59E0B (degraded) / #DC2626 (outage)
+- Box-shadow: 0 0 8px (same color at 50% opacity)
+- Animation: pulse (subtle)
+
+Status text:
+- "All Systems Operational" - 15px, medium, #FAFAFA
+- Or: "Partial Outage" / "Service Disruption"
+
+Last updated:
+- "Updated 2 minutes ago" - 13px, #52525B
+- Margin-left: 12px
+
+Right side:
+- "View Status Page" link
+- ExternalLink icon, 14px
+- 14px, #7C3AED
+
+=== FEEDBACK SECTION ===
+Padding: 0 48px 60px
+Max-width: 1200px
+Margin: 0 auto
+
+--- Feedback Card ---
+Background: linear-gradient 135deg #7C3AED/10 to #EC4899/10
+Border: 1px solid #7C3AED/30
+Border-radius: 20px
+Padding: 40px
+Text-align: center
+
+Icon:
+- Lightbulb icon, 40px, #F59E0B
+- Margin-bottom: 16px
+
+Title:
+- "Have feedback or suggestions?" - 20px, semibold, #FAFAFA
+
+Description:
+- "We'd love to hear your ideas for improving AI Creative Studio" - 15px, #A1A1AA
+- Margin-top: 8px
+- Max-width: 500px
+- Margin-left: auto
+- Margin-right: auto
+
+CTA button:
+- "Share Feedback" text
+- Send icon, 18px
+- bg #7C3AED
+- text white
+- padding: 14px 28px
+- border-radius: 12px
+- Margin-top: 24px
+
+=== MODALS ===
+
+--- Search Results Modal ---
+Triggered when typing in search
+
+Position: Below search bar
+Width: 100% of search bar
+Max-height: 400px
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 12px
+Box-shadow: 0 20px 60px rgba(0,0,0,0.5)
+Overflow: hidden
+Margin-top: 8px
+
+Search results header:
+- "Results for 'prompt'" - 12px, #52525B
+- Padding: 12px 16px
+- Border-bottom: 1px solid #1F1F23
+
+Results list:
+Each result:
+- Padding: 12px 16px
+- Display: flex
+- Align-items: center
+- Gap: 12px
+- Cursor: pointer
+- Hover: bg #1A1A1F
+
+Result content:
+- FileText icon, 18px, #52525B
+- Title: 14px, #FAFAFA
+- Category: 12px, #71717A
+
+Keyboard navigation hint:
+- "Use arrow keys to navigate, Enter to select" - 11px, #52525B
+- Padding: 8px 16px
+- Border-top: 1px solid #1F1F23
+
+No results state:
+- Search icon, 32px, #2A2A30
+- "No results found for 'xyz'" - 14px, #71717A
+- "Try different keywords" - 13px, #52525B
+
+--- Live Chat Widget ---
+Position: fixed
+Bottom: 24px
+Right: 24px
+Z-index: 1000
+
+Chat button (collapsed):
+- Width: 60px
+- Height: 60px
+- Background: #16A34A
+- Border-radius: 9999px
+- Box-shadow: 0 8px 24px rgba(22, 163, 74, 0.4)
+- Display: flex
+- Align-items: center
+- Justify-content: center
+- Cursor: pointer
+- Transition: transform 200ms
+- Hover: scale 1.05
+
+Button icon:
+- MessageCircle icon, 28px, white
+
+Notification badge:
+- Position: absolute
+- Top: -4px
+- Right: -4px
+- Width: 20px
+- Height: 20px
+- Background: #DC2626
+- Border-radius: 9999px
+- Font: 11px, bold, white
+- Display: flex, center
+- "1" or unread count
+
+Chat window (expanded):
+- Width: 380px
+- Height: 520px
+- Background: #111113
+- Border: 1px solid #1F1F23
+- Border-radius: 20px
+- Box-shadow: 0 20px 60px rgba(0,0,0,0.5)
+- Overflow: hidden
+- Display: flex
+- Flex-direction: column
+- Animation: slideUp 200ms ease
+
+Chat header:
+- Background: #16A34A
+- Padding: 16px 20px
+- Display: flex
+- Justify-content: space-between
+- Align-items: center
+
+Header left:
+- Agent avatar, 36px circle
+- "Support Team" - 15px, semibold, white
+- "Online" - 12px, rgba(255,255,255,0.8)
+
+Header right:
+- Minimize button: Minus icon
+- Close button: X icon
+
+Chat messages area:
+- Flex: 1
+- Padding: 16px
+- Overflow-y: auto
+- Background: #0A0A0B
+
+Message bubble (support):
+- Background: #1F1F25
+- Border-radius: 12px 12px 12px 4px
+- Padding: 12px 16px
+- Max-width: 80%
+- Font: 14px, #E4E4E7
+- Margin-bottom: 12px
+
+Message bubble (user):
+- Background: #7C3AED
+- Border-radius: 12px 12px 4px 12px
+- Padding: 12px 16px
+- Max-width: 80%
+- Font: 14px, white
+- Margin-left: auto
+- Margin-bottom: 12px
+
+Timestamp:
+- 11px, #52525B
+- Text-align: center
+- Margin: 16px 0
+
+Chat input area:
+- Padding: 12px 16px
+- Border-top: 1px solid #1F1F23
+- Display: flex
+- Gap: 12px
+
+Input field:
+- Flex: 1
+- Background: #1A1A1F
+- Border: 1px solid #2A2A30
+- Border-radius: 10px
+- Padding: 12px 16px
+- Font: 14px
+
+Send button:
+- Width: 44px
+- Height: 44px
+- Background: #16A34A
+- Border-radius: 10px
+- Send icon, 20px, white
+
+--- Contact Form Modal ---
+Triggered by "Send Email" button
+
+Modal:
+- Width: 500px
+- Background: #111113
+- Border: 1px solid #1F1F23
+- Border-radius: 20px
+- Padding: 32px
+
+Header:
+- Mail icon, 24px, #3B82F6
+- "Contact Support" - 22px, semibold
+- Close X button
+
+Form:
+Margin-top: 24px
+
+Fields:
+
+Subject dropdown:
+- Label: "Subject"
+- Options: "General Question", "Technical Issue", "Billing Question", "Feature Request", "Bug Report", "Other"
+
+Priority dropdown:
+- Label: "Priority"
+- Options: "Low", "Normal", "High", "Urgent"
+
+Message textarea:
+- Label: "Message"
+- Placeholder: "Describe your issue or question in detail..."
+- Min-height: 150px
+
+Attachments:
+- Label: "Attachments (optional)"
+- Upload zone with Paperclip icon
+- "Drag files or click to upload"
+- "Max 5 files, 10MB each" - 12px, #52525B
+
+Action buttons:
+- "Cancel" - ghost
+- "Send Message" - bg #3B82F6, text white
+
+--- Article View Modal / Page ---
+Triggered by clicking any article
+
+Full page or large modal view:
+
+Article header:
+- Breadcrumb: "Help > Image Generation > Article Title"
+- Title: 28px, bold
+- Meta: Category badge, Clock icon + "5 min read", Eye icon + "2.3K views"
+- Last updated: "Updated Dec 10, 2024"
+
+Article content:
+- Max-width: 720px
+- Prose styling
+- Headings: h2 (22px), h3 (18px)
+- Paragraphs: 16px, line-height 1.8, #E4E4E7
+- Code blocks: bg #1A1A1F, rounded, padding
+- Images: Full width, rounded corners
+- Callouts: Tip (green), Warning (amber), Note (blue)
+
+Table of contents (sidebar):
+- Position: sticky
+- "On this page" header
+- List of h2 headings
+- Active section highlighted
+
+Article footer:
+- "Was this helpful?" with thumbs up/down buttons
+- Related articles
+- "Edit this page" link (for open docs)
+
+=== KEYBOARD SHORTCUTS ===
+- Cmd/Ctrl + K: Focus search
+- Esc: Close modal/search
+- Arrow keys: Navigate search results
+- Enter: Select result
+
+=== RESPONSIVE BEHAVIOR ===
+
+Desktop (1200px+):
+- Full layout
+- 3-4 column grids
+
+Laptop (900-1199px):
+- 2-3 column grids
+- Narrower content
+
+Tablet (600-899px):
+- 2 column grids
+- Sidebar hidden
+- Compact cards
+
+Mobile (<600px):
+- Single column
+- Stacked layout
+- Bottom navigation
+- Chat widget: Full screen when open
+- Search: Full width overlay
+
+=== COLOR TOKENS ===
+
+Background Base: #0A0A0B
+Background Card: #111113
+Surface: #1A1A1F
+Border: #1F1F23
+Border Hover: #2A2A30
+
+Text Primary: #FAFAFA
+Text Secondary: #A1A1AA
+Text Muted: #71717A
+
+Primary: #7C3AED
+Success: #16A34A (Live Chat)
+Info: #3B82F6 (Email)
+Community: #8B5CF6 (Forum)
+Warning: #F59E0B
+Error: #DC2626
+
+=== TYPOGRAPHY ===
+
+Hero title: 36px, bold
+Section titles: 22px, semibold
+Card titles: 17px, semibold
+Body: 14-15px, regular
+Article body: 16px, line-height 1.8
+Labels: 12px, regular
+Small text: 11-12px, #52525B
+
+=== ICONS USED (Lucide) ===
+
+Navigation: HelpCircle, LayoutGrid, Wand2, ShoppingBag, Scissors, FolderOpen, Star, Settings, CreditCard
+Categories: Rocket, Wand2, ShoppingBag, Scissors, BrainCircuit, CreditCard, Shield, Code, AlertCircle
+Articles: FileText, BookOpen, Clock, ChevronRight, ChevronDown, TrendingUp, Eye
+Videos: PlayCircle, Play
+Contact: MessageCircle, Mail, Users, Send, Paperclip
+Resources: FileText, Code, BookOpen, Github, Youtube, Twitter, MessageSquare, FileQuestion, ExternalLink
+Status: CheckCircle, AlertTriangle, XCircle
+Search: Search, ArrowRight, ArrowUp, ArrowDown
+General: Lightbulb, Zap, Copy, X, Minus, ThumbsUp, ThumbsDown
