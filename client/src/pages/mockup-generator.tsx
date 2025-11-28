@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   Shirt, 
   Grid, 
@@ -66,11 +66,21 @@ export default function MockupGenerator() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedMockups, setGeneratedMockups] = useState<string[]>([]);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationStage, setGenerationStage] = useState("");
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const steps = journey === "AOP" ? AOP_STEPS : DTG_STEPS;
   const currentStep = steps[currentStepIndex];
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   const handleJourneySelect = (type: JourneyType) => {
     setJourney(type);
@@ -104,21 +114,45 @@ export default function MockupGenerator() {
 
   const handleGenerate = () => {
     setIsGenerating(true);
-    // Simulate generation
-    setTimeout(() => {
-      setIsGenerating(false);
-      setGeneratedMockups([
-        moodMinimal, // Placeholder results
-        moodUrban,
-        moodNatural,
-        moodBold
-      ]);
-      toast({
-        title: "Mockups Generated!",
-        description: "Your professional product photos are ready.",
-        className: "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400",
-      });
-    }, 3000);
+    setGenerationProgress(0);
+    setGenerationStage("Initializing engine...");
+
+    // Clear any existing interval
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    const stages = [
+      { pct: 10, text: "Analyzing product geometry..." },
+      { pct: 30, text: "Mapping textures..." },
+      { pct: 50, text: "Calculating lighting & shadows..." },
+      { pct: 75, text: "Rendering 12 angles..." },
+      { pct: 90, text: "Applying post-processing..." },
+      { pct: 100, text: "Finalizing..." }
+    ];
+
+    let currentStage = 0;
+
+    intervalRef.current = setInterval(() => {
+      if (currentStage >= stages.length) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setIsGenerating(false);
+        setGeneratedMockups([
+          moodMinimal, // Placeholder results
+          moodUrban,
+          moodNatural,
+          moodBold
+        ]);
+        toast({
+          title: "Mockups Generated!",
+          description: "Your professional product photos are ready.",
+          className: "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400",
+        });
+        return;
+      }
+
+      setGenerationProgress(stages[currentStage].pct);
+      setGenerationStage(stages[currentStage].text);
+      currentStage++;
+    }, 600); // Slightly faster simulation
   };
 
   return (
@@ -428,13 +462,23 @@ export default function MockupGenerator() {
                               </Button>
                             </div>
                           ) : isGenerating ? (
-                            <div className="flex-1 flex flex-col items-center justify-center text-center">
-                              <div className="relative mb-8">
+                            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-[400px] mx-auto">
+                              <div className="relative mb-8 w-full">
                                 <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full animate-pulse" />
-                                <RefreshCw className="h-16 w-16 text-indigo-600 animate-spin relative z-10" />
+                                <RefreshCw className="h-16 w-16 text-indigo-600 animate-spin relative z-10 mx-auto" />
                               </div>
+                              
                               <h2 className="text-2xl font-bold mb-2">Generating Photoshoot...</h2>
-                              <p className="text-muted-foreground">Creating realistic lighting and shadows</p>
+                              <p className="text-indigo-600 font-medium mb-4">{generationStage}</p>
+                              
+                              <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden mb-2">
+                                <motion.div 
+                                  className="bg-indigo-600 h-full rounded-full"
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${generationProgress}%` }}
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground">{generationProgress}% complete</p>
                             </div>
                           ) : (
                             <div className="flex-1 flex flex-col h-full">
