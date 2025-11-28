@@ -1,0 +1,1757 @@
+Design an Image Generation screen for "AI Creative Studio" with a clean, prompt-first interface. Prompt bar at the top as the hero element, with a feed of recent generations below showing images with their prompts and settings. Follow the sidebar layout from dashboard. Dark/light theme support. Premium, immersive UI. Use Lucide icons throughout - NO emojis.
+
+=== PAGE STRUCTURE ===
+Full viewport height
+Layout: Fixed left sidebar (280px) + Main content area
+Background: #0A0A0B (dark) / #F8F8F8 (light)
+Color scheme: Deep dark with purple/violet accents
+
+=== LEFT SIDEBAR ===
+Width: 280px, full height, fixed
+Background: #111113 (dark) / #FFFFFF (light)
+Border-right: 1px solid #1F1F23 (dark) / #E4E4E7 (light)
+
+Same structure as dashboard BUT:
+- "Image Generator" nav item ACTIVE (purple highlight #7C3AED)
+- Badge: "5 AI Agents" - 11px, bg #7C3AED/20, text #7C3AED
+
+Sidebar sections:
+
+Logo area:
+- Sparkles icon + "AI Creative Studio" text
+- 20px, bold
+
+Navigation:
+- Home (LayoutGrid icon)
+- Image Generator (Wand2 icon) - ACTIVE
+- Mockup Generator (ShoppingBag icon)
+- Background Remover (Scissors icon)
+- My Projects (FolderOpen icon)
+- Favorites (Star icon)
+
+Sidebar footer:
+- Credits display with Zap icon: "1,523 credits"
+- Circular progress ring showing usage percentage
+- "Upgrade" link
+
+=== MAIN CONTENT AREA ===
+Display: flex
+Flex-direction: column
+Height: 100vh
+Overflow: hidden
+Background: #0A0A0B (dark) / #F8F8F8 (light)
+
+=== TOP SECTION: PROMPT BAR (Hero Element) ===
+Position: sticky top
+Background: #111113 (dark) / #FFFFFF (light)
+Border-bottom: 1px solid #1F1F23 (dark) / #E4E4E7 (light)
+Padding: 24px 40px 20px
+Z-index: 100
+
+--- Header Row ---
+Flex, space-between, align-center
+Margin-bottom: 20px
+
+Left side:
+- Wand2 icon, 24px, #7C3AED
+- "Image Generator" - 24px, bold, #FAFAFA (dark) / #18181B (light)
+- 12px gap between icon and text
+
+Right side action buttons (12px gap):
+
+Style Library button:
+- BookOpen icon, 18px
+- "Style Library" text, 13px
+- Ghost button style
+- bg transparent, hover bg #1F1F23
+- Opens Knowledge Base modal
+
+Shortcuts button:
+- Keyboard icon, 18px
+- "Shortcuts" text, 13px
+- Ghost button style
+- Opens shortcuts modal
+
+Credits display:
+- Zap icon, 14px, #F59E0B
+- "1,523" text, 13px, semibold
+- bg #1F1F23, rounded-full, padding 6px 14px
+
+--- Main Prompt Container ---
+Background: #1A1A1F (dark) / #F4F4F5 (light)
+Border: 2px solid #2A2A30 (dark) / #E4E4E7 (light)
+Border-radius: 20px
+Padding: 6px
+Transition: all 200ms
+
+Focus-within state:
+- Border-color: #7C3AED
+- Box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15)
+- Background: #1F1F25 (dark) / #FFFFFF (light)
+
+--- Prompt Bar Inner Layout ---
+Display: flex
+Align-items: flex-start
+Gap: 12px
+
+--- Left: Reference Image Button ---
+Width: 48px
+Height: 48px
+Background: #2A2A30 (dark) / #E4E4E7 (light)
+Border-radius: 12px
+Border: none
+Cursor: pointer
+Flex-shrink: 0
+Display: flex
+Align-items: center
+Justify-content: center
+Transition: all 200ms
+
+Icon: ImagePlus, 22px, #71717A
+Hover: bg #3A3A40, icon #A1A1AA
+Tooltip: "Add reference image (optional)"
+
+With image attached:
+- Shows thumbnail of uploaded image
+- X icon button on top-right corner to remove
+- Border: 2px solid #7C3AED
+- Border-radius: 12px
+
+Reference image modal (on click):
+- "Upload Reference Image" title
+- Upload icon with drag-drop zone
+- "Or paste image URL" input field
+- "Select from Projects" button with FolderOpen icon
+- "Cancel" and "Add Reference" buttons
+
+--- Center: Prompt Input Area ---
+Flex: 1
+Display: flex
+Flex-direction: column
+Gap: 8px
+
+Textarea:
+- Width: 100%
+- Min-height: 48px
+- Max-height: 140px
+- Background: transparent
+- Border: none
+- Font: 16px, #FAFAFA (dark) / #18181B (light)
+- Placeholder: "Describe what you want to create..." - #52525B
+- Line-height: 1.6
+- Resize: none
+- Padding: 12px 0
+
+Character counter (bottom-right of textarea):
+- "0 / 2000" - 11px, #52525B
+- Shows when typing
+- Warning state at 1800+: text #F59E0B
+- Error state at 2000: text #DC2626
+
+--- Right: Controls Column ---
+Display: flex
+Flex-direction: column
+Gap: 8px
+Align-items: flex-end
+
+Top row - Settings:
+Display: flex
+Gap: 8px
+
+Settings toggle button:
+- SlidersHorizontal icon, 20px
+- 44px square
+- Background: #2A2A30 (dark) / #E4E4E7 (light)
+- Border-radius: 12px
+- Hover: bg #3A3A40
+- Tooltip: "Generation Settings"
+- Active state (panel open): bg #7C3AED, icon white
+
+Quick settings preview pills (inline):
+- Shows current selections as small pills
+- Style pill: "Cinematic" with Clapperboard icon
+- Quality pill: "Standard" with Sparkles icon
+- Click any pill to open settings panel
+
+Bottom row - Generate:
+Imagine button:
+- Background: linear-gradient 135deg #7C3AED to #9333EA
+- Sparkles icon, 18px, white (left of text)
+- Text: "Imagine" - 15px, bold, white
+- Padding: 14px 28px
+- Border-radius: 12px
+- Min-width: 140px
+- Gap: 8px between icon and text
+- Box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4)
+- Hover: brightness 1.1, translateY(-2px), shadow increase
+- Active: scale 0.98
+- Transition: all 200ms
+
+Loading state:
+- Background: #7C3AED (solid, no gradient)
+- Loader2 icon spinning + "Creating..."
+- Pointer-events: none
+- Opacity: 0.9
+
+Keyboard hint below button:
+- Command icon + "Enter" - 10px, #52525B
+- Flex row, gap 4px
+
+--- Settings Panel (Expandable) ---
+Slides down when settings button clicked
+Background: #151518 (dark) / #FFFFFF (light)
+Border-top: 1px solid #2A2A30
+Padding: 24px 0
+Margin-top: 16px
+Max-height: 0 (collapsed) / auto (expanded)
+Overflow: hidden
+Animation: slideDown 250ms ease
+Transition: max-height 250ms ease
+
+--- Settings Grid Row 1 ---
+Display: grid
+Grid-template-columns: repeat(5, 1fr)
+Gap: 24px
+
+Column 1 - Style Preset:
+Label: "STYLE" - 10px, bold, #52525B, uppercase, letter-spacing 1px, margin-bottom 10px
+
+Dropdown button:
+- Current value: "Auto" with Sparkles icon
+- ChevronDown icon, 16px, right side
+- Full width, 46px height
+- bg #1F1F25, border 1px #2A2A30, rounded-12px
+- Hover: border #3A3A40
+- Display: flex, align-items center, justify-content space-between
+- Padding: 0 14px
+
+Dropdown panel (on click):
+- Position: absolute below
+- bg #1F1F25
+- border 1px #2A2A30
+- border-radius 12px
+- box-shadow: 0 10px 40px rgba(0,0,0,0.5)
+- max-height 300px, overflow-y auto
+- padding 6px
+
+Style options (from project STYLE_PRESETS):
+Each option:
+- Padding: 10px 14px
+- border-radius 8px
+- hover: bg #2A2A30
+- Selected: bg #7C3AED/20, text #7C3AED
+
+Options list:
+1. Sparkles icon - "Auto" (default) - "AI selects best style"
+2. Camera icon - "Photorealistic" - "DSLR quality, natural lighting"
+3. Clapperboard icon - "Cinematic" - "Film grain, dramatic shadows"
+4. Tv icon - "Anime/Manga" - "Cel shaded, vibrant colors"
+5. Palette icon - "Oil Painting" - "Visible brushstrokes, Renaissance"
+6. Droplets icon - "Watercolor" - "Soft edges, paper texture"
+7. Monitor icon - "Digital Art" - "Trending on ArtStation"
+8. Circle icon - "Minimalist" - "Clean lines, negative space"
+9. Sunset icon - "Retrowave" - "Neon lights, 80s aesthetic"
+10. Sword icon - "Dark Fantasy" - "Gothic, dramatic lighting"
+11. Shapes icon - "Pop Art" - "Bold colors, Ben-Day dots"
+12. Box icon - "Isometric 3D" - "Clean geometry, soft shadows"
+13. Pencil icon - "Pencil Sketch" - "Graphite, crosshatching"
+
+Column 2 - Quality Level:
+Label: "QUALITY"
+
+Segmented control:
+- bg #1F1F25
+- border-radius 10px
+- padding 4px
+- Display: flex
+
+4 segments (from project QUALITY_PRESETS):
+Each segment:
+- Flex: 1
+- Height: 38px
+- border-radius 8px
+- font 12px, medium
+- transition: all 200ms
+- display: flex, align-items center, justify-content center, gap 6px
+
+Segments:
+1. Zap icon - "Draft" - tooltip: "Fast preview, good for iteration"
+2. Sparkles icon - "Standard" (default) - tooltip: "Balanced quality and speed"
+3. Gem icon - "Premium" - tooltip: "Maximum quality, slower"
+4. Flame icon - "Ultra" - tooltip: "Extreme detail, longest generation"
+
+Segment states:
+- Inactive: bg transparent, text #71717A
+- Hover: bg #2A2A30/50
+- Active: bg #7C3AED, text white, box-shadow inset
+
+Column 3 - Aspect Ratio:
+Label: "RATIO"
+
+Visual ratio selector (from project ASPECT_RATIOS):
+- Display: flex
+- Gap: 8px
+
+5 ratio buttons:
+Each button:
+- Width: 42px
+- Height: 42px
+- bg #1F1F25
+- border 1px #2A2A30
+- border-radius 8px
+- Display: flex, align-items center, justify-content center
+- Transition: all 200ms
+
+Button states:
+- Inactive: bg #1F1F25, border #2A2A30
+- Hover: border #3A3A40
+- Active: bg #7C3AED/20, border #7C3AED
+
+Ratio options with visual shape inside:
+1. Square icon - "1:1" - tooltip: "Square - Social media profiles"
+2. RectangleHorizontal icon - "16:9" - tooltip: "Landscape - Cinematic, wallpapers"
+3. RectangleVertical icon - "9:16" - tooltip: "Portrait - Mobile, stories"
+4. Monitor icon - "4:3" - tooltip: "Classic - Traditional photo"
+5. Smartphone icon - "3:4" - tooltip: "Tall - Portrait photos, posters"
+
+Column 4 - Variations:
+Label: "VARIATIONS"
+
+Segmented control (from project VariationCount type):
+- Same style as Quality selector
+- 3 segments
+
+Segments:
+1. "1" - Single image
+2. "2" - Two variations
+3. "4" - Four variations (default)
+
+Column 5 - Refiner:
+Label: "ENHANCE"
+
+Toggle container:
+- Display: flex
+- Flex-direction: column
+- Gap: 12px
+
+Refiner toggle row:
+- "Master Refiner" label, 13px, #E4E4E7
+- Toggle switch on right
+- Default: ON (enabled)
+
+Toggle switch:
+- Width: 44px
+- Height: 24px
+- bg #2A2A30 (off) / #7C3AED (on)
+- border-radius: 9999px
+- Thumb: 20px circle, white, translateX animation
+
+Refiner preset dropdown (visible when toggle ON):
+- Dropdown same style as Style dropdown
+- SlidersHorizontal icon left
+- Current value shown
+
+Refiner presets (from project REFINER_PRESETS):
+1. Clapperboard icon - "Cinematic" (default)
+2. Crosshair icon - "Sharp Detail"
+3. Sun icon - "Soft Glow"
+4. Palette icon - "Vibrant"
+5. Moon icon - "Moody"
+
+--- Settings Grid Row 2: AI Features ---
+Margin-top: 20px
+Padding-top: 20px
+Border-top: 1px solid #1F1F23
+Display: flex
+Gap: 16px
+Align-items: center
+
+Label on left:
+- "AI FEATURES" - 10px, bold, #52525B, uppercase
+
+Toggle chips:
+Each chip:
+- Display: flex
+- Align-items: center
+- Gap: 8px
+- bg #1F1F25
+- border 1px #2A2A30
+- border-radius: 9999px
+- padding: 10px 18px
+- font: 13px, medium
+- cursor: pointer
+- transition: all 200ms
+
+Chip states:
+- Inactive: bg #1F1F25, border #2A2A30, text #A1A1AA
+- Hover: border #3A3A40
+- Active: bg #7C3AED/15, border #7C3AED, text #C4B5FD
+
+Chips (from project features):
+
+1. AI Curation chip:
+- BrainCircuit icon, 16px
+- "AI Curation" text
+- Toggle on/off
+- Default: ON
+- Tooltip: "AI automatically selects the best variation"
+
+2. Auto Optimize chip:
+- Target icon, 16px
+- "Auto Optimize" text
+- Toggle on/off
+- Default: ON
+- Tooltip: "AI learns from your ratings to improve results"
+
+3. Knowledge Base button:
+- BookOpen icon, 16px
+- "Knowledge Base" text
+- ChevronRight icon, 14px, right side
+- Not a toggle - opens modal
+- Tooltip: "Browse 180+ artistic styles"
+
+=== AI AGENTS STATUS BAR (During Generation) ===
+Appears below prompt bar during generation
+Position: relative
+Background: #111113
+Border-bottom: 1px solid #1F1F23
+Padding: 20px 40px
+Animation: slideDown 250ms ease
+Overflow: hidden
+
+--- Agents Pipeline Container ---
+Display: flex
+Flex-direction: column
+Align-items: center
+Gap: 16px
+
+--- Pipeline Nodes Row ---
+Display: flex
+Align-items: center
+Justify-content: center
+Gap: 0
+
+5 Agent nodes with connecting lines:
+
+Each node structure:
+- Node circle + Connecting line (except last)
+
+Node circle:
+- Width: 48px
+- Height: 48px
+- border-radius: 9999px
+- Display: flex
+- Align-items: center
+- Justify-content: center
+- Transition: all 300ms
+- Position: relative
+
+Connecting line:
+- Width: 60px
+- Height: 3px
+- Background: #2A2A30 (idle) / gradient (active)
+- Margin: 0 -1px (overlap with circles)
+
+Node states:
+- Idle: bg #1F1F25, border 2px #2A2A30
+- Waiting: bg #1F1F25, border 2px #3A3A40
+- Active: bg #7C3AED, border none, box-shadow 0 0 20px rgba(124,58,237,0.5), pulse animation
+- Complete: bg #16A34A, border none
+- Error: bg #DC2626, border none
+
+Agent nodes (from project AgentType enum):
+
+Node 1 - Text Sentinel:
+- Bot icon, 20px
+- Label below: "Text" - 10px, uppercase, #52525B
+- Full name tooltip: "Text Sentinel - Checks spelling and text placement"
+- Color when active: #3B82F6 (blue)
+
+Node 2 - Style Architect:
+- Sparkles icon, 20px
+- Label: "Style"
+- Tooltip: "Style Architect - Enhances prompt with style keywords"
+- Color when active: #8B5CF6 (violet)
+
+Node 3 - Visual Synthesizer:
+- Palette icon, 20px
+- Label: "Create"
+- Tooltip: "Visual Synthesizer - Generates the image"
+- Color when active: #EC4899 (pink)
+
+Node 4 - Master Refiner:
+- SlidersHorizontal icon, 20px
+- Label: "Refine"
+- Tooltip: "Master Refiner - Enhances quality and details"
+- Color when active: #F59E0B (amber)
+
+Node 5 - Quality Analyst:
+- BrainCircuit icon, 20px
+- Label: "Analyze"
+- Tooltip: "Quality Analyst - Scores and learns from results"
+- Color when active: #10B981 (emerald)
+
+Icons in states:
+- Idle/Waiting: Agent-specific icon, #52525B
+- Active: Agent-specific icon, white
+- Complete: Check icon, white
+- Error: X icon, white
+
+--- Status Text Row ---
+Display: flex
+Align-items: center
+Justify-content: center
+Gap: 8px
+
+Current agent message:
+- Agent icon (small, 16px)
+- Message text: "Style Architect is enhancing your prompt..." - 14px, #A1A1AA
+- Animated ellipsis
+
+--- Progress Bar ---
+Width: 100%
+Max-width: 400px
+Height: 4px
+Background: #1F1F25
+Border-radius: 9999px
+Overflow: hidden
+Margin-top: 8px
+
+Progress fill:
+- Height: 100%
+- Background: linear-gradient 90deg #7C3AED to #EC4899
+- Border-radius: 9999px
+- Width: based on progress percentage
+- Transition: width 300ms ease
+- Animated shimmer overlay
+
+--- Cancel Button ---
+Position: absolute
+Right: 40px
+Top: 50%
+Transform: translateY(-50%)
+
+Button:
+- X icon, 18px
+- "Cancel" text, 13px
+- Ghost style
+- text #71717A
+- hover: text #DC2626
+
+=== BOTTOM SECTION: RECENT GENERATIONS FEED ===
+Flex: 1
+Overflow-y: auto
+Padding: 24px 40px 40px
+Background: #0A0A0B
+Scroll-behavior: smooth
+
+Custom scrollbar:
+- Width: 8px
+- Track: transparent
+- Thumb: #2A2A30, border-radius 4px
+- Thumb hover: #3A3A40
+
+--- Section Header ---
+Display: flex
+Justify-content: space-between
+Align-items: center
+Margin-bottom: 24px
+Position: sticky
+Top: 0
+Background: linear-gradient to bottom, #0A0A0B 80%, transparent
+Padding: 8px 0 16px
+Z-index: 10
+
+Left side:
+- Clock icon, 20px, #52525B
+- "Recent Creations" - 18px, semibold, #FAFAFA
+- Gap: 10px
+- Count badge: "24 images" - 12px, #52525B, margin-left 12px
+
+Right side controls:
+Display: flex
+Gap: 12px
+Align-items: center
+
+View toggle:
+- Segmented control, 2 options
+- LayoutGrid icon - Grid view (default)
+- List icon - List view
+- bg #1F1F25
+- Active: bg #2A2A30
+
+Filter dropdown:
+- Filter icon, 16px
+- "All Types" text
+- ChevronDown icon
+- bg #1F1F25, border 1px #2A2A30, rounded-lg
+- padding 8px 14px
+
+Filter options:
+- "All Types"
+- "Images Only"
+- "With Variations"
+- "Favorites"
+
+Sort dropdown:
+- ArrowUpDown icon, 16px
+- "Newest" text
+- ChevronDown icon
+- Same style as filter
+
+Sort options:
+- "Newest First"
+- "Oldest First"
+- "Highest Rated"
+- "Most Variations"
+
+--- Generations Feed Grid ---
+Display: grid
+Grid-template-columns: repeat(2, 1fr)
+Gap: 24px
+
+--- Generation Card Component ---
+Background: #111113 (dark) / #FFFFFF (light)
+Border: 1px solid #1F1F23 (dark) / #E4E4E7 (light)
+Border-radius: 20px
+Overflow: hidden
+Transition: all 300ms ease
+
+Hover state:
+- Border-color: #2A2A30
+- Transform: translateY(-4px)
+- Box-shadow: 0 20px 40px rgba(0,0,0,0.4)
+
+--- Card Layout ---
+Display: flex
+Flex-direction: row
+Min-height: 300px
+
+Left side - Image Section: 55% width
+Right side - Details Section: 45% width
+
+--- Card Left: Image Section ---
+Position: relative
+Background: #0A0A0B
+Overflow: hidden
+
+Single image layout (1 variation):
+- Image fills container
+- Object-fit: cover
+- Aspect ratio maintained
+
+Multiple images layout (2 variations):
+- Display: grid
+- Grid-template-columns: repeat(2, 1fr)
+- Gap: 2px
+
+Multiple images layout (4 variations):
+- Display: grid
+- Grid-template-columns: repeat(2, 1fr)
+- Grid-template-rows: repeat(2, 1fr)
+- Gap: 2px
+
+Each variation image:
+- Object-fit: cover
+- Cursor: pointer
+- Transition: opacity 200ms
+- Hover: opacity 0.8
+
+Selected variation indicator:
+- Ring: 2px solid #7C3AED
+- Inset from edge
+
+Image overlay (appears on hover):
+- Position: absolute
+- Inset: 0
+- Background: linear-gradient to top, rgba(0,0,0,0.8) 0%, transparent 50%
+- Opacity: 0 (default) / 1 (hover)
+- Transition: opacity 200ms
+
+Overlay action buttons (bottom of overlay):
+- Position: absolute
+- Bottom: 16px
+- Left: 16px
+- Display: flex
+- Gap: 8px
+
+Action buttons:
+Each button:
+- Width: 36px
+- Height: 36px
+- bg rgba(255,255,255,0.15)
+- backdrop-blur: 8px
+- border-radius: 10px
+- Display: flex, align-items center, justify-content center
+- Transition: all 200ms
+- Hover: bg rgba(255,255,255,0.25)
+
+Buttons:
+1. Download icon - tooltip: "Download"
+2. Copy icon - tooltip: "Create Variations"
+3. Star icon (outline/filled based on favorite state) - tooltip: "Add to Favorites"
+4. Maximize2 icon - tooltip: "View Full Size"
+
+Favorite indicator (if favorited, always visible):
+- Position: absolute
+- Top: 12px
+- Right: 12px
+- Star icon, 18px, filled, #F59E0B
+- bg rgba(0,0,0,0.5)
+- backdrop-blur: 4px
+- border-radius: 9999px
+- padding: 6px
+
+Generation ID badge (top-left):
+- Position: absolute
+- Top: 12px
+- Left: 12px
+- "#247" text - 10px, semibold
+- bg rgba(0,0,0,0.5)
+- backdrop-blur: 4px
+- border-radius: 9999px
+- padding: 4px 10px
+- text: #A1A1AA
+
+Variation count badge (bottom-right, if multiple):
+- Position: absolute
+- Bottom: 12px
+- Right: 12px
+- Layers icon, 14px
+- "4" text - 11px
+- bg rgba(0,0,0,0.5)
+- backdrop-blur: 4px
+- border-radius: 8px
+- padding: 4px 8px
+- Display: flex, gap 4px
+
+--- Card Right: Details Section ---
+Padding: 24px
+Display: flex
+Flex-direction: column
+Gap: 16px
+Background: #111113
+
+Prompt section:
+Label row:
+- "PROMPT" - 9px, bold, #52525B, uppercase, letter-spacing 1px
+- Copy icon button, 14px, #52525B, hover #A1A1AA
+
+Prompt text container:
+- Margin-top: 8px
+- Max-height: 80px (approximately 4 lines)
+- Overflow: hidden
+- Position: relative
+
+Prompt text:
+- 14px, #E4E4E7
+- Line-height: 1.6
+- Word-break: break-word
+
+Show more indicator (if truncated):
+- Position: absolute
+- Bottom: 0
+- Left: 0
+- Right: 0
+- Height: 30px
+- Background: linear-gradient to top, #111113, transparent
+- "Show more" link centered at bottom
+
+Settings tags section:
+- Margin-top: auto
+- Display: flex
+- Flex-wrap: wrap
+- Gap: 8px
+
+Setting tag pills:
+Each pill:
+- Display: flex
+- Align-items: center
+- Gap: 6px
+- bg #1A1A1F
+- border: 1px solid #2A2A30
+- border-radius: 9999px
+- padding: 6px 12px
+- font: 11px, medium, #A1A1AA
+
+Tag pills to show:
+1. Style tag: Clapperboard icon + "Cinematic"
+2. Quality tag: Sparkles icon + "Premium"
+3. Ratio tag: Square icon + "1:1"
+4. Refiner tag (if used): SlidersHorizontal icon + "Sharp Detail"
+
+Bottom metadata row:
+- Display: flex
+- Justify-content: space-between
+- Align-items: center
+- Padding-top: 16px
+- Border-top: 1px solid #1F1F23
+- Margin-top: 12px
+
+Left metadata:
+- Clock icon, 14px, #52525B
+- "2 hours ago" - 12px, #52525B
+- Dot separator: "·" - #3A3A40
+- Timer icon, 14px, #52525B
+- "12.3s" - 12px, #52525B
+
+Right actions:
+- "Use Prompt" text button
+  - ArrowRight icon, 14px
+  - Text: 12px, semibold, #7C3AED
+  - Hover: underline
+  
+- More options button:
+  - MoreHorizontal icon, 18px, #52525B
+  - Hover: #A1A1AA
+
+More options dropdown:
+- Position: absolute
+- bg #1F1F25
+- border 1px #2A2A30
+- border-radius: 12px
+- box-shadow: 0 10px 40px rgba(0,0,0,0.5)
+- padding: 6px
+- min-width: 180px
+
+Dropdown items:
+Each item:
+- Display: flex
+- Align-items: center
+- Gap: 10px
+- Padding: 10px 14px
+- border-radius: 8px
+- font: 13px
+- Hover: bg #2A2A30
+
+Items:
+1. Copy icon - "Copy Prompt"
+2. Pencil icon - "Edit & Regenerate"
+3. Layers icon - "Create Variations"
+4. Star icon - "Add to Favorites"
+5. Info icon - "View Full Details"
+6. Divider line
+7. Trash2 icon - "Delete" - text #DC2626
+
+=== GENERATION IN PROGRESS CARD ===
+Appears at top of feed grid when generating
+Grid-column: span 2 (full width)
+Background: #111113
+Border: 2px solid transparent
+Border-radius: 20px
+Overflow: hidden
+Position: relative
+
+Animated border:
+- Background: conic-gradient animation
+- Colors: #7C3AED, #EC4899, #7C3AED
+- Animation: rotate 2s linear infinite
+
+Inner content:
+- Background: #111113
+- Border-radius: 18px
+- Padding: 32px
+- Display: flex
+- Gap: 32px
+
+Left section (40%):
+- Aspect-ratio: 16/9
+- Background: linear-gradient 135deg #1A1A1F to #2A2A30
+- Border-radius: 12px
+- Overflow: hidden
+- Position: relative
+
+Animated placeholder:
+- Shimmer animation left to right
+- Gradient overlay moving
+
+Preview images (if variations generated):
+- Grid of images as they complete
+- Blur/unblur animation on each
+
+Right section (60%):
+Display: flex
+Flex-direction: column
+Gap: 16px
+Justify-content: center
+
+Status header:
+- Loader2 icon spinning, 24px, #7C3AED
+- "Creating your image..." - 20px, semibold, #FAFAFA
+- Gap: 12px
+
+Prompt preview:
+- Current prompt text, truncated to 2 lines
+- 14px, #A1A1AA
+
+Settings preview:
+- Tags showing selected settings
+- Same style as completed cards
+
+Agent status:
+- Current agent: "Agent 3/5 - Visual Synthesizer"
+- Progress percentage: "67%"
+- 13px, #71717A
+
+Cancel button:
+- X icon + "Cancel" text
+- Ghost style
+- Position: bottom-right
+
+=== EMPTY STATE (No generations yet) ===
+Display: flex
+Flex-direction: column
+Align-items: center
+Justify-content: center
+Text-align: center
+Padding: 80px 40px
+Max-width: 600px
+Margin: 0 auto
+
+Illustration:
+- Large Sparkles icon, 80px, #2A2A30
+- Or abstract gradient orb animation
+
+Title:
+- "Start Creating" - 28px, bold, #FAFAFA
+- Margin-top: 24px
+
+Description:
+- "Describe anything in the prompt bar above and watch AI bring it to life" - 16px, #71717A
+- Margin-top: 12px
+- Max-width: 400px
+
+Example prompts section:
+- Margin-top: 40px
+- Width: 100%
+
+Label:
+- Lightbulb icon, 16px, #52525B
+- "Try one of these prompts" - 14px, #52525B
+- Gap: 8px
+- Margin-bottom: 16px
+
+Example cards grid:
+- Display: grid
+- Grid-template-columns: repeat(2, 1fr)
+- Gap: 12px
+
+Each example card:
+- bg #111113
+- border 1px #1F1F23
+- border-radius: 16px
+- padding: 20px
+- cursor: pointer
+- text-align: left
+- Transition: all 200ms
+
+Hover:
+- border-color: #7C3AED
+- Transform: translateY(-2px)
+
+Card content:
+- Icon: 28px, #7C3AED (top)
+- Title: 15px, semibold, #FAFAFA, margin-top 12px
+- Preview: 13px, #71717A, margin-top 6px, 2 lines max
+
+Example cards:
+1. Building2 icon - "Neon Cityscape" - "A cyberpunk city at night with neon signs reflecting on wet streets..."
+2. Palette icon - "Oil Portrait" - "Classical oil painting portrait of a renaissance noble with dramatic lighting..."
+3. Mountain icon - "Fantasy Landscape" - "Majestic mountain kingdom with floating islands and crystal waterfalls..."
+4. Rocket icon - "Sci-Fi Scene" - "Interior of a spaceship cockpit with holographic displays and a view of nebula..."
+
+Click action: Fills prompt bar with full example prompt
+
+=== IMAGE LIGHTBOX / DETAIL VIEW ===
+Triggered by clicking image or Maximize icon
+
+Overlay:
+- Position: fixed
+- Inset: 0
+- Background: rgba(10, 10, 11, 0.98)
+- Backdrop-filter: blur(8px)
+- Z-index: 1000
+- Animation: fadeIn 200ms ease
+
+Modal container:
+- Position: relative
+- Max-width: 1200px
+- Max-height: 90vh
+- Margin: 5vh auto
+- Background: #111113
+- Border-radius: 24px
+- Border: 1px solid #1F1F23
+- Overflow: hidden
+- Display: flex
+
+--- Left Section: Image Viewer (65%) ---
+Background: #0A0A0B
+Display: flex
+Align-items: center
+Justify-content: center
+Position: relative
+Padding: 24px
+
+Checkerboard background (for transparency):
+- Pattern of #0A0A0B and #151518
+- 10px squares
+
+Image:
+- Max-width: 100%
+- Max-height: calc(90vh - 48px)
+- Object-fit: contain
+- Border-radius: 8px
+- Box-shadow: 0 20px 60px rgba(0,0,0,0.5)
+
+Zoom controls (bottom-center):
+- Position: absolute
+- Bottom: 24px
+- Left: 50%
+- Transform: translateX(-50%)
+- Display: flex
+- Gap: 4px
+- bg rgba(0,0,0,0.6)
+- backdrop-blur: 8px
+- border-radius: 10px
+- padding: 6px
+
+Zoom buttons:
+- ZoomOut icon - decrease zoom
+- "100%" text - current zoom level, click to reset
+- ZoomIn icon - increase zoom
+- Maximize2 icon - fit to container
+
+Each button: 36px square, hover bg rgba(255,255,255,0.1)
+
+Navigation arrows (if multiple variations):
+Left arrow:
+- Position: absolute
+- Left: 24px
+- Top: 50%
+- ChevronLeft icon, 24px
+- 44px circle
+- bg rgba(0,0,0,0.6)
+- Hover: bg rgba(255,255,255,0.1)
+
+Right arrow:
+- Same style, right side
+- ChevronRight icon
+
+Variation dots (if multiple):
+- Position: absolute
+- Bottom: 70px
+- Left: 50%
+- Transform: translateX(-50%)
+- Display: flex
+- Gap: 8px
+
+Each dot:
+- 8px circle
+- Inactive: bg #3A3A40
+- Active: bg #7C3AED
+
+--- Right Section: Details Panel (35%) ---
+Width: 35%
+Min-width: 360px
+Background: #111113
+Border-left: 1px solid #1F1F23
+Display: flex
+Flex-direction: column
+Overflow: hidden
+
+Panel header:
+- Padding: 20px 24px
+- Border-bottom: 1px solid #1F1F23
+- Display: flex
+- Justify-content: space-between
+- Align-items: center
+
+Title: "Image Details" - 16px, semibold
+
+Close button:
+- X icon, 20px
+- 36px square
+- bg #1F1F25
+- border-radius: 10px
+- Hover: bg #2A2A30
+
+Panel content:
+- Flex: 1
+- Overflow-y: auto
+- Padding: 24px
+
+Content sections:
+
+Section 1 - Actions:
+- Display: flex
+- Flex-wrap: wrap
+- Gap: 10px
+- Padding-bottom: 20px
+- Border-bottom: 1px solid #1F1F23
+
+Action buttons:
+Primary download button:
+- Download icon + "Download" text
+- bg gradient #7C3AED to #9333EA
+- text white
+- padding 12px 20px
+- border-radius 10px
+- Dropdown arrow for format options
+
+Download dropdown:
+- "PNG (Original)"
+- "JPEG (Compressed)"
+- "WebP (Optimized)"
+
+Secondary buttons (icon + text):
+- Layers icon + "Variations"
+- Pencil icon + "Edit"
+- Star icon + "Favorite" (or filled if already)
+- Share2 icon + "Share"
+
+Each secondary:
+- bg #1F1F25
+- border 1px #2A2A30
+- padding 10px 16px
+- border-radius 10px
+- Hover: border #3A3A40
+
+Section 2 - Prompt:
+- Margin-top: 20px
+
+Label:
+- "PROMPT" - 10px, bold, #52525B, uppercase
+
+Prompt container:
+- Margin-top: 10px
+- bg #1A1A1F
+- border-radius: 12px
+- padding: 16px
+- Position: relative
+
+Prompt text:
+- 14px, #E4E4E7
+- Line-height: 1.7
+- White-space: pre-wrap
+
+Copy button:
+- Position: absolute
+- Top: 12px
+- Right: 12px
+- Copy icon, 16px
+- 32px square
+- bg #2A2A30
+- border-radius: 8px
+- Hover: bg #3A3A40
+- Active: Check icon (copied feedback)
+
+Section 3 - Generation Settings:
+- Margin-top: 20px
+
+Label:
+- "SETTINGS" - 10px, bold, #52525B, uppercase
+
+Settings grid:
+- Margin-top: 12px
+- Display: grid
+- Grid-template-columns: repeat(2, 1fr)
+- Gap: 12px
+
+Each setting item:
+- bg #1A1A1F
+- border-radius: 10px
+- padding: 12px
+
+Item content:
+- Label: 11px, #52525B
+- Value: 14px, #E4E4E7, margin-top 4px
+- Icon: 16px, #52525B, inline with value
+
+Settings to show:
+1. Style: Clapperboard icon + "Cinematic"
+2. Quality: Sparkles icon + "Premium"
+3. Aspect Ratio: Square icon + "16:9"
+4. Variations: Layers icon + "4"
+5. Refiner: SlidersHorizontal icon + "Sharp Detail"
+6. AI Curation: BrainCircuit icon + "Enabled"
+
+Section 4 - AI Quality Analysis:
+- Margin-top: 20px
+
+Label:
+- "AI ANALYSIS" - 10px, bold, #52525B, uppercase
+- Info icon with tooltip: "Scores from Quality Analyst agent"
+
+Overall score:
+- Large display
+- "8.5" - 48px, bold, #FAFAFA
+- "/10" - 24px, #52525B
+- Circular progress ring behind number
+
+Breakdown bars:
+- Margin-top: 16px
+- Display: flex
+- Flex-direction: column
+- Gap: 12px
+
+Each score bar (from project ImageQualityScores):
+Label row:
+- Score name: 13px, #A1A1AA
+- Score value: 13px, #FAFAFA
+
+Bar:
+- Height: 6px
+- bg #1F1F25
+- border-radius: 9999px
+- Overflow: hidden
+
+Bar fill:
+- Height: 100%
+- Width: based on score (score/10 * 100%)
+- border-radius: 9999px
+
+Score bars:
+1. "Composition" - fill color #3B82F6
+2. "Detail" - fill color #8B5CF6
+3. "Lighting" - fill color #EC4899
+4. "Color" - fill color #F59E0B
+
+Section 5 - Rate This Result:
+- Margin-top: 20px
+- bg #1A1A1F
+- border-radius: 12px
+- padding: 16px
+- text-align: center
+
+Label:
+- "RATE THIS RESULT" - 10px, bold, #52525B, uppercase
+
+Subtext:
+- "Help improve future generations" - 12px, #71717A
+- Margin-top: 4px
+
+Star rating:
+- Display: flex
+- Justify-content: center
+- Gap: 8px
+- Margin-top: 12px
+
+5 star buttons:
+Each star:
+- Star icon, 28px
+- Cursor: pointer
+- Transition: all 200ms
+
+Star states:
+- Empty: stroke #3A3A40, fill transparent
+- Hover: stroke #F59E0B, fill transparent, scale 1.1
+- Filled: stroke #F59E0B, fill #F59E0B
+
+Rating saved feedback:
+- Check icon + "Thanks for your feedback!"
+- Fade in animation
+- 13px, #16A34A
+
+Section 6 - Metadata:
+- Margin-top: 20px
+- Padding-top: 20px
+- Border-top: 1px solid #1F1F23
+
+Metadata grid:
+- Display: grid
+- Grid-template-columns: repeat(2, 1fr)
+- Gap: 12px
+
+Each metadata item:
+Label: 11px, #52525B
+Value: 13px, #A1A1AA
+Copy button for seed
+
+Items:
+1. "Created" - "Dec 15, 2024 at 2:30 PM"
+2. "Generation Time" - "12.3 seconds"
+3. "Seed" - "1234567890" with Copy icon
+4. "Image ID" - "img_abc123xyz"
+
+Section 7 - Quick Actions:
+- Margin-top: 20px
+- Display: flex
+- Flex-direction: column
+- Gap: 10px
+
+"Use This Prompt" button:
+- Full width
+- bg #1F1F25
+- border 1px #2A2A30
+- border-radius: 10px
+- padding: 14px
+- Display: flex
+- Align-items: center
+- Justify-content: center
+- Gap: 8px
+- ArrowUpRight icon, 18px
+- "Use This Prompt" - 14px, semibold
+- Hover: border #7C3AED, bg #7C3AED/10
+
+"Edit & Regenerate" button:
+- Same style
+- Pencil icon
+- "Edit & Regenerate" text
+
+=== EDIT MODE PANEL ===
+Replaces details panel content when Edit clicked
+
+Panel header:
+- ArrowLeft icon + "Back to Details" link
+- "Edit Image" - 16px, semibold
+
+Tab selector:
+- Display: flex
+- Gap: 4px
+- bg #1A1A1F
+- border-radius: 10px
+- padding: 4px
+- Margin-top: 16px
+
+Tabs:
+1. Type icon + "Edit Text"
+2. Image icon + "Change Background"
+
+Tab style:
+- Flex: 1
+- padding: 10px 16px
+- border-radius: 8px
+- font: 13px, medium
+- Inactive: bg transparent, text #71717A
+- Active: bg #2A2A30, text #FAFAFA
+
+--- Edit Text Tab Content ---
+Instruction:
+- "What text should it say now?" - 14px, #A1A1AA
+- Margin-top: 20px
+
+Detected text display (from project DetectedTextInfo):
+- bg #1A1A1F
+- border-radius: 12px
+- padding: 16px
+- Margin-top: 12px
+
+Detected items:
+- "Current text found:" - 12px, #52525B
+- List of detected text with placement info
+
+Input field:
+- Margin-top: 16px
+- Full width textarea
+- Placeholder: "e.g., 'CLOSED' or 'SALE 50% OFF'"
+- min-height: 80px
+
+Text styling options:
+- Font style dropdown: Bold, Elegant, Handwritten, Modern, Vintage, Tech, Playful, Minimal
+- Placement dropdown: Center, Top, Bottom, etc.
+
+Apply button:
+- Full width
+- Primary gradient style
+- Check icon + "Apply Text Edit"
+- Margin-top: 16px
+
+--- Change Background Tab Content ---
+Instruction:
+- "Describe the new background" - 14px, #A1A1AA
+
+Input field:
+- Margin-top: 16px
+- Full width textarea
+- Placeholder: "e.g., 'on a tropical beach at sunset' or 'in a modern office'"
+
+Quick presets:
+- "Quick suggestions:" - 12px, #52525B
+- Margin-top: 16px
+
+Preset buttons:
+- Display: flex
+- Flex-wrap: wrap
+- Gap: 8px
+
+Each preset:
+- bg #1F1F25
+- border 1px #2A2A30
+- border-radius: 9999px
+- padding: 8px 14px
+- font: 12px
+- Hover: border #7C3AED
+
+Presets:
+- "Studio white background"
+- "Nature outdoor scene"
+- "Urban city street"
+- "Abstract gradient"
+- "Wooden table surface"
+
+Apply button:
+- Full width
+- Primary gradient style
+- Check icon + "Apply Background Edit"
+
+--- Edit Processing State ---
+Overlay on image:
+- Semi-transparent dark overlay
+- Loader2 icon spinning, 32px
+- "Editing image..." text
+- Progress indicator
+
+=== KNOWLEDGE BASE MODAL ===
+Triggered by Knowledge Base chip
+
+Overlay:
+- Position: fixed
+- Inset: 0
+- Background: rgba(10, 10, 11, 0.95)
+- Z-index: 1000
+
+Modal:
+- Width: 90vw
+- Max-width: 1100px
+- Height: 85vh
+- Margin: 7.5vh auto
+- Background: #111113
+- Border: 1px solid #1F1F23
+- Border-radius: 24px
+- Overflow: hidden
+- Display: flex
+
+--- Modal Header ---
+Position: sticky
+Top: 0
+Background: #111113
+Border-bottom: 1px solid #1F1F23
+Padding: 20px 24px
+Display: flex
+Flex-direction: column
+Gap: 16px
+Z-index: 10
+
+Title row:
+- BookOpen icon, 24px, #7C3AED
+- "Style Knowledge Base" - 22px, bold
+- "180+ artistic styles" badge - 11px, bg #7C3AED/20, text #7C3AED
+- Close X button on right
+
+Search input:
+- Full width
+- Search icon left
+- Placeholder: "Search styles..."
+- bg #1A1A1F
+- border 1px #2A2A30
+- border-radius: 12px
+- padding: 14px 14px 14px 44px
+- font: 15px
+
+--- Modal Body ---
+Display: flex
+Flex: 1
+Overflow: hidden
+
+--- Sidebar: Categories (240px) ---
+Width: 240px
+Background: #0A0A0B
+Border-right: 1px solid #1F1F23
+Padding: 16px
+Overflow-y: auto
+
+Category items:
+Each item:
+- Display: flex
+- Align-items: center
+- Gap: 10px
+- Padding: 12px 14px
+- border-radius: 10px
+- font: 14px
+- cursor: pointer
+- Transition: all 200ms
+
+States:
+- Inactive: text #A1A1AA
+- Hover: bg #1F1F23
+- Active: bg #7C3AED/20, text #C4B5FD
+
+Categories (from project FULL_STYLE_LIBRARY):
+1. Layers icon - "All Styles" - count "180+"
+2. Landmark icon - "Historical & Classical"
+3. Paintbrush icon - "Modern Movements"
+4. Monitor icon - "Digital & Contemporary"
+5. BookOpen icon - "Illustration & Comics"
+6. Globe icon - "Cultural & Traditional"
+7. Building icon - "Architecture"
+8. Shirt icon - "Fashion & Costume"
+9. Gamepad2 icon - "Gaming & Animation"
+10. Camera icon - "Photography Styles"
+
+--- Main Content: Style Grid ---
+Flex: 1
+Padding: 24px
+Overflow-y: auto
+
+Grid:
+- Display: grid
+- Grid-template-columns: repeat(3, 1fr)
+- Gap: 16px
+
+Style card:
+- Background: #1A1A1F
+- Border: 1px solid #2A2A30
+- Border-radius: 16px
+- Overflow: hidden
+- Cursor: pointer
+- Transition: all 200ms
+
+Hover:
+- Border-color: #7C3AED
+- Transform: translateY(-4px)
+- Box-shadow: 0 10px 30px rgba(0,0,0,0.3)
+
+Card content:
+Preview area:
+- Height: 100px
+- Background: gradient based on style mood
+- Or preview image
+
+Info area:
+- Padding: 16px
+
+Style name:
+- 15px, semibold, #FAFAFA
+
+Brief description:
+- 12px, #71717A
+- Margin-top: 4px
+- 2 lines max
+
+Keywords preview:
+- 11px, #52525B
+- Margin-top: 8px
+- Truncated
+
+Apply button (on hover):
+- Position: absolute
+- Bottom: 16px
+- Right: 16px
+- "Apply" text
+- bg #7C3AED
+- text white
+- padding: 8px 16px
+- border-radius: 8px
+
+=== KEYBOARD SHORTCUTS MODAL ===
+Triggered by Shortcuts button
+
+Small modal:
+- Width: 400px
+- Background: #111113
+- Border: 1px solid #1F1F23
+- Border-radius: 16px
+- Padding: 24px
+
+Header:
+- Keyboard icon, 20px
+- "Keyboard Shortcuts" - 18px, semibold
+- Close X button
+
+Shortcuts list:
+- Margin-top: 20px
+- Display: flex
+- Flex-direction: column
+- Gap: 12px
+
+Each shortcut row:
+- Display: flex
+- Justify-content: space-between
+- Align-items: center
+
+Action label: 14px, #A1A1AA
+Key combo:
+- Display: flex
+- Gap: 4px
+
+Key badge:
+- bg #1F1F25
+- border 1px #2A2A30
+- border-radius: 6px
+- padding: 4px 8px
+- font: 12px, mono, #FAFAFA
+
+Shortcuts:
+- "Generate" - Command + Enter
+- "Focus prompt" - Command + K
+- "Close modal" - Esc
+- "Download image" - Command + S
+- "Toggle favorite" - F
+- "Create variations" - V
+- "Edit image" - E
+- "Rate 1-5 stars" - 1, 2, 3, 4, 5
+- "Show shortcuts" - ?
+
+=== TOAST NOTIFICATIONS ===
+Position: fixed
+Top: 24px
+Right: 24px
+Z-index: 2000
+
+Toast container:
+- Display: flex
+- Flex-direction: column
+- Gap: 12px
+
+Each toast:
+- Min-width: 300px
+- bg #111113
+- border 1px #1F1F23
+- border-radius: 12px
+- padding: 16px
+- box-shadow: 0 10px 40px rgba(0,0,0,0.5)
+- Display: flex
+- Align-items: flex-start
+- Gap: 12px
+- Animation: slideInRight 200ms ease
+
+Toast types:
+
+Success:
+- CheckCircle icon, 20px, #16A34A
+- Title: 14px, semibold, #FAFAFA
+- Message: 13px, #A1A1AA
+
+Error:
+- AlertCircle icon, 20px, #DC2626
+- Same text styles
+
+Info:
+- Info icon, 20px, #7C3AED
+- Same text styles
+
+Loading:
+- Loader2 icon spinning, 20px, #7C3AED
+- Same text styles
+
+Close button:
+- X icon, 16px, #52525B
+- Position: absolute top-right
+- Hover: #A1A1AA
+
+Auto-dismiss: 5 seconds (except errors)
+
+=== RESPONSIVE BEHAVIOR ===
+
+Desktop (1440px+):
+- Full sidebar (280px)
+- 2-column generation feed
+- Settings panel inline
+- Lightbox: image 65%, details 35%
+
+Laptop (1024-1439px):
+- Sidebar: 240px
+- 2-column feed
+- Settings panel: 2 rows
+- Lightbox: image 60%, details 40%
+
+Tablet (768-1023px):
+- Sidebar: Collapsed to icons (72px)
+- Single column feed
+- Settings: Modal instead of inline panel
+- Lightbox: Full screen, tabs for image/details
+
+Mobile (<768px):
+- No sidebar (bottom navigation instead)
+- Single column feed
+- Prompt bar: Simplified (input + generate only)
+- Settings: Full-screen bottom sheet
+- Lightbox: Full screen
+- Image/details as swipeable views
+
+=== COLOR TOKENS ===
+Background Base: #0A0A0B
+Background Elevated: #111113
+Background Card: #1A1A1F
+Surface: #1F1F25
+Surface Hover: #2A2A30
+Border: #1F1F23
+Border Hover: #2A2A30
+Border Active: #3A3A40
+
+Text Primary: #FAFAFA
+Text Secondary: #E4E4E7
+Text Tertiary: #A1A1AA
+Text Muted: #71717A
+Text Disabled: #52525B
+
+Primary: #7C3AED
+Primary Light: #8B5CF6
+Primary Lighter: #A78BFA
+Primary Dark: #6D28D9
+Primary Gradient: linear-gradient(135deg, #7C3AED, #9333EA)
+
+Secondary Pink: #EC4899
+Accent Amber: #F59E0B
+Success: #16A34A
+Error: #DC2626
+Info: #3B82F6
+
+Agent Colors:
+- Text Sentinel: #3B82F6
+- Style Architect: #8B5CF6
+- Visual Synthesizer: #EC4899
+- Master Refiner: #F59E0B
+- Quality Analyst: #10B981
+
+=== TYPOGRAPHY ===
+Font Family: Inter, -apple-system, system-ui, sans-serif
+
+Display: 28px, bold, -0.02em tracking
+Title: 24px, bold
+Heading: 20px, semibold
+Subheading: 18px, semibold
+Body Large: 16px, regular
+Body: 14px, regular
+Body Small: 13px, regular
+Caption: 12px, regular
+Label: 10-11px, bold, uppercase, 0.05em tracking
+Mono: "JetBrains Mono", monospace
+
+Line heights:
+- Headings: 1.2
+- Body: 1.5
+- Prompts: 1.6
+
+=== ANIMATIONS & TRANSITIONS ===
+Duration Fast: 150ms
+Duration Normal: 200ms
+Duration Slow: 300ms
+Duration Slower: 400ms
+
+Easing Default: cubic-bezier(0.4, 0, 0.2, 1)
+Easing In: cubic-bezier(0.4, 0, 1, 1)
+Easing Out: cubic-bezier(0, 0, 0.2, 1)
+Easing Spring: cubic-bezier(0.34, 1.56, 0.64, 1)
+
+Specific animations:
+- slideDown: translateY(-10px) to translateY(0), opacity 0 to 1
+- slideUp: translateY(10px) to translateY(0), opacity 0 to 1
+- fadeIn: opacity 0 to 1
+- scaleIn: scale(0.95) to scale(1), opacity 0 to 1
+- pulse: scale(1) to scale(1.05) to scale(1), loop
+- spin: rotate(0deg) to rotate(360deg), loop
+- shimmer: translateX(-100%) to translateX(100%), loop
+
+=== ICON REFERENCE (Lucide Icons Used) ===
+Navigation: LayoutGrid, Wand2, ShoppingBag, Scissors, FolderOpen, Star, Settings
+Prompt Bar: ImagePlus, SlidersHorizontal, Sparkles, Command, ChevronDown
+Styles: Camera, Clapperboard, Tv, Palette, Droplets, Monitor, Circle, Sunset, Sword, Shapes, Box, Pencil
+Quality: Zap, Sparkles, Gem, Flame
+Ratios: Square, RectangleHorizontal, RectangleVertical, Monitor, Smartphone
+Refiner: SlidersHorizontal, Crosshair, Sun, Palette, Moon
+AI Features: BrainCircuit, Target, BookOpen, ChevronRight
+Agents: Bot, Sparkles, Palette, SlidersHorizontal, BrainCircuit, Check, X
+Actions: Download, Copy, Star, Maximize2, Layers, Pencil, Share2, Trash2, MoreHorizontal, ArrowRight
+Lightbox: ZoomIn, ZoomOut, ChevronLeft, ChevronRight
+General: Clock, Timer, Info, AlertCircle, CheckCircle, Loader2, Search, X, ArrowLeft, ArrowUpRight, Lightbulb, Building2, Mountain, Rocket, Keyboard
