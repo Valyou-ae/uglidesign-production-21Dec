@@ -1,0 +1,1275 @@
+Design a Discover page for "AI Creative Studio" - an inspiration hub where users can explore trending styles, curated collections, featured prompts, community creations, and new artistic techniques. This is the creative exploration center of the app. Follow the sidebar layout from dashboard. Dark/light theme support. Vibrant, inspiring UI with gradient accents. Use Lucide icons throughout - NO emojis.
+
+=== PAGE STRUCTURE ===
+Full viewport height
+Layout: Fixed left sidebar (280px) + Main content area
+Background: #0A0A0B (dark) / #F8F8F8 (light)
+Main content: Scrollable with immersive sections
+
+=== LEFT SIDEBAR ===
+Width: 280px, full height, fixed
+Background: #111113 (dark) / #FFFFFF (light)
+Border-right: 1px solid #1F1F23 (dark) / #E4E4E7 (light)
+
+Sidebar navigation - UPDATED with Discover:
+
+Main section:
+- Home (LayoutGrid icon)
+- Discover (Compass icon) - NEW, ACTIVE with gradient highlight
+- Image Generator (Wand2 icon)
+- Mockup Generator (ShoppingBag icon)
+- Background Remover (Scissors icon)
+- My Projects (FolderOpen icon)
+- Favorites (Star icon)
+
+Account section:
+- Settings (Settings icon)
+- Billing (CreditCard icon)
+- Help & Support (HelpCircle icon)
+
+--- Discover Nav Item Styling ---
+Active state:
+- Background: linear-gradient 90deg rgba(124, 58, 237, 0.15) to rgba(236, 72, 153, 0.15)
+- Border-left: 3px solid transparent
+- Border-image: linear-gradient 180deg #7C3AED to #EC4899
+- Text: #FAFAFA
+- Icon: Gradient fill or #7C3AED
+
+Badge on Discover:
+- "New" badge - 9px, bold, uppercase
+- bg linear-gradient #7C3AED to #EC4899
+- text white
+- padding: 2px 6px
+- border-radius: 4px
+- margin-left: 8px
+
+=== MAIN CONTENT AREA ===
+Padding: 0
+Overflow-y: auto
+Height: 100vh
+Scroll-behavior: smooth
+
+=== HERO SECTION ===
+Position: relative
+Height: 400px
+Background: linear-gradient 135deg #0A0A0B 0%, #1A1A2E 50%, #16132D 100%
+Overflow: hidden
+
+--- Animated Background ---
+Position: absolute
+Inset: 0
+Overflow: hidden
+
+Floating gradient orbs:
+- Orb 1: 400px circle, #7C3AED at 20% opacity, blur 100px, top-left, floating animation
+- Orb 2: 300px circle, #EC4899 at 15% opacity, blur 80px, bottom-right, floating animation (offset)
+- Orb 3: 200px circle, #3B82F6 at 10% opacity, blur 60px, center-right, floating animation (offset)
+
+Grid pattern:
+- Subtle dot grid, opacity 0.03
+- Or: Diagonal lines pattern
+
+--- Hero Content ---
+Position: relative
+Z-index: 10
+Padding: 60px 48px
+Max-width: 1400px
+Margin: 0 auto
+Height: 100%
+Display: flex
+Flex-direction: column
+Justify-content: center
+
+Title row:
+- Compass icon, 32px, gradient fill #7C3AED to #EC4899
+- "Discover" - 40px, bold, #FAFAFA
+- Gap: 16px
+- Display: flex
+- Align-items: center
+
+Subtitle:
+- "Explore trending styles, innovative techniques, and creative inspiration" - 18px, #A1A1AA
+- Margin-top: 12px
+- Max-width: 600px
+
+--- Hero Search Bar ---
+Margin-top: 32px
+Max-width: 600px
+
+Search container:
+- Background: rgba(255, 255, 255, 0.08)
+- Backdrop-filter: blur(12px)
+- Border: 1px solid rgba(255, 255, 255, 0.1)
+- Border-radius: 16px
+- Padding: 4px
+- Display: flex
+- Align-items: center
+
+Search icon:
+- Search icon, 22px, #71717A
+- Margin-left: 16px
+
+Input:
+- Flex: 1
+- Background: transparent
+- Border: none
+- Padding: 14px 12px
+- Font: 16px, #FAFAFA
+- Placeholder: "Search styles, prompts, techniques..." - #52525B
+
+Filter button:
+- SlidersHorizontal icon, 20px
+- bg rgba(255, 255, 255, 0.1)
+- border-radius: 10px
+- padding: 10px
+- margin-right: 4px
+- Hover: bg rgba(255, 255, 255, 0.15)
+
+--- Hero Quick Filters ---
+Margin-top: 20px
+Display: flex
+Gap: 10px
+Flex-wrap: wrap
+
+Filter pills:
+Each pill:
+- bg rgba(255, 255, 255, 0.08)
+- border: 1px solid rgba(255, 255, 255, 0.1)
+- border-radius: 9999px
+- padding: 8px 16px
+- font: 13px, #A1A1AA
+- cursor: pointer
+- transition: all 200ms
+- backdrop-filter: blur(8px)
+
+Pill hover:
+- bg rgba(255, 255, 255, 0.15)
+- text #FAFAFA
+
+Pill active:
+- bg linear-gradient 90deg #7C3AED to #EC4899
+- border: transparent
+- text white
+
+Pills:
+1. Sparkles icon - "Trending" - ACTIVE
+2. Clock icon - "New This Week"
+3. Flame icon - "Most Popular"
+4. Palette icon - "Styles"
+5. Type icon - "Prompts"
+6. Lightbulb icon - "Techniques"
+7. Users icon - "Community"
+
+--- Hero Stats ---
+Position: absolute
+Bottom: 40px
+Right: 48px
+Display: flex
+Gap: 32px
+
+Each stat:
+- Display: flex
+- Flex-direction: column
+- Align-items: flex-end
+
+Stat value:
+- 24px, bold, #FAFAFA
+
+Stat label:
+- 12px, #71717A
+- Margin-top: 2px
+
+Stats:
+1. "12.5K+" - "Styles"
+2. "50K+" - "Prompts"
+3. "8.2K" - "This Week"
+
+=== TRENDING NOW SECTION ===
+Padding: 48px
+Max-width: 1400px
+Margin: 0 auto
+
+--- Section Header ---
+Display: flex
+Justify-content: space-between
+Align-items: center
+Margin-bottom: 28px
+
+Left side:
+- TrendingUp icon, 24px, #EC4899
+- "Trending Now" - 24px, semibold, #FAFAFA
+- Gap: 12px
+
+Live indicator:
+- Dot, 8px, #16A34A, pulse animation
+- "Live" - 12px, #16A34A
+- bg #16A34A/10
+- padding: 4px 10px 4px 8px
+- border-radius: 9999px
+- margin-left: 12px
+
+Right side:
+- "View all trending" link
+- ArrowRight icon, 16px
+- 14px, #7C3AED
+
+--- Trending Grid ---
+Display: grid
+Grid-template-columns: repeat(4, 1fr)
+Gap: 20px
+
+Responsive:
+- 1400px+: 4 columns
+- 1100px: 3 columns
+- 800px: 2 columns
+- 600px: 1 column
+
+--- Trending Card ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 20px
+Overflow: hidden
+Cursor: pointer
+Transition: all 300ms ease
+Position: relative
+
+Hover state:
+- Transform: translateY(-8px)
+- Box-shadow: 0 20px 50px rgba(124, 58, 237, 0.2)
+- Border-color: #7C3AED/50
+
+--- Card Image Section ---
+Aspect-ratio: 1/1
+Position: relative
+Overflow: hidden
+
+Image:
+- Object-fit: cover
+- Width/height: 100%
+- Transition: transform 400ms ease
+- Hover: scale 1.08
+
+Gradient overlay:
+- Position: absolute
+- Inset: 0
+- Background: linear-gradient to top, rgba(0,0,0,0.8) 0%, transparent 50%
+
+Trending rank badge (top-left):
+- Position: absolute
+- Top: 12px
+- Left: 12px
+- Width: 32px
+- Height: 32px
+- Background: linear-gradient 135deg #7C3AED to #EC4899
+- Border-radius: 10px
+- Display: flex
+- Align-items: center
+- Justify-content: center
+- Font: 14px, bold, white
+- "#1", "#2", "#3", etc.
+
+Category badge (top-right):
+- Position: absolute
+- Top: 12px
+- Right: 12px
+- bg rgba(0,0,0,0.6)
+- backdrop-filter: blur(8px)
+- padding: 6px 10px
+- border-radius: 8px
+- font: 11px, semibold, white
+- "Style" / "Prompt" / "Technique"
+
+Save button (top-right, appears on hover):
+- Position: absolute
+- Top: 12px
+- Right: 12px (replaces category on hover)
+- Bookmark icon, 20px
+- bg rgba(255,255,255,0.2)
+- backdrop-filter: blur(8px)
+- padding: 8px
+- border-radius: 10px
+- Hover: bg #7C3AED
+
+--- Card Info Section ---
+Padding: 20px
+Position: relative
+
+Style name:
+- 17px, semibold, #FAFAFA
+- Max 1 line, truncate
+
+Creator row:
+- Display: flex
+- Align-items: center
+- Gap: 8px
+- Margin-top: 10px
+
+Creator avatar:
+- 24px circle
+- Object-fit: cover
+
+Creator name:
+- 13px, #71717A
+- "by @username"
+
+Verified badge (if verified):
+- BadgeCheck icon, 14px, #3B82F6
+
+Stats row:
+- Display: flex
+- Gap: 16px
+- Margin-top: 14px
+
+Each stat:
+- Display: flex
+- Align-items: center
+- Gap: 4px
+- Font: 12px, #52525B
+
+Stats:
+1. Eye icon, 14px - "12.5K" (views)
+2. Heart icon, 14px - "2.3K" (likes)
+3. Wand2 icon, 14px - "892" (uses)
+
+Tags row:
+- Display: flex
+- Gap: 6px
+- Margin-top: 12px
+- Flex-wrap: wrap
+
+Tag pills:
+- bg #1F1F25
+- padding: 4px 8px
+- border-radius: 6px
+- font: 10px, #71717A
+- Max 3 visible
+
+Tags examples: "cinematic", "moody", "portrait"
+
+--- Trending Cards Content (8 cards) ---
+
+Card 1:
+- Rank: #1
+- Image: Cinematic portrait style preview
+- "Ethereal Glow"
+- "@creativemind" (verified)
+- Views: 45.2K, Likes: 8.9K, Uses: 3.2K
+- Tags: "portrait", "ethereal", "soft light"
+- Category: Style
+
+Card 2:
+- Rank: #2
+- Image: Cyberpunk cityscape
+- "Neon Dystopia"
+- "@futuredesign"
+- Views: 38.1K, Likes: 7.2K, Uses: 2.8K
+- Tags: "cyberpunk", "neon", "city"
+- Category: Style
+
+Card 3:
+- Rank: #3
+- Image: Watercolor effect
+- "Liquid Dreams"
+- "@artflow"
+- Views: 31.4K, Likes: 5.8K, Uses: 2.1K
+- Tags: "watercolor", "abstract", "flowing"
+- Category: Technique
+
+Card 4:
+- Rank: #4
+- Image: Minimal product shot
+- "Clean Commerce"
+- "@minimalstudio" (verified)
+- Views: 28.9K, Likes: 4.5K, Uses: 1.9K
+- Tags: "minimal", "product", "clean"
+- Category: Prompt
+
+(Continue pattern for cards 5-8)
+
+=== FEATURED COLLECTIONS SECTION ===
+Padding: 0 48px 48px
+Max-width: 1400px
+Margin: 0 auto
+
+--- Section Header ---
+Display: flex
+Justify-content: space-between
+Align-items: center
+Margin-bottom: 28px
+
+Left:
+- Layers icon, 24px, #7C3AED
+- "Featured Collections" - 24px, semibold
+- Gap: 12px
+
+Right:
+- "Browse all collections" link
+- ArrowRight icon
+
+--- Collections Horizontal Scroll ---
+Display: flex
+Gap: 20px
+Overflow-x: auto
+Padding-bottom: 16px
+Scroll-snap-type: x mandatory
+Scrollbar: thin, custom styled
+
+--- Collection Card ---
+Min-width: 320px
+Max-width: 320px
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 20px
+Overflow: hidden
+Cursor: pointer
+Scroll-snap-align: start
+Transition: all 250ms
+
+Hover:
+- Border-color: #2A2A30
+- Transform: translateY(-4px)
+
+--- Collection Preview Grid ---
+Height: 180px
+Display: grid
+Grid-template-columns: 2fr 1fr
+Grid-template-rows: 1fr 1fr
+Gap: 2px
+Overflow: hidden
+
+Large image (spans 2 rows):
+- Grid-row: 1 / 3
+- Object-fit: cover
+
+Small images (2 stacked):
+- Object-fit: cover
+
+--- Collection Info ---
+Padding: 20px
+
+Collection name:
+- 18px, semibold, #FAFAFA
+
+Curator row:
+- Display: flex
+- Align-items: center
+- Gap: 8px
+- Margin-top: 8px
+
+Curator info:
+- "Curated by" - 12px, #52525B
+- Avatar, 20px circle
+- Name - 12px, #A1A1AA
+
+Collection stats:
+- Display: flex
+- Gap: 16px
+- Margin-top: 12px
+
+Stats:
+- Layers icon + "24 styles"
+- Heart icon + "5.2K saves"
+
+--- Collection Cards Content ---
+
+Collection 1:
+- "Dark & Moody Portraits"
+- Curated by @shadowmaster
+- 24 styles, 5.2K saves
+- Preview: Dark portrait images
+
+Collection 2:
+- "Product Photography Essentials"
+- Curated by AI Creative Studio (official)
+- 36 styles, 8.9K saves
+- Preview: Clean product shots
+
+Collection 3:
+- "Anime & Manga Masterclass"
+- Curated by @animeartist
+- 48 styles, 12.3K saves
+- Preview: Anime style images
+
+Collection 4:
+- "Vintage Film Aesthetics"
+- Curated by @retrowave
+- 18 styles, 3.7K saves
+- Preview: Vintage film looks
+
+Collection 5:
+- "Abstract & Experimental"
+- Curated by @artlab
+- 32 styles, 4.1K saves
+- Preview: Abstract art
+
+=== NEW THIS WEEK SECTION ===
+Padding: 0 48px 48px
+Max-width: 1400px
+Margin: 0 auto
+
+--- Section Header ---
+Left:
+- Sparkles icon, 24px, #F59E0B
+- "New This Week" - 24px, semibold
+- Gap: 12px
+
+Badge:
+- "42 new" - 11px
+- bg #F59E0B/20
+- text #F59E0B
+- padding: 4px 10px
+- border-radius: 9999px
+
+--- New Items Grid ---
+Display: grid
+Grid-template-columns: repeat(5, 1fr)
+Gap: 16px
+
+Responsive columns
+
+--- New Item Card (Compact) ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 14px
+Overflow: hidden
+Cursor: pointer
+Transition: all 200ms
+
+Hover:
+- Border-color: #2A2A30
+- Transform: translateY(-2px)
+
+Image:
+- Aspect-ratio: 1/1
+- Object-fit: cover
+
+Info:
+- Padding: 14px
+
+Name:
+- 14px, semibold, #FAFAFA
+- Truncate
+
+Type + Time:
+- 12px, #52525B
+- "Style · 2h ago"
+
+"New" badge (on recent items):
+- Position: absolute
+- Top: 10px
+- Left: 10px
+- bg #F59E0B
+- text #18181B
+- font: 9px, bold
+- padding: 3px 6px
+- border-radius: 4px
+
+=== STYLE CATEGORIES SECTION ===
+Padding: 0 48px 48px
+Max-width: 1400px
+Margin: 0 auto
+
+--- Section Header ---
+Left:
+- Palette icon, 24px, #7C3AED
+- "Explore by Style" - 24px, semibold
+
+--- Categories Grid ---
+Display: grid
+Grid-template-columns: repeat(6, 1fr)
+Gap: 16px
+
+Responsive: 6 > 4 > 3 > 2
+
+--- Category Card ---
+Position: relative
+Aspect-ratio: 1/1
+Border-radius: 16px
+Overflow: hidden
+Cursor: pointer
+Transition: all 250ms
+
+Background image:
+- Representative style image
+- Object-fit: cover
+
+Gradient overlay:
+- Position: absolute
+- Inset: 0
+- Background: linear-gradient to top, rgba(0,0,0,0.8), transparent
+
+Hover:
+- Transform: scale(1.03)
+- Box-shadow: 0 16px 40px rgba(0,0,0,0.4)
+
+Content:
+- Position: absolute
+- Bottom: 16px
+- Left: 16px
+- Right: 16px
+
+Category name:
+- 16px, semibold, white
+
+Count:
+- 12px, rgba(255,255,255,0.7)
+- "2.4K styles"
+
+--- Category Cards Content ---
+
+1. "Photorealistic" - 3.2K styles
+2. "Cinematic" - 2.8K styles
+3. "Anime & Manga" - 4.1K styles
+4. "Digital Art" - 2.9K styles
+5. "Oil Painting" - 1.8K styles
+6. "Watercolor" - 1.2K styles
+7. "Minimalist" - 1.5K styles
+8. "Dark Fantasy" - 2.1K styles
+9. "Retrowave" - 980 styles
+10. "Pop Art" - 760 styles
+11. "Isometric" - 540 styles
+12. "Sketch" - 890 styles
+
+=== PROMPT LIBRARY SECTION ===
+Padding: 0 48px 48px
+Max-width: 1400px
+Margin: 0 auto
+
+--- Section Header ---
+Left:
+- Type icon, 24px, #3B82F6
+- "Prompt Library" - 24px, semibold
+
+Right:
+- "Submit your prompt" link with Plus icon
+- "View all prompts" link
+
+--- Prompt Filter Tabs ---
+Display: flex
+Gap: 8px
+Margin-bottom: 24px
+
+Tab buttons:
+- "All Prompts"
+- "Portraits"
+- "Landscapes"
+- "Products"
+- "Abstract"
+- "Characters"
+- "Architecture"
+
+Tab style:
+- Inactive: bg transparent, text #71717A
+- Hover: bg #1F1F25
+- Active: bg #3B82F6, text white
+- padding: 8px 16px
+- border-radius: 9999px
+- font: 13px, medium
+
+--- Prompts Grid ---
+Display: grid
+Grid-template-columns: repeat(2, 1fr)
+Gap: 20px
+
+--- Prompt Card ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 16px
+Padding: 0
+Overflow: hidden
+Display: flex
+Cursor: pointer
+Transition: all 200ms
+
+Hover:
+- Border-color: #3B82F6/50
+- bg #1A1A1F
+
+--- Card Left: Preview Image ---
+Width: 140px
+Flex-shrink: 0
+Background: #0A0A0B
+
+Image:
+- Object-fit: cover
+- Height: 100%
+
+--- Card Right: Prompt Info ---
+Padding: 20px
+Flex: 1
+Display: flex
+Flex-direction: column
+
+Prompt title:
+- 16px, semibold, #FAFAFA
+- Max 1 line
+
+Prompt text:
+- 13px, #A1A1AA
+- Margin-top: 8px
+- Line-height: 1.5
+- Max 3 lines, truncate
+- Font-style: italic
+
+Creator row:
+- Margin-top: auto
+- Padding-top: 12px
+- Display: flex
+- Justify-content: space-between
+- Align-items: center
+
+Left:
+- Avatar, 24px
+- Username, 12px, #71717A
+
+Right:
+- Copy button: Copy icon, 18px, #52525B
+- Tooltip: "Copy prompt"
+- Hover: #7C3AED
+
+Stats row:
+- Display: flex
+- Gap: 12px
+- Margin-top: 10px
+
+Stats:
+- Heart icon + "1.2K"
+- Copy icon + "456 uses"
+
+--- Prompt Cards Content ---
+
+Prompt 1:
+- Title: "Cinematic Portrait Lighting"
+- Prompt: "Portrait photography of [subject], dramatic Rembrandt lighting, shallow depth of field, 85mm lens, film grain, moody atmosphere..."
+- @lightmaster, 2.3K likes, 892 uses
+
+Prompt 2:
+- Title: "Floating Product Shot"
+- Prompt: "Product photography of [product] floating in mid-air, soft gradient background, professional studio lighting, reflection below..."
+- @productstudio, 1.8K likes, 654 uses
+
+Prompt 3:
+- Title: "Anime Character Design"
+- Prompt: "Anime character portrait, [description], cel shaded, vibrant colors, detailed eyes, clean linework, studio ghibli inspired..."
+- @animemaster, 4.1K likes, 1.2K uses
+
+Prompt 4:
+- Title: "Misty Mountain Landscape"
+- Prompt: "Ethereal mountain landscape at dawn, layers of misty valleys, golden hour sunlight, dramatic clouds, wide angle shot..."
+- @natureart, 3.2K likes, 987 uses
+
+=== TECHNIQUES & TUTORIALS SECTION ===
+Padding: 0 48px 48px
+Max-width: 1400px
+Margin: 0 auto
+
+--- Section Header ---
+Left:
+- Lightbulb icon, 24px, #F59E0B
+- "Techniques & Tips" - 24px, semibold
+
+Right:
+- "View all tutorials" link
+
+--- Techniques Grid ---
+Display: grid
+Grid-template-columns: repeat(3, 1fr)
+Gap: 20px
+
+--- Technique Card ---
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 18px
+Overflow: hidden
+Cursor: pointer
+Transition: all 200ms
+
+Hover:
+- Border-color: #F59E0B/50
+- Transform: translateY(-4px)
+
+--- Card Header Image ---
+Height: 160px
+Position: relative
+Overflow: hidden
+
+Before/After slider:
+- Split view showing technique effect
+- Or: Static comparison image
+
+Technique type badge:
+- Position: absolute
+- Top: 12px
+- Left: 12px
+- bg rgba(0,0,0,0.7)
+- backdrop-filter: blur(8px)
+- padding: 6px 10px
+- border-radius: 8px
+
+Badge content:
+- Icon (varies) + Text
+- "Beginner" - #16A34A
+- "Intermediate" - #F59E0B
+- "Advanced" - #DC2626
+
+--- Card Content ---
+Padding: 20px
+
+Title:
+- 17px, semibold, #FAFAFA
+
+Description:
+- 14px, #A1A1AA
+- Margin-top: 8px
+- Line-height: 1.5
+- Max 2 lines
+
+Meta row:
+- Display: flex
+- Justify-content: space-between
+- Margin-top: 16px
+
+Left:
+- Clock icon + "5 min read" - 12px, #52525B
+
+Right:
+- Eye icon + "3.2K views" - 12px, #52525B
+
+--- Technique Cards Content ---
+
+Card 1:
+- "Mastering Lighting Keywords"
+- "Learn how to use lighting terms like Rembrandt, rim light, and golden hour to dramatically improve your generations"
+- Beginner, 5 min, 8.2K views
+
+Card 2:
+- "Advanced Composition Techniques"
+- "Discover rule of thirds, leading lines, and framing techniques that work perfectly with AI image generation"
+- Intermediate, 8 min, 5.4K views
+
+Card 3:
+- "Color Grading with Words"
+- "Master the art of describing color palettes, tones, and moods to achieve cinematic color grading"
+- Advanced, 12 min, 4.1K views
+
+Card 4:
+- "Negative Prompts That Work"
+- "Essential negative prompt strategies to avoid common artifacts and improve image quality"
+- Beginner, 4 min, 12.3K views
+
+Card 5:
+- "Style Mixing Secrets"
+- "Learn to combine multiple artistic styles for unique, personalized results"
+- Intermediate, 7 min, 6.8K views
+
+Card 6:
+- "Prompt Engineering for Products"
+- "Specialized techniques for generating professional product photography"
+- Intermediate, 10 min, 3.9K views
+
+=== COMMUNITY SHOWCASE SECTION ===
+Padding: 0 48px 48px
+Max-width: 1400px
+Margin: 0 auto
+
+--- Section Header ---
+Left:
+- Users icon, 24px, #EC4899
+- "Community Showcase" - 24px, semibold
+
+Right:
+- "Submit your work" button
+- Plus icon
+- Secondary style
+
+--- Community Grid (Masonry Style) ---
+Column-count: 4
+Column-gap: 16px
+
+Responsive: 4 > 3 > 2 > 1 columns
+
+--- Community Card ---
+Break-inside: avoid
+Margin-bottom: 16px
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 16px
+Overflow: hidden
+Cursor: pointer
+Transition: all 200ms
+
+Hover:
+- Border-color: #EC4899/50
+
+Image:
+- Width: 100%
+- Height: auto (natural aspect ratio)
+
+Info section:
+- Padding: 16px
+
+Title:
+- 15px, semibold, #FAFAFA
+
+Creator row:
+- Display: flex
+- Align-items: center
+- Gap: 8px
+- Margin-top: 8px
+
+Creator:
+- Avatar, 24px
+- Name, 13px, #71717A
+
+Interaction row:
+- Display: flex
+- Gap: 16px
+- Margin-top: 12px
+
+Buttons:
+- Heart icon + count - toggle like
+- MessageCircle icon + count - comments
+- Share2 icon - share
+
+--- Community Cards (varied heights) ---
+Mix of portrait, landscape, square images
+Various styles and creators
+Engagement metrics visible
+
+=== DAILY CHALLENGE SECTION ===
+Padding: 0 48px 48px
+Max-width: 1400px
+Margin: 0 auto
+
+--- Challenge Banner ---
+Background: linear-gradient 135deg #7C3AED to #EC4899
+Border-radius: 24px
+Padding: 40px
+Display: flex
+Justify-content: space-between
+Align-items: center
+Position: relative
+Overflow: hidden
+
+Decorative elements:
+- Trophy icon pattern, subtle, opacity 0.1
+
+Left content:
+
+Badge:
+- "Daily Challenge" - 11px, bold, uppercase
+- bg rgba(255,255,255,0.2)
+- padding: 6px 12px
+- border-radius: 9999px
+- text white
+
+Title:
+- "Enchanted Forest at Twilight" - 28px, bold, white
+- Margin-top: 12px
+
+Description:
+- "Create a magical forest scene with bioluminescent plants and mystical creatures" - 16px, rgba(255,255,255,0.9)
+- Margin-top: 8px
+
+Stats row:
+- Display: flex
+- Gap: 24px
+- Margin-top: 20px
+
+Stats:
+- Users icon + "2,341 participants"
+- Clock icon + "18 hours left"
+- Gift icon + "500 credits prize"
+
+Right content:
+
+"Join Challenge" button:
+- bg white
+- text #7C3AED
+- padding: 16px 32px
+- border-radius: 12px
+- font: 16px, bold
+- Hover: scale 1.02
+
+Winner showcase (small):
+- "Yesterday's Winner" label
+- Small image preview
+- Winner name
+
+=== FOOTER SECTION ===
+Padding: 48px
+Background: #111113
+Border-top: 1px solid #1F1F23
+
+--- Newsletter Signup ---
+Max-width: 600px
+Margin: 0 auto
+Text-align: center
+
+Title:
+- "Stay Inspired" - 22px, semibold
+
+Description:
+- "Get weekly style trends, new techniques, and creative inspiration delivered to your inbox" - 14px, #71717A
+- Margin-top: 8px
+
+Email input row:
+- Display: flex
+- Gap: 12px
+- Margin-top: 24px
+- Max-width: 480px
+- Margin-left: auto
+- Margin-right: auto
+
+Input:
+- Flex: 1
+- bg #1A1A1F
+- border: 1px solid #2A2A30
+- padding: 14px 16px
+- border-radius: 12px
+- Placeholder: "Enter your email"
+
+Subscribe button:
+- bg #7C3AED
+- text white
+- padding: 14px 24px
+- border-radius: 12px
+- "Subscribe"
+
+=== MODALS ===
+
+--- Style/Prompt Detail Modal ---
+Triggered by clicking any card
+
+Overlay: rgba(0, 0, 0, 0.9)
+Modal: Max-width 1000px, max-height 90vh
+Background: #111113
+Border: 1px solid #1F1F23
+Border-radius: 24px
+Overflow: hidden
+Display: flex
+
+Left: Image Section (55%)
+- Large preview image
+- Zoom controls
+- Navigation if multiple images
+
+Right: Details Section (45%)
+- Padding: 32px
+- Overflow-y: auto
+
+Content:
+
+Title:
+- 24px, bold, #FAFAFA
+
+Creator section:
+- Avatar, 48px
+- Name, 16px, semibold
+- Bio snippet, 13px, #71717A
+- "Follow" button
+
+Style/Prompt info:
+- Category tags
+- Created date
+- Stats (views, likes, uses)
+
+"Use This Style" button:
+- Full width
+- Primary gradient
+- Sparkles icon + "Use This Style"
+- Opens in Image Generator with preset
+
+Prompt section (if prompt):
+- Full prompt text
+- Copy button
+
+Related styles:
+- Horizontal scroll of similar items
+
+Comments section:
+- Comment input
+- Comment list
+
+--- Filter Modal ---
+Triggered by filter button in search
+
+Slide-over from right, 400px width
+Background: #111113
+Border-left: 1px solid #1F1F23
+Padding: 32px
+
+Header:
+- "Filters" - 20px, semibold
+- "Clear all" link
+- Close X button
+
+Filter groups:
+
+Category checkboxes:
+- Styles
+- Prompts
+- Techniques
+- Collections
+
+Style type checkboxes:
+- Photorealistic
+- Cinematic
+- Anime
+- Digital Art
+- etc.
+
+Time range:
+- All time
+- This week
+- This month
+- This year
+
+Sort by:
+- Trending
+- Most recent
+- Most popular
+- Most used
+
+Quality filter:
+- Slider: Minimum rating
+
+"Apply Filters" button:
+- Full width
+- Primary style
+
+--- Submit Style/Prompt Modal ---
+Triggered by "Submit" buttons
+
+Modal: 600px width
+Padding: 32px
+
+Header:
+- "Share Your Creation" - 22px, semibold
+
+Form:
+
+Type selector:
+- Style / Prompt / Technique
+
+Title input:
+- "Give it a memorable name"
+
+Description textarea:
+- "Describe what makes this unique"
+
+Image upload:
+- Drag & drop zone
+- "Upload preview images"
+
+Prompt input (if prompt type):
+- Full prompt text
+- Character count
+
+Category tags:
+- Multi-select chips
+
+Terms checkbox:
+- "I agree to the community guidelines"
+
+"Submit for Review" button:
+- Primary style
+
+=== FLOATING ELEMENTS ===
+
+--- Scroll to Top Button ---
+Position: fixed
+Bottom: 24px
+Right: 24px
+Width: 48px
+Height: 48px
+bg #7C3AED
+border-radius: 12px
+ArrowUp icon, 24px, white
+Opacity: 0 (default) / 1 (scrolled)
+Hover: scale 1.05
+
+=== LOADING STATES ===
+
+Skeleton cards:
+- Shimmer animation
+- Matching card dimensions
+
+Infinite scroll:
+- Loading spinner at bottom
+- "Loading more..."
+
+Image lazy loading:
+- Blur placeholder
+- Fade in on load
+
+=== KEYBOARD SHORTCUTS ===
+- /: Focus search
+- Esc: Close modal
+- Arrow keys: Navigate cards
+- Enter: Open selected
+- S: Save/bookmark
+- L: Like
+
+=== RESPONSIVE BEHAVIOR ===
+
+Desktop (1400px+):
+- Full layout
+- 4-5 column grids
+
+Laptop (1100-1399px):
+- 3-4 column grids
+- Narrower hero
+
+Tablet (800-1099px):
+- 2-3 column grids
+- Compact cards
+- Sidebar hidden
+
+Mobile (<800px):
+- Single column
+- Full-width cards
+- Bottom navigation
+- Search in header
+- Horizontal scroll carousels
+
+=== COLOR TOKENS ===
+
+Background Base: #0A0A0B
+Background Card: #111113
+Surface: #1A1A1F
+Border: #1F1F23
+
+Text Primary: #FAFAFA
+Text Secondary: #A1A1AA
+Text Muted: #71717A
+
+Gradients:
+- Primary: #7C3AED to #EC4899
+- Trending: #EC4899 to #F59E0B
+- New: #F59E0B to #FBBF24
+- Community: #EC4899 to #8B5CF6
+
+Category colors:
+- Styles: #7C3AED
+- Prompts: #3B82F6
+- Techniques: #F59E0B
+- Collections: #8B5CF6
+- Community: #EC4899
+
+=== TYPOGRAPHY ===
+
+Hero title: 40px, bold
+Section titles: 24px, semibold
+Card titles: 16-17px, semibold
+Body: 14px, regular
+Stats: 12px, regular
+Labels: 11px, medium
+
+=== ICONS USED (Lucide) ===
+
+Navigation: Compass, LayoutGrid, Wand2, ShoppingBag, Scissors, FolderOpen, Star, Settings, CreditCard, HelpCircle
+Discovery: Search, SlidersHorizontal, TrendingUp, Sparkles, Clock, Flame, Palette, Type, Lightbulb, Users, Layers
+Cards: Eye, Heart, Wand2, Bookmark, Copy, BadgeCheck, ArrowRight
+Categories: Camera, Clapperboard, Tv, Monitor, Paintbrush, Droplets, Circle, Sword, Sunset, Shapes, Box, Pencil
+Actions: Plus, Share2, MessageCircle, ArrowUp, Gift, Trophy, Mail
