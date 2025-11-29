@@ -112,87 +112,6 @@ const MOCKUP_ANGLES = [
   { id: 'closeup', name: 'Close-up View', description: 'Detailed shot of the design and fabric.', icon: Search, recommended: true },
 ];
 
-const PRODUCT_COLORS = [
-  // Row 1 - Darks
-  { name: "Black", hex: "#000000" },
-  { name: "Jet Black", hex: "#1A1A1A" },
-  { name: "Charcoal", hex: "#333333" },
-  { name: "Dark Purple", hex: "#2D1B4E" },
-  { name: "Midnight Blue", hex: "#191970" },
-  { name: "Dark Green", hex: "#006400" },
-  { name: "Maroon", hex: "#800000" },
-  { name: "Dark Brown", hex: "#4B3621" },
-  { name: "Dark Slate", hex: "#2F4F4F" },
-  { name: "Navy", hex: "#000080" },
-  { name: "Gunmetal", hex: "#2A3439" },
-  { name: "Olive Drab", hex: "#4B5320" },
-  
-  // Row 2 - Deep/Rich
-  { name: "Forest Green", hex: "#228B22" },
-  { name: "Magenta", hex: "#8B008B" },
-  { name: "Dim Grey", hex: "#696969" },
-  { name: "Coffee", hex: "#6F4E37" },
-  { name: "Russet", hex: "#80461B" },
-  { name: "Slate Blue", hex: "#6A5ACD" },
-  { name: "Sea Green", hex: "#2E8B57" },
-  { name: "Royal Blue", hex: "#4169E1" },
-  { name: "Steel Blue", hex: "#4682B4" },
-  { name: "Crimson", hex: "#DC143C" },
-  { name: "Kelly Green", hex: "#4CBB17" },
-  { name: "Jade", hex: "#00A86B" },
-
-  // Row 3 - Muted/Earth
-  { name: "Rosy Brown", hex: "#BC8F8F" },
-  { name: "Sienna", hex: "#A0522D" },
-  { name: "Olive", hex: "#808000" },
-  { name: "Chocolate", hex: "#D2691E" },
-  { name: "Indian Red", hex: "#CD5C5C" },
-  { name: "Grey", hex: "#808080" },
-  { name: "Dark Orange", hex: "#FF8C00" },
-  { name: "Coral", hex: "#FF7F50" },
-  { name: "Teal", hex: "#008080" },
-  { name: "Medium Purple", hex: "#9370DB" },
-  { name: "Sandy Brown", hex: "#F4A460" },
-  { name: "Pale Violet Red", hex: "#DB7093" },
-  { name: "Cornflower Blue", hex: "#6495ED" },
-  { name: "Tan", hex: "#D2B48C" },
-  { name: "Dark Sea Green", hex: "#8FBC8F" },
-  { name: "Goldenrod", hex: "#DAA520" },
-  { name: "Peru", hex: "#CD853F" },
-
-  // Row 4 - Brights/Pastels
-  { name: "Turquoise", hex: "#40E0D0" },
-  { name: "Thistle", hex: "#D8BFD8" },
-  { name: "Burlywood", hex: "#DEB887" },
-  { name: "Gold", hex: "#FFD700" },
-  { name: "Sky Blue", hex: "#87CEEB" },
-  { name: "Pale Green", hex: "#98FB98" },
-  { name: "Light Steel Blue", hex: "#B0C4DE" },
-  { name: "Plum", hex: "#DDA0DD" },
-  { name: "Light Green", hex: "#90EE90" },
-  { name: "Peach Puff", hex: "#FFDAB9" },
-  { name: "Light Pink", hex: "#FFB6C1" },
-  { name: "Silver", hex: "#C0C0C0" },
-  { name: "Light Grey", hex: "#D3D3D3" },
-  { name: "Light Sky Blue", hex: "#87CEFA" },
-  { name: "Lavender", hex: "#E6E6FA" },
-  { name: "Wheat", hex: "#F5DEB3" },
-  { name: "Khaki", hex: "#F0E68C" },
-  { name: "Antique White", hex: "#FAEBD7" },
-
-  // Row 5 - Very Light
-  { name: "Powder Blue", hex: "#B0E0E6" },
-  { name: "Mint Cream", hex: "#F5FFFA" },
-  { name: "Honeydew", hex: "#F0FFF0" },
-  { name: "Misty Rose", hex: "#FFE4E1" },
-  { name: "Gainsboro", hex: "#DCDCDC" },
-  { name: "Beige", hex: "#F5F5DC" },
-  { name: "Old Lace", hex: "#FDF5E6" },
-  { name: "Ivory", hex: "#FFFFF0" },
-  { name: "White Smoke", hex: "#F5F5F5" },
-  { name: "White", hex: "#FFFFFF" }
-];
-
 export default function MockupGenerator() {
   const [journey, setJourney] = useState<JourneyType>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -827,40 +746,45 @@ export default function MockupGenerator() {
                                       {selectedColors.length} Selected
                                     </span>
                                   </div>
-                                  <ScrollArea className="h-[200px] pr-2">
-                                    <div className="grid grid-cols-8 sm:grid-cols-10 gap-1.5">
-                                      {PRODUCT_COLORS.map((color) => {
-                                        const isSelected = selectedColors.includes(color.name);
-                                        return (
-                                          <div 
-                                            key={color.name}
-                                            onClick={() => {
-                                              if (isSelected) {
-                                                setSelectedColors(selectedColors.filter(c => c !== color.name));
-                                              } else {
-                                                setSelectedColors([...selectedColors, color.name]);
-                                              }
-                                            }}
-                                            className="group relative aspect-square rounded-md border cursor-pointer transition-all hover:border-indigo-500 flex items-center justify-center"
-                                            title={color.name}
-                                          >
-                                            <div 
-                                              className={cn(
-                                                "h-4 w-4 rounded-full border shadow-sm transition-transform group-hover:scale-110",
-                                                isSelected ? "ring-2 ring-indigo-600 ring-offset-1 dark:ring-offset-background scale-110" : ""
-                                              )} 
-                                              style={{ backgroundColor: color.hex }}
-                                            />
-                                            {isSelected && (
-                                              <div className="absolute -top-1 -right-1 bg-indigo-600 rounded-full p-[1px] border border-background z-10">
-                                                <CheckIcon className="h-1.5 w-1.5 text-white" />
-                                              </div>
-                                            )}
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </ScrollArea>
+                                  <div className="grid grid-cols-5 gap-2">
+                                    {[
+                                      { name: "White", class: "bg-white border-gray-200" },
+                                      { name: "Black", class: "bg-black border-black" },
+                                      { name: "Grey", class: "bg-zinc-400 border-zinc-400" },
+                                      { name: "Navy", class: "bg-blue-900 border-blue-900" },
+                                      { name: "Red", class: "bg-red-600 border-red-600" },
+                                      { name: "Forest", class: "bg-green-800 border-green-800" },
+                                      { name: "Royal", class: "bg-blue-600 border-blue-600" },
+                                      { name: "Maroon", class: "bg-red-900 border-red-900" },
+                                      { name: "Yellow", class: "bg-yellow-400 border-yellow-400" },
+                                    ].map((color) => {
+                                      const isSelected = selectedColors.includes(color.name);
+                                      return (
+                                        <div 
+                                          key={color.name}
+                                          onClick={() => {
+                                            if (isSelected) {
+                                              setSelectedColors(selectedColors.filter(c => c !== color.name));
+                                            } else {
+                                              setSelectedColors([...selectedColors, color.name]);
+                                            }
+                                          }}
+                                          className="group relative aspect-square rounded-lg border cursor-pointer transition-all hover:border-indigo-500 flex items-center justify-center"
+                                        >
+                                          <div className={cn(
+                                            "h-6 w-6 rounded-full border shadow-sm transition-transform group-hover:scale-110",
+                                            color.class,
+                                            isSelected ? "ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-background scale-110" : ""
+                                          )} />
+                                          {isSelected && (
+                                            <div className="absolute -top-1 -right-1 bg-indigo-600 rounded-full p-0.5 border-2 border-background">
+                                              <CheckIcon className="h-2 w-2 text-white" />
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
 
                                 <Separator />
