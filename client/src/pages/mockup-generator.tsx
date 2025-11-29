@@ -43,35 +43,7 @@ import {
   BookOpen,
   Smile,
   Scissors,
-  LayoutGrid,
-  Baby,
-  Gem,
-  PersonStanding,
-  Book,
-  Anchor,
-  Zap,
-  Star,
-  Umbrella,
-  Watch,
-  Headphones,
-  Tv,
-  Speaker,
-  Armchair,
-  Bed,
-  Bath,
-  UtensilsCrossed,
-  ChefHat,
-  Ruler,
-  Pen,
-  Brush,
-  Palette as PaletteIcon,
-  CircleDashed,
-  MoveRight,
-  MoveDiagonal,
-  Scaling,
-  Type,
-  Wind,
-  PartyPopper
+  LayoutGrid
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -428,48 +400,48 @@ export default function MockupGenerator() {
                                   icon: User,
                                   items: [
                                     { name: "T-shirts", icon: Shirt },
-                                    { name: "Polo shirts", icon: LayoutGrid },
-                                    { name: "Tank tops", icon: CircleDashed },
-                                    { name: "3/4 sleeve shirts", icon: Scaling },
-                                    { name: "Long sleeve shirts", icon: MoveRight },
+                                    { name: "Polo shirts", icon: Shirt },
+                                    { name: "Tank tops", icon: Shirt },
+                                    { name: "3/4 sleeve shirts", icon: Shirt },
+                                    { name: "Long sleeve shirts", icon: Shirt },
                                     { name: "Embroidered shirts", icon: Tag },
                                     { name: "Jackets & vests", icon: Layers },
                                     { name: "Hoodies", icon: Cloud },
-                                    { name: "Sweatshirts", icon: Wind },
+                                    { name: "Sweatshirts", icon: Shirt },
                                     { name: "Knitwear", icon: Grid },
                                   ]
                                 },
                                 { 
                                   name: "Women's Clothing", 
-                                  icon: Gem,
+                                  icon: User,
                                   items: [
                                     { name: "T-shirts", icon: Shirt },
-                                    { name: "Polo shirts", icon: LayoutGrid },
-                                    { name: "Tank tops", icon: CircleDashed },
-                                    { name: "Crop tops", icon: Scissors },
+                                    { name: "Polo shirts", icon: Shirt },
+                                    { name: "Tank tops", icon: Shirt },
+                                    { name: "Crop tops", icon: Shirt },
                                     { name: "Embroidered shirts", icon: Tag },
-                                    { name: "3/4 sleeve shirts", icon: Scaling },
-                                    { name: "Long sleeve shirts", icon: MoveRight },
-                                    { name: "Dresses", icon: PartyPopper }, 
+                                    { name: "3/4 sleeve shirts", icon: Shirt },
+                                    { name: "Long sleeve shirts", icon: Shirt },
+                                    { name: "Dresses", icon: Layers }, 
                                     { name: "Knitwear", icon: Grid },
                                     { name: "Jackets", icon: Layers },
                                     { name: "Hoodies", icon: Cloud },
-                                    { name: "Sweatshirts", icon: Wind },
+                                    { name: "Sweatshirts", icon: Shirt },
                                   ]
                                 },
                                 { 
                                   name: "Kids' Clothing", 
-                                  icon: Baby, 
+                                  icon: User, 
                                   items: [
                                     { name: "T-shirts", icon: Shirt },
                                     { name: "All-over shirts", icon: Grid },
-                                    { name: "3/4 sleeve shirts", icon: Scaling },
-                                    { name: "Long sleeve shirts", icon: MoveRight },
+                                    { name: "3/4 sleeve shirts", icon: Shirt },
+                                    { name: "Long sleeve shirts", icon: Shirt },
                                     { name: "Hoodies", icon: Cloud },
-                                    { name: "Sweatshirts", icon: Wind },
-                                    { name: "Hats", icon: Smile },
+                                    { name: "Sweatshirts", icon: Shirt },
+                                    { name: "Hats", icon: Smile }, // Using Smile as placeholder for kids/fun
                                     { name: "Leggings", icon: Layers },
-                                    { name: "Baby bodysuits", icon: Baby },
+                                    { name: "Baby bodysuits", icon: User },
                                   ] 
                                 }, 
                                 { 
@@ -500,7 +472,7 @@ export default function MockupGenerator() {
                                     { name: "Blankets", icon: Layers },
                                     { name: "Pillow cases", icon: Layers },
                                     { name: "Magnets", icon: StickyNote },
-                                    { name: "Tableware", icon: UtensilsCrossed },
+                                    { name: "Tableware", icon: Utensils },
                                     { name: "Water bottles", icon: Coffee },
                                     { name: "Mugs", icon: Coffee },
                                     { name: "Tumblers", icon: Coffee },
@@ -508,7 +480,7 @@ export default function MockupGenerator() {
                                     { name: "Postcards", icon: StickyNote },
                                     { name: "Notebooks", icon: BookOpen },
                                     { name: "Stickers", icon: StickyNote },
-                                    { name: "Aprons", icon: ChefHat },
+                                    { name: "Aprons", icon: Scissors },
                                     { name: "Towels", icon: Layers },
                                   ] 
                                 }
@@ -583,129 +555,18 @@ export default function MockupGenerator() {
                           </div>
 
                           {/* Model Config */}
-                          <div className="lg:col-span-3 border-l border-border pl-6 flex flex-col gap-6">
-                            <div className="flex items-center gap-2 text-foreground mb-4">
-                              <Sparkles className="h-4 w-4 text-indigo-600" />
-                              <h3 className="text-lg font-bold">Configuration</h3>
-                            </div>
-                            
-                            <div className="space-y-6 bg-card/50 rounded-xl p-1 sticky top-0">
+                          <div className="lg:col-span-3 border-l border-border pl-6">
+                            <div className="sticky top-6">
+                              <div className="flex items-center gap-2 text-foreground mb-4">
+                                <Sparkles className="h-4 w-4 text-indigo-600" />
+                                <h3 className="text-lg font-bold">Configuration</h3>
+                              </div>
+                              
+                              <div className="space-y-6 bg-card/50 rounded-xl p-1">
                                 {/* Size Selection */}
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
                                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Size</label>
-                                    <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">
-                                      {selectedSizes.length} Selected
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"].map((size) => {
-                                      const isSelected = selectedSizes.includes(size);
-                                      return (
-                                        <button
-                                          key={size}
-                                          onClick={() => {
-                                            if (isSelected) {
-                                              setSelectedSizes(selectedSizes.filter(s => s !== size));
-                                            } else {
-                                              setSelectedSizes([...selectedSizes, size]);
-                                            }
-                                          }}
-                                          className={cn(
-                                            "h-9 min-w-[36px] px-2 rounded-lg text-xs font-medium border transition-all",
-                                            isSelected 
-                                              ? "bg-indigo-600 border-indigo-600 text-white shadow-sm" 
-                                              : "bg-background border-border text-muted-foreground hover:border-indigo-300 hover:text-foreground"
-                                          )}
-                                        >
-                                          {size}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-
-                                <Separator />
-
-                                {/* Color Selection */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Color</label>
-                                    <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">
-                                      {selectedColors.length} Selected
-                                    </span>
-                                  </div>
-                                  <div className="grid grid-cols-5 gap-2">
-                                    {[
-                                      { name: "White", class: "bg-white border-gray-200" },
-                                      { name: "Black", class: "bg-black border-black" },
-                                      { name: "Grey", class: "bg-zinc-400 border-zinc-400" },
-                                      { name: "Navy", class: "bg-blue-900 border-blue-900" },
-                                      { name: "Red", class: "bg-red-600 border-red-600" },
-                                      { name: "Royal", class: "bg-blue-600 border-blue-600" },
-                                      { name: "Green", class: "bg-green-600 border-green-600" },
-                                      { name: "Maroon", class: "bg-red-900 border-red-900" },
-                                      { name: "Gold", class: "bg-yellow-500 border-yellow-500" },
-                                      { name: "Pink", class: "bg-pink-400 border-pink-400" },
-                                    ].map((color) => {
-                                      const isSelected = selectedColors.includes(color.name);
-                                      return (
-                                        <button
-                                          key={color.name}
-                                          onClick={() => {
-                                            if (isSelected) {
-                                              setSelectedColors(selectedColors.filter(c => c !== color.name));
-                                            } else {
-                                              setSelectedColors([...selectedColors, color.name]);
-                                            }
-                                          }}
-                                          className={cn(
-                                            "h-8 w-full rounded-lg border-2 transition-all relative",
-                                            color.class,
-                                            isSelected ? "ring-2 ring-offset-2 ring-indigo-600 scale-105 z-10" : "hover:scale-105"
-                                          )}
-                                          title={color.name}
-                                        >
-                                          {isSelected && (
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                              <CheckIcon className={cn(
-                                                "h-3 w-3",
-                                                color.name === "White" ? "text-black" : "text-white"
-                                              )} />
-                                            </div>
-                                          )}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-
-                                <Separator />
-
-                                {/* Ethnicity Selection */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Model Ethnicity</label>
-                                  </div>
-                                  <Select defaultValue="diverse">
-                                    <SelectTrigger className="h-9">
-                                      <SelectValue placeholder="Select ethnicity" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="diverse">Diverse Mix (Random)</SelectItem>
-                                      <SelectItem value="caucasian">Caucasian</SelectItem>
-                                      <SelectItem value="african">African American</SelectItem>
-                                      <SelectItem value="asian">Asian</SelectItem>
-                                      <SelectItem value="hispanic">Hispanic/Latino</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {currentStep === "style" && (
                                     <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">
                                       {selectedSizes.length} Selected
                                     </span>
