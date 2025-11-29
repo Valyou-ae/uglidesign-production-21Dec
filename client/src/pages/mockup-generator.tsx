@@ -26,7 +26,9 @@ import {
   Dumbbell,
   User,
   Users,
-  UserCheck
+  UserCheck,
+  Plus,
+  Check as CheckIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -71,7 +73,9 @@ export default function MockupGenerator() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [environmentPrompt, setEnvironmentPrompt] = useState("");
+  const [selectedColors, setSelectedColors] = useState<string[]>(["White"]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [customColor, setCustomColor] = useState("#ffffff");
   const [generatedMockups, setGeneratedMockups] = useState<string[]>([]);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStage, setGenerationStage] = useState("");
@@ -422,9 +426,11 @@ export default function MockupGenerator() {
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
                                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Color</label>
-                                    <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">White</span>
+                                    <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">
+                                      {selectedColors.length} Selected
+                                    </span>
                                   </div>
-                                  <div className="grid grid-cols-4 gap-2">
+                                  <div className="grid grid-cols-5 gap-2">
                                     {[
                                       { name: "White", class: "bg-white border-gray-200" },
                                       { name: "Black", class: "bg-black border-black" },
@@ -434,18 +440,57 @@ export default function MockupGenerator() {
                                       { name: "Forest", class: "bg-green-800 border-green-800" },
                                       { name: "Royal", class: "bg-blue-600 border-blue-600" },
                                       { name: "Maroon", class: "bg-red-900 border-red-900" },
-                                    ].map((color, i) => (
-                                      <div 
-                                        key={color.name}
-                                        className="group relative aspect-square rounded-lg border cursor-pointer transition-all hover:border-indigo-500 flex items-center justify-center"
-                                      >
-                                        <div className={cn(
-                                          "h-6 w-6 rounded-full border shadow-sm transition-transform group-hover:scale-110",
-                                          color.class,
-                                          i === 0 ? "ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-background scale-110" : ""
-                                        )} />
-                                      </div>
-                                    ))}
+                                      { name: "Yellow", class: "bg-yellow-400 border-yellow-400" },
+                                    ].map((color) => {
+                                      const isSelected = selectedColors.includes(color.name);
+                                      return (
+                                        <div 
+                                          key={color.name}
+                                          onClick={() => {
+                                            if (isSelected) {
+                                              setSelectedColors(selectedColors.filter(c => c !== color.name));
+                                            } else {
+                                              setSelectedColors([...selectedColors, color.name]);
+                                            }
+                                          }}
+                                          className="group relative aspect-square rounded-lg border cursor-pointer transition-all hover:border-indigo-500 flex items-center justify-center"
+                                        >
+                                          <div className={cn(
+                                            "h-6 w-6 rounded-full border shadow-sm transition-transform group-hover:scale-110",
+                                            color.class,
+                                            isSelected ? "ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-background scale-110" : ""
+                                          )} />
+                                          {isSelected && (
+                                            <div className="absolute -top-1 -right-1 bg-indigo-600 rounded-full p-0.5 border-2 border-background">
+                                              <CheckIcon className="h-2 w-2 text-white" />
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                    
+                                    {/* Custom Color Button */}
+                                    <div className="relative aspect-square rounded-lg border-2 border-dashed border-border hover:border-indigo-500 cursor-pointer transition-colors flex items-center justify-center group">
+                                      <input 
+                                        type="color" 
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        value={customColor}
+                                        onChange={(e) => {
+                                          const newColor = e.target.value;
+                                          setCustomColor(newColor);
+                                          if (!selectedColors.includes("Custom")) {
+                                            setSelectedColors([...selectedColors, "Custom"]);
+                                          }
+                                        }}
+                                      />
+                                      <Plus className="h-4 w-4 text-muted-foreground group-hover:text-indigo-500" />
+                                      {selectedColors.includes("Custom") && (
+                                        <div 
+                                          className="absolute inset-0 m-2 rounded-full border shadow-sm pointer-events-none"
+                                          style={{ backgroundColor: customColor }}
+                                        />
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
 
