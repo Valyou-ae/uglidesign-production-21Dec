@@ -19,7 +19,11 @@ import {
   Download,
   Copy,
   RefreshCw,
-  X
+  X,
+  Sun,
+  Trees,
+  Coffee,
+  Dumbbell
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -64,6 +68,7 @@ export default function MockupGenerator() {
   const [journey, setJourney] = useState<JourneyType>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [environmentPrompt, setEnvironmentPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedMockups, setGeneratedMockups] = useState<string[]>([]);
   const [generationProgress, setGenerationProgress] = useState(0);
@@ -434,13 +439,122 @@ export default function MockupGenerator() {
                       )}
 
                       {/* Placeholder for other steps to keep code concise */}
-                      {["platform", "seamless", "scene", "colors", "angles"].includes(currentStep) && (
+                      {["platform", "seamless", "colors", "angles"].includes(currentStep) && (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                           <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mb-4">
                             <Wand2 className="h-10 w-10 text-muted-foreground" />
                           </div>
                           <h2 className="text-2xl font-bold mb-2">Step: {currentStep}</h2>
                           <p className="text-muted-foreground">This step content would be fully implemented here.</p>
+                        </div>
+                      )}
+
+                      {currentStep === "scene" && (
+                        <div className="flex flex-col h-full max-w-[640px] mx-auto w-full animate-fade-in">
+                          {/* Section 1: Quick Templates */}
+                          <div className="mb-6">
+                            <h3 className="text-sm font-bold text-foreground/80 mb-3">Quick Templates</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {[
+                                { icon: Building, label: "Urban Street", prompt: "A vibrant urban street scene with graffiti walls, neon lights, and natural sunlight" },
+                                { icon: Camera, label: "Studio Clean", prompt: "A minimalist gray or white photography studio with professional soft lighting" },
+                                { icon: Trees, label: "Outdoor Nature", prompt: "A beautiful outdoor park setting with lush greenery and golden hour lighting" },
+                                { icon: Coffee, label: "Coffee Shop", prompt: "A cozy coffee shop interior with warm lighting, wood accents, and modern decor" },
+                                { icon: Dumbbell, label: "Gym/Athletic", prompt: "A modern fitness gym with motivational atmosphere and athletic equipment in the background" },
+                                { icon: Sun, label: "Beach/Summer", prompt: "A sunny beach setting with sand, ocean waves, and bright summery daylight" },
+                              ].map((template, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setEnvironmentPrompt(template.prompt)}
+                                  className={cn(
+                                    "flex items-center gap-3 p-3 text-left rounded-lg border-2 transition-all duration-150",
+                                    environmentPrompt === template.prompt
+                                      ? "bg-indigo-50 border-indigo-400 dark:bg-indigo-900/20 dark:border-indigo-600"
+                                      : "bg-card border-border hover:bg-accent dark:hover:bg-accent/50 text-muted-foreground hover:text-foreground"
+                                  )}
+                                >
+                                  <template.icon className={cn(
+                                    "h-5 w-5 flex-shrink-0",
+                                    environmentPrompt === template.prompt ? "text-indigo-600 dark:text-indigo-400" : "text-current"
+                                  )} />
+                                  <span className={cn(
+                                    "text-sm font-medium",
+                                    environmentPrompt === template.prompt ? "text-indigo-900 dark:text-indigo-100" : "text-current"
+                                  )}>
+                                    {template.label}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Section 2: Custom Scene Textarea */}
+                          <div className="flex-1 flex flex-col min-h-0">
+                            <h3 className="text-sm font-bold text-foreground/80 mb-3">Custom Scene</h3>
+                            <div className="relative flex-1 max-h-[200px] mb-2">
+                              <Textarea
+                                value={environmentPrompt}
+                                onChange={(e) => setEnvironmentPrompt(e.target.value)}
+                                placeholder="E.g., Walking down a busy Tokyo street at night..."
+                                className={cn(
+                                  "w-full h-32 p-4 rounded-xl border-2 resize-none transition-colors text-base bg-background",
+                                  "focus-visible:ring-0 focus-visible:border-indigo-600"
+                                )}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                        e.preventDefault();
+                                        if (environmentPrompt.length > 5) handleNext();
+                                    }
+                                    if (e.key === "Escape") handleBack();
+                                }}
+                              />
+                              <div className="absolute bottom-3 right-3 text-xs text-muted-foreground">
+                                {environmentPrompt.length} characters
+                              </div>
+                            </div>
+                            <p className="text-xs text-center text-muted-foreground">
+                              This scene will be interpreted within your chosen Brand Style.
+                            </p>
+                          </div>
+
+                          {/* Footer Navigation */}
+                          <div className="mt-auto pt-6 border-t border-border flex flex-col gap-2">
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    variant="ghost"
+                                    onClick={handleBack}
+                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                    Back
+                                </Button>
+                                <Button
+                                    onClick={handleNext}
+                                    disabled={environmentPrompt.length <= 5}
+                                    className={cn(
+                                        "gap-2 px-6 transition-all",
+                                        environmentPrompt.length > 5 
+                                            ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
+                                            : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
+                                    )}
+                                >
+                                    Next Step
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            
+                            <div className="flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
+                                <span className="flex items-center gap-1">
+                                    <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Enter</kbd> 
+                                    Next
+                                </span>
+                                <span className="mx-1">•</span>
+                                <span className="flex items-center gap-1">
+                                    <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Esc</kbd> 
+                                    Back
+                                </span>
+                            </div>
+                          </div>
                         </div>
                       )}
 

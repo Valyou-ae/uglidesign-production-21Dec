@@ -1,0 +1,378 @@
+Design a Scene/Environment selection screen for the Mockup Generator wizard in "AI Creative Studio". This is Step 6 in the DTG journey (8 steps total) and Step 7 in the AOP journey (9 steps total). Users select a quick template or write a custom scene description. Follow the established wizard layout. Dark/light theme support. Use Lucide icons - NO emojis.
+
+=== PAGE STRUCTURE ===
+Full viewport height
+Layout: Fixed left sidebar (280px) + Main wizard content area
+Background: #0A0A0B (dark) / #F8F8F8 (light)
+
+=== LEFT SIDEBAR ===
+Same as other mockup generator screens
+- "Mockup Generator" nav item ACTIVE (indigo highlight #4F46E5)
+
+=== MAIN CONTENT AREA ===
+Display: flex
+Flex-direction: column
+Height: 100vh
+Overflow: hidden
+
+=== TOP: WIZARD PROGRESS BAR ===
+Position: sticky
+Top: 0
+Background: #111113 (dark) / #FFFFFF (light)
+Border-bottom: 1px solid #1F1F23
+Padding: 20px 40px
+Z-index: 50
+
+--- Progress Steps ---
+Display: flex
+Justify-content: space-between
+Align-items: center
+Position: relative
+
+Progress line background:
+- Position: absolute
+- Height: 4px
+- Background: #1F1F25
+- Top: 50%
+- Transform: translateY(-50%)
+- Width: 100%
+- Z-index: -1
+
+Progress line fill:
+- Position: absolute
+- Height: 4px
+- Background: #4F46E5
+- Top: 50%
+- Transform: translateY(-50%)
+- Width: Based on current step percentage
+- Z-index: -1
+- Transition: width 300ms
+
+DTG Steps (8 total):
+1. Upload (Upload icon)
+2. Product (ShoppingBag icon)
+3. Platform (Building2 icon)
+4. Style (Sparkles icon)
+5. Scene (MapPin icon) - CURRENT ACTIVE
+6. Colors (Palette icon)
+7. Angles (Camera icon)
+8. Generate (Wand2 icon)
+
+AOP Steps (9 total):
+1. Upload (Upload icon)
+2. Seamless (Repeat icon)
+3. Product (ShoppingBag icon)
+4. Platform (Building2 icon)
+5. Style (Sparkles icon)
+6. Scene (MapPin icon) - CURRENT ACTIVE
+7. Colors (Palette icon)
+8. Angles (Camera icon)
+9. Generate (Wand2 icon)
+
+Each step node:
+- Circle: 32px diameter
+- Icon inside: 16px
+- Label below: 10px, bold, uppercase
+
+Step states:
+- Completed: bg #4F46E5, border #4F46E5, icon white
+- Current: bg #4F46E5, border #4F46E5, icon white
+- Upcoming: bg white (light) / #1F1F25 (dark), border #D1D5DB (light) / #3A3A40 (dark), icon #9CA3AF
+
+Tooltip on hover:
+- "Describe the photoshoot environment."
+
+=== MIDDLE: SCENE CONTENT ===
+Flex: 1
+Overflow-y: auto
+Padding: 24px
+Display: flex
+Justify-content: center
+Align-items: center
+
+Content container:
+- Max-width: 640px
+- Width: 100%
+
+=== SECTION 1: QUICK TEMPLATES ===
+Margin-bottom: 24px
+
+--- Section Label ---
+- "Quick Templates" - 14px, bold, #374151 (light) / #E5E7EB (dark)
+- Margin-bottom: 8px
+
+--- Templates Grid ---
+Display: grid
+Grid-template-columns: repeat(2, 1fr)
+Gap: 8px
+
+At medium screens (md): repeat(3, 1fr)
+
+--- Template Button (6 Total) ---
+Display: flex
+Align-items: center
+Gap: 12px
+Padding: 12px
+Text-align: left
+Border-radius: 8px
+Border: 2px solid
+Transition: all 150ms
+Cursor: pointer
+
+Unselected state:
+- Background: #F8FAFC (light) / #1F1F25 (dark)
+- Border-color: #E2E8F0 (light) / #2A2A30 (dark)
+
+Hover state:
+- Background: #F1F5F9 (light) / #2A2A30 (dark)
+
+Selected state:
+- Background: #EEF2FF (light) / #4F46E5/20 (dark)
+- Border-color: #A5B4FC (light) / #4F46E5 (dark)
+
+Icon:
+- Width: 20px
+- Height: 20px
+- Flex-shrink: 0
+- Unselected: #64748B (light) / #71717A (dark)
+- Selected: #4F46E5
+
+Template name:
+- Font: 14px, medium
+- Unselected: #334155 (light) / #E5E7EB (dark)
+- Selected: #312E81 (light) / #C7D2FE (dark)
+
+--- 6 Template Buttons (Exact from Project) ---
+
+1. Building icon - "Urban Street"
+   Prompt: "A vibrant urban street scene with graffiti walls, neon lights, and natural sunlight"
+
+2. Camera icon - "Studio Clean"
+   Prompt: "A minimalist gray or white photography studio with professional soft lighting"
+
+3. Trees icon - "Outdoor Nature"
+   Prompt: "A beautiful outdoor park setting with lush greenery and golden hour lighting"
+
+4. Coffee icon - "Coffee Shop"
+   Prompt: "A cozy coffee shop interior with warm lighting, wood accents, and modern decor"
+
+5. Dumbbell icon - "Gym/Athletic"
+   Prompt: "A modern fitness gym with motivational atmosphere and athletic equipment in the background"
+
+6. Sun icon - "Beach/Summer"
+   Prompt: "A sunny beach setting with sand, ocean waves, and bright summery daylight"
+
+Click behavior:
+- Sets environmentPrompt to the template's prompt text
+- Visually selects the button
+- Only one can be selected at a time
+- Custom text in textarea also deselects template if different
+
+=== SECTION 2: CUSTOM SCENE TEXTAREA ===
+
+--- Section Label ---
+- "Custom Scene" - 14px, bold, #374151 (light) / #E5E7EB (dark)
+- Margin-bottom: 8px
+
+--- Textarea Container ---
+Position: relative
+
+Textarea:
+- Width: 100%
+- Height: 128px (h-32)
+- Padding: 16px
+- Border-radius: 12px
+- Border: 2px solid #E2E8F0 (light) / #2A2A30 (dark)
+- Background: white (light) / #1A1A1F (dark)
+- Font: 16px, #1E293B (light) / #FAFAFA (dark)
+- Placeholder: "E.g., Walking down a busy Tokyo street at night..."
+- Placeholder color: #94A3B8 (light) / #52525B (dark)
+- Resize: none
+- Transition: border-color 200ms
+
+Focus state:
+- Border-color: #4F46E5
+- Outline: none
+
+--- Character Counter ---
+Position: absolute
+Bottom: 12px
+Right: 12px
+Font: 12px, #94A3B8 (light) / #52525B (dark)
+Content: "{characterCount} characters"
+
+--- Helper Text ---
+- "This scene will be interpreted within your chosen Brand Style."
+- Font: 12px, #94A3B8 (light) / #52525B (dark)
+- Text-align: center
+- Margin-top: 8px
+
+=== BOTTOM: NAVIGATION FOOTER ===
+Background: #F8FAFC (light) / #111113 (dark)
+Border-top: 1px solid #E2E8F0 (light) / #1F1F23 (dark)
+Padding: 12px 24px
+Flex-shrink: 0
+
+--- Footer Content ---
+Display: flex
+Flex-direction: column
+Gap: 8px
+
+--- Button Row ---
+Display: flex
+Justify-content: space-between
+Align-items: center
+
+Back button:
+- Display: flex
+- Align-items: center
+- Gap: 8px
+- Padding: 8px 16px
+- Border-radius: 8px
+- Font: 14px, medium
+- ChevronLeft icon, 16px
+- "Back" text
+
+Enabled state:
+- Color: #475569 (light) / #A1A1AA (dark)
+- Hover: bg #E2E8F0 (light) / #1F1F25 (dark)
+
+Disabled state (Step 1):
+- Color: #CBD5E1 (light) / #3A3A40 (dark)
+- Pointer-events: none
+
+Next button:
+- Display: flex
+- Align-items: center
+- Gap: 8px
+- Padding: 10px 24px
+- Border-radius: 8px
+- Font: 14px, bold
+- Box-shadow: sm
+- "Next Step" text
+- ChevronRight icon, 16px
+
+Enabled state:
+- Background: #4F46E5
+- Color: white
+- Hover: bg #4338CA
+
+Disabled state (validation fails):
+- Background: #E2E8F0 (light) / #1F1F25 (dark)
+- Color: #94A3B8 (light) / #52525B (dark)
+- Pointer-events: none
+
+--- Keyboard Hints ---
+Display: flex
+Justify-content: center
+Gap: 8px
+Font: 12px, #94A3B8 (light) / #52525B (dark)
+
+Kbd elements:
+- Background: #E2E8F0 (light) / #1F1F25 (dark)
+- Padding: 2px 8px
+- Border-radius: 4px
+- Color: #64748B (light) / #71717A (dark)
+
+Content:
+- "Enter" kbd + "Next" text
+- "•" separator
+- "Esc" kbd + "Back" text
+
+=== VALIDATION LOGIC ===
+
+Next button enabled when:
+- environmentPrompt.length > 5 (more than 5 characters)
+
+Next button disabled when:
+- environmentPrompt is empty or <= 5 characters
+
+=== STATE MANAGEMENT ===
+
+State variable:
+- environmentPrompt: string (initially empty "")
+
+Template click:
+- Sets environmentPrompt to template.prompt value
+
+Textarea change:
+- Updates environmentPrompt with textarea value
+
+Selection logic:
+- Template is visually selected if environmentPrompt === template.prompt
+- If user modifies text, template deselects (no match)
+
+=== KEYBOARD NAVIGATION ===
+
+Enter key:
+- If validation passes, proceed to next step (Colors)
+- If in textarea, allow newline (don't proceed)
+
+Escape key:
+- Go back to previous step (Style)
+
+=== RESPONSIVE BEHAVIOR ===
+
+Desktop/Laptop:
+- 3-column template grid
+- Full width textarea
+
+Tablet:
+- 3-column template grid
+- Full width textarea
+
+Mobile:
+- 2-column template grid
+- Full width textarea
+- Compact padding
+
+=== COLOR TOKENS ===
+
+Light Mode:
+- Background: #F8FAFC
+- Card: #FFFFFF
+- Border: #E2E8F0
+- Text Primary: #1E293B
+- Text Secondary: #475569
+- Text Muted: #94A3B8
+- Primary: #4F46E5
+- Primary Hover: #4338CA
+- Selected BG: #EEF2FF
+- Selected Border: #A5B4FC
+
+Dark Mode:
+- Background: #0A0A0B
+- Card: #111113
+- Surface: #1A1A1F
+- Border: #1F1F23
+- Border Hover: #2A2A30
+- Text Primary: #FAFAFA
+- Text Secondary: #A1A1AA
+- Text Muted: #71717A
+- Primary: #4F46E5
+- Selected BG: rgba(79, 70, 229, 0.2)
+
+=== TYPOGRAPHY ===
+
+Section labels: 14px, bold
+Template names: 14px, medium
+Textarea: 16px, regular
+Helper text: 12px, regular
+Kbd: 12px, regular
+
+=== ICONS USED (Lucide) ===
+
+Progress bar:
+- Upload, ShoppingBag, Building2, Sparkles, MapPin, Palette, Camera, Wand2, Repeat
+
+Templates:
+- Building (Urban Street)
+- Camera (Studio Clean)
+- Trees (Outdoor Nature)
+- Coffee (Coffee Shop)
+- Dumbbell (Gym/Athletic)
+- Sun (Beach/Summer)
+
+Navigation:
+- ChevronLeft (Back)
+- ChevronRight (Next)
