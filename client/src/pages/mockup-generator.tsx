@@ -27,6 +27,8 @@ import {
   User,
   Users,
   UserCheck
+  Plus,
+  CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -72,6 +74,24 @@ export default function MockupGenerator() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [environmentPrompt, setEnvironmentPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedColors, setSelectedColors] = useState<string[]>(["White"]);
+  const [customColor, setCustomColor] = useState("#3b82f6");
+
+  const toggleColor = (colorName: string) => {
+    if (selectedColors.includes(colorName)) {
+      if (selectedColors.length > 1) {
+        setSelectedColors(selectedColors.filter(c => c !== colorName));
+      }
+    } else {
+      setSelectedColors([...selectedColors, colorName]);
+    }
+  };
+
+  const addCustomColor = () => {
+    if (!selectedColors.includes("Custom")) {
+      setSelectedColors([...selectedColors, "Custom"]);
+    }
+  };
   const [generatedMockups, setGeneratedMockups] = useState<string[]>([]);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStage, setGenerationStage] = useState("");
@@ -421,8 +441,10 @@ export default function MockupGenerator() {
                                 {/* Color Selection */}
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Color</label>
-                                    <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">White</span>
+                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Colors ({selectedColors.length})</label>
+                                    <span className="text-[10px] font-medium text-muted-foreground truncate max-w-[100px]">
+                                      {selectedColors.join(", ")}
+                                    </span>
                                   </div>
                                   <div className="grid grid-cols-4 gap-2">
                                     {[
@@ -434,18 +456,64 @@ export default function MockupGenerator() {
                                       { name: "Forest", class: "bg-green-800 border-green-800" },
                                       { name: "Royal", class: "bg-blue-600 border-blue-600" },
                                       { name: "Maroon", class: "bg-red-900 border-red-900" },
-                                    ].map((color, i) => (
+                                    ].map((color) => (
                                       <div 
                                         key={color.name}
+                                        onClick={() => toggleColor(color.name)}
                                         className="group relative aspect-square rounded-lg border cursor-pointer transition-all hover:border-indigo-500 flex items-center justify-center"
                                       >
                                         <div className={cn(
-                                          "h-6 w-6 rounded-full border shadow-sm transition-transform group-hover:scale-110",
-                                          color.class,
-                                          i === 0 ? "ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-background scale-110" : ""
-                                        )} />
+                                          "h-6 w-6 rounded-full border shadow-sm transition-transform group-hover:scale-110 relative",
+                                          color.class
+                                        )}>
+                                          {selectedColors.includes(color.name) && (
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                              <CheckCircle2 className={cn(
+                                                "h-3.5 w-3.5", 
+                                                ["White", "Grey"].includes(color.name) ? "text-black" : "text-white"
+                                              )} />
+                                            </div>
+                                          )}
+                                        </div>
+                                        {selectedColors.includes(color.name) && (
+                                          <div className="absolute -inset-px border-2 border-indigo-600 rounded-lg pointer-events-none" />
+                                        )}
                                       </div>
                                     ))}
+                                    
+                                    {/* Custom Color Button */}
+                                    <div className="relative aspect-square">
+                                      <div 
+                                        onClick={addCustomColor}
+                                        className={cn(
+                                          "w-full h-full rounded-lg border cursor-pointer transition-all hover:border-indigo-500 flex items-center justify-center overflow-hidden relative",
+                                          selectedColors.includes("Custom") ? "border-indigo-600 ring-1 ring-indigo-600" : "border-dashed border-border hover:bg-accent"
+                                        )}
+                                      >
+                                        {selectedColors.includes("Custom") ? (
+                                          <>
+                                            <div 
+                                              className="absolute inset-0" 
+                                              style={{ backgroundColor: customColor }}
+                                            />
+                                            <input 
+                                              type="color" 
+                                              value={customColor}
+                                              onChange={(e) => setCustomColor(e.target.value)}
+                                              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                              <CheckCircle2 className="h-3.5 w-3.5 text-white drop-shadow-md" />
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <div className="flex flex-col items-center gap-1">
+                                            <Plus className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-[8px] font-bold uppercase text-muted-foreground">Custom</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
 
