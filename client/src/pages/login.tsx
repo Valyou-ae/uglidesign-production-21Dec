@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
+import logo from "@assets/minimal-modern-wordmark-logo-text-ugli-i_7VuJ3CXPRueyRNWmv9BnCw_YaTvFRB9TpS_XzP-6PzYkA-removebg-preview_1764450493822.png";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -51,9 +52,7 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center shadow-2xl shadow-purple-500/30 mb-8">
-              <div className="h-8 w-8 bg-white/20 rounded-lg backdrop-blur-sm" />
-            </div>
+            <img src={logo} alt="Logo" className="h-24 mb-8 object-contain drop-shadow-2xl" />
             
             <h1 className="text-5xl font-bold text-white mb-6 leading-tight">
               Unleash your <br />
@@ -108,9 +107,7 @@ export default function Login() {
         <div className="w-full max-w-[440px] space-y-8">
           
           <div className="text-center lg:text-left">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 flex lg:hidden items-center justify-center shadow-lg shadow-purple-500/20 mx-auto mb-6">
-              <div className="h-5 w-5 bg-white/20 rounded-md backdrop-blur-sm" />
-            </div>
+            <img src={logo} alt="Logo" className="h-12 lg:hidden mx-auto mb-6 object-contain" />
             <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
             <p className="text-muted-foreground mt-2">
               Enter your credentials to access your account
