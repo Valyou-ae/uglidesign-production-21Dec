@@ -481,6 +481,26 @@ export default function ImageGenerator() {
 
                 {/* Right Side Actions inside Input - Bottom Aligned */}
                 <div className="flex items-center gap-1 mb-0.5 shrink-0 self-end">
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant={isListening ? "destructive" : "ghost"} 
+                          size="icon" 
+                          onClick={toggleVoiceInput}
+                          className={cn(
+                            "h-9 w-9 rounded-lg transition-all",
+                            isListening && "animate-pulse"
+                          )}
+                        >
+                          {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent><p>{isListening ? "Stop Listening" : "Voice Input"}</p></TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
                   {/* Generate Button (Visible only when typing) */}
                   <AnimatePresence>
                     {prompt.trim().length > 0 && (
@@ -505,25 +525,6 @@ export default function ImageGenerator() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant={isListening ? "destructive" : "ghost"} 
-                          size="icon" 
-                          onClick={toggleVoiceInput}
-                          className={cn(
-                            "h-9 w-9 rounded-lg transition-all",
-                            isListening && "animate-pulse"
-                          )}
-                        >
-                          {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent><p>{isListening ? "Stop Listening" : "Voice Input"}</p></TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
 
                   <TooltipProvider>
                     <Tooltip>
