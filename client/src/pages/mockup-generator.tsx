@@ -75,7 +75,7 @@ export default function MockupGenerator() {
   const [environmentPrompt, setEnvironmentPrompt] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>(["White"]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [customColor, setCustomColor] = useState("#ffffff");
+  const [customColors, setCustomColors] = useState<string[]>([]);
   const [generatedMockups, setGeneratedMockups] = useState<string[]>([]);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStage, setGenerationStage] = useState("");
@@ -468,28 +468,50 @@ export default function MockupGenerator() {
                                         </div>
                                       );
                                     })}
+
+                                    {/* Custom Colors */}
+                                    {customColors.map((color, i) => {
+                                      const isSelected = selectedColors.includes(color);
+                                      return (
+                                        <div 
+                                          key={`custom-${i}`}
+                                          onClick={() => {
+                                            if (isSelected) {
+                                              setSelectedColors(selectedColors.filter(c => c !== color));
+                                            } else {
+                                              setSelectedColors([...selectedColors, color]);
+                                            }
+                                          }}
+                                          className="group relative aspect-square rounded-lg border cursor-pointer transition-all hover:border-indigo-500 flex items-center justify-center"
+                                        >
+                                          <div 
+                                            className={cn(
+                                              "h-6 w-6 rounded-full border shadow-sm transition-transform group-hover:scale-110",
+                                              isSelected ? "ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-background scale-110" : ""
+                                            )} 
+                                            style={{ backgroundColor: color }}
+                                          />
+                                          {isSelected && (
+                                            <div className="absolute -top-1 -right-1 bg-indigo-600 rounded-full p-0.5 border-2 border-background">
+                                              <CheckIcon className="h-2 w-2 text-white" />
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
                                     
-                                    {/* Custom Color Button */}
+                                    {/* Add Custom Color Button */}
                                     <div className="relative aspect-square rounded-lg border-2 border-dashed border-border hover:border-indigo-500 cursor-pointer transition-colors flex items-center justify-center group">
                                       <input 
                                         type="color" 
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                        value={customColor}
                                         onChange={(e) => {
                                           const newColor = e.target.value;
-                                          setCustomColor(newColor);
-                                          if (!selectedColors.includes("Custom")) {
-                                            setSelectedColors([...selectedColors, "Custom"]);
-                                          }
+                                          setCustomColors([...customColors, newColor]);
+                                          setSelectedColors([...selectedColors, newColor]);
                                         }}
                                       />
                                       <Plus className="h-4 w-4 text-muted-foreground group-hover:text-indigo-500" />
-                                      {selectedColors.includes("Custom") && (
-                                        <div 
-                                          className="absolute inset-0 m-2 rounded-full border shadow-sm pointer-events-none"
-                                          style={{ backgroundColor: customColor }}
-                                        />
-                                      )}
                                     </div>
                                   </div>
                                 </div>
