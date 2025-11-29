@@ -22,7 +22,7 @@ export default function Login() {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      setLocation("/");
+      setLocation("/home");
     }, 1500);
   };
 
@@ -30,7 +30,7 @@ export default function Login() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      setLocation("/");
+      setLocation("/home");
     }, 1500);
   };
 
@@ -119,10 +119,10 @@ export default function Login() {
 
           <div className="grid gap-6">
             {/* Social Login Buttons */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <Button 
                 variant="outline" 
-                className="h-12 rounded-xl border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                className="h-12 rounded-xl border-input bg-background hover:bg-accent hover:text-accent-foreground w-full"
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
               >
@@ -145,14 +145,6 @@ export default function Login() {
                   />
                 </svg>
                 Google
-              </Button>
-              <Button 
-                variant="outline" 
-                className="h-12 rounded-xl border-input bg-background hover:bg-accent hover:text-accent-foreground"
-                disabled={isLoading}
-              >
-                <Github className="mr-2 h-5 w-5" />
-                GitHub
               </Button>
             </div>
 
