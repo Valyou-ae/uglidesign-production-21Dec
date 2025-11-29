@@ -98,7 +98,8 @@ export default function MockupGenerator() {
   const [journey, setJourney] = useState<JourneyType>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>("Men's Clothing");
+  const [activeCategory, setActiveCategory] = useState<string>("Men's Clothing");
+  const [selectedProductType, setSelectedProductType] = useState<string | null>(null);
   const [environmentPrompt, setEnvironmentPrompt] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>(["White"]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["L"]);
@@ -496,48 +497,24 @@ export default function MockupGenerator() {
                                   ] 
                                 }
                               ].map((cat) => {
-                                const isExpanded = expandedCategory === cat.name;
+                                const isActive = activeCategory === cat.name;
                                 return (
-                                  <div key={cat.name} className="space-y-1">
-                                    <button 
-                                      onClick={() => setExpandedCategory(isExpanded ? null : cat.name)}
-                                      className={cn(
-                                        "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                                        isExpanded 
-                                          ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" 
-                                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                      )}
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <cat.icon className="h-4 w-4" />
-                                        {cat.name}
-                                      </div>
-                                      {isExpanded ? (
-                                        <ChevronDown className="h-4 w-4 opacity-50" />
-                                      ) : (
-                                        <ChevronRight className="h-4 w-4 opacity-30" />
-                                      )}
-                                    </button>
-
-                                    {isExpanded && cat.items && cat.items.length > 0 && (
-                                      <motion.div 
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="pl-4 space-y-0.5 pt-1 overflow-hidden"
-                                      >
-                                        {cat.items.map((item) => (
-                                          <button 
-                                            key={item.name}
-                                            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors group"
-                                          >
-                                            <item.icon className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100 group-hover:text-indigo-600 transition-colors" />
-                                            {item.name}
-                                          </button>
-                                        ))}
-                                      </motion.div>
+                                  <button 
+                                    key={cat.name}
+                                    onClick={() => setActiveCategory(cat.name)}
+                                    className={cn(
+                                      "w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                                      isActive 
+                                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20" 
+                                        : "bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border"
                                     )}
-                                  </div>
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <cat.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-muted-foreground")} />
+                                      {cat.name}
+                                    </div>
+                                    {isActive && <ChevronRight className="h-4 w-4 opacity-80" />}
+                                  </button>
                                 );
                               })}
                             </div>
@@ -549,19 +526,121 @@ export default function MockupGenerator() {
                               <ShoppingBag className="h-4 w-4 text-indigo-600" />
                               <h3 className="text-lg font-bold">Choose Product</h3>
                             </div>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                              {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="group relative border border-border rounded-xl p-4 cursor-pointer hover:border-indigo-600 hover:shadow-lg transition-all">
-                                  <div className="aspect-[3/4] bg-muted rounded-lg mb-3 relative overflow-hidden">
-                                    {/* Placeholder for product image */}
-                                    <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-indigo-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                      <Check className="h-3 w-3" />
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 h-[500px] overflow-y-auto pr-2 pb-4 content-start">
+                              {[
+                                { 
+                                  name: "Men's Clothing", 
+                                  items: [
+                                    { name: "T-shirts", icon: Shirt },
+                                    { name: "Polo shirts", icon: Award },
+                                    { name: "Tank tops", icon: Sun },
+                                    { name: "3/4 sleeve shirts", icon: MoveHorizontal },
+                                    { name: "Long sleeve shirts", icon: Wind },
+                                    { name: "Embroidered shirts", icon: Tag },
+                                    { name: "Jackets & vests", icon: Shield },
+                                    { name: "Hoodies", icon: Cloud },
+                                    { name: "Sweatshirts", icon: Layers },
+                                    { name: "Knitwear", icon: Grid },
+                                  ]
+                                },
+                                { 
+                                  name: "Women's Clothing", 
+                                  items: [
+                                    { name: "T-shirts", icon: Shirt },
+                                    { name: "Polo shirts", icon: Award },
+                                    { name: "Tank tops", icon: Sun },
+                                    { name: "Crop tops", icon: Scissors },
+                                    { name: "Embroidered shirts", icon: Tag },
+                                    { name: "3/4 sleeve shirts", icon: MoveHorizontal },
+                                    { name: "Long sleeve shirts", icon: Wind },
+                                    { name: "Dresses", icon: Umbrella }, 
+                                    { name: "Knitwear", icon: Grid },
+                                    { name: "Jackets", icon: Shield },
+                                    { name: "Hoodies", icon: Cloud },
+                                    { name: "Sweatshirts", icon: Layers },
+                                  ]
+                                },
+                                { 
+                                  name: "Kids' Clothing", 
+                                  items: [
+                                    { name: "T-shirts", icon: Shirt },
+                                    { name: "All-over shirts", icon: Grid },
+                                    { name: "3/4 sleeve shirts", icon: MoveHorizontal },
+                                    { name: "Long sleeve shirts", icon: Wind },
+                                    { name: "Hoodies", icon: Cloud },
+                                    { name: "Sweatshirts", icon: Layers },
+                                    { name: "Hats", icon: Smile }, 
+                                    { name: "Leggings", icon: Layers },
+                                    { name: "Baby bodysuits", icon: Baby },
+                                  ] 
+                                }, 
+                                { 
+                                  name: "Accessories", 
+                                  items: [
+                                    { name: "Tote bags", icon: ShoppingBag },
+                                    { name: "Duffle bags", icon: ShoppingBag },
+                                    { name: "Drawstring bags", icon: ShoppingBag },
+                                    { name: "Backpacks", icon: ShoppingBag },
+                                    { name: "Handbags", icon: ShoppingBag },
+                                    { name: "Flip flops", icon: Footprints },
+                                    { name: "Shoes", icon: Footprints },
+                                    { name: "Socks", icon: Footprints },
+                                    { name: "Phone cases", icon: Smartphone },
+                                    { name: "Laptop cases", icon: Laptop },
+                                    { name: "Mouse pads", icon: Monitor },
+                                    { name: "Face masks", icon: Smile },
+                                  ] 
+                                },
+                                { 
+                                  name: "Home & Living", 
+                                  items: [
+                                    { name: "Wall art", icon: Frame },
+                                    { name: "Posters", icon: StickyNote },
+                                    { name: "Framed posters", icon: Frame },
+                                    { name: "Blankets", icon: Layers },
+                                    { name: "Pillow cases", icon: Layers },
+                                    { name: "Magnets", icon: StickyNote },
+                                    { name: "Tableware", icon: Utensils },
+                                    { name: "Water bottles", icon: Coffee },
+                                    { name: "Mugs", icon: Coffee },
+                                    { name: "Tumblers", icon: Coffee },
+                                    { name: "Coasters", icon: Coffee },
+                                    { name: "Postcards", icon: StickyNote },
+                                    { name: "Notebooks", icon: BookOpen },
+                                    { name: "Stickers", icon: StickyNote },
+                                    { name: "Aprons", icon: Scissors },
+                                    { name: "Towels", icon: Layers },
+                                  ] 
+                                }
+                              ].find(c => c.name === activeCategory)?.items.map((item) => {
+                                const isSelected = selectedProductType === item.name;
+                                return (
+                                  <div 
+                                    key={item.name} 
+                                    onClick={() => setSelectedProductType(item.name)}
+                                    className={cn(
+                                      "group relative border rounded-xl p-4 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-3 h-[140px]",
+                                      isSelected 
+                                        ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-sm" 
+                                        : "border-border hover:border-indigo-300 hover:shadow-md bg-card"
+                                    )}
+                                  >
+                                    <div className={cn(
+                                      "h-12 w-12 rounded-full flex items-center justify-center transition-colors",
+                                      isSelected ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300" : "bg-muted text-muted-foreground group-hover:text-indigo-600 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20"
+                                    )}>
+                                      <item.icon className="h-6 w-6" />
                                     </div>
+                                    <p className={cn("font-medium text-sm", isSelected ? "text-indigo-700 dark:text-indigo-300" : "text-foreground")}>{item.name}</p>
+                                    
+                                    {isSelected && (
+                                      <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                                        <Check className="h-3 w-3" />
+                                      </div>
+                                    )}
                                   </div>
-                                  <p className="font-bold text-sm">Classic Tee</p>
-                                  <p className="text-xs text-muted-foreground">Gildan 5000</p>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
 
