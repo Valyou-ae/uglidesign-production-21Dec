@@ -54,7 +54,12 @@ import {
   Shield,
   Watch,
   Frame,
-  Timer
+  Timer,
+  PersonStanding,
+  View,
+  Combine,
+  Search,
+  Maximize2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -94,6 +99,13 @@ type WizardStep =
 const DTG_STEPS: WizardStep[] = ["upload", "product", "style", "scene", "angles", "generate"];
 const AOP_STEPS: WizardStep[] = ["upload", "seamless", "product", "style", "scene", "angles", "generate"];
 
+const MOCKUP_ANGLES = [
+  { id: 'front', name: 'Front View', description: 'Direct frontal shot - the hero image.', icon: PersonStanding, recommended: true },
+  { id: 'three-quarter', name: 'Three-Quarter', description: '45° angle to show dimension and fit.', icon: View, recommended: true },
+  { id: 'side', name: 'Side Profile', description: '90° side view to showcase silhouette.', icon: Combine, recommended: false },
+  { id: 'closeup', name: 'Close-up View', description: 'Detailed shot of the design and fabric.', icon: Search, recommended: true },
+];
+
 export default function MockupGenerator() {
   const [journey, setJourney] = useState<JourneyType>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -103,6 +115,7 @@ export default function MockupGenerator() {
   const [environmentPrompt, setEnvironmentPrompt] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>(["White"]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["L"]);
+  const [selectedAngles, setSelectedAngles] = useState<string[]>(["front"]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedMockups, setGeneratedMockups] = useState<string[]>([]);
   const [generationProgress, setGenerationProgress] = useState(0);
@@ -763,14 +776,184 @@ export default function MockupGenerator() {
                         </div>
                       )}
 
-                      {/* Placeholder for other steps to keep code concise */}
-                      {["seamless", "angles"].includes(currentStep) && (
+                      {currentStep === "seamless" && (
                         <div className="flex flex-col items-center justify-center h-full text-center">
-                          <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mb-4">
-                            <Wand2 className="h-10 w-10 text-muted-foreground" />
+                           <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mb-4">
+                             <Repeat className="h-10 w-10 text-muted-foreground" />
+                           </div>
+                           <h2 className="text-2xl font-bold mb-2">Seamless Pattern</h2>
+                           <p className="text-muted-foreground">Upload or generate your seamless pattern here.</p>
+                           <Button onClick={handleNext} className="mt-4">Next Step</Button>
+                        </div>
+                      )}
+
+                      {currentStep === "angles" && (
+                        <div className="flex flex-col h-full overflow-hidden animate-fade-in">
+                          <div className="flex-1 flex flex-col overflow-hidden">
+                            {/* Header */}
+                            <div className="mb-6 shrink-0">
+                               <div className="flex items-start gap-3 mb-4">
+                                 <PersonStanding className="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                                 <div>
+                                   <h2 className="text-base font-bold text-foreground mb-1">Choose Camera Angles</h2>
+                                   <p className="text-xs text-muted-foreground">Select the angles for your photoshoot. More angles provide a more comprehensive product view.</p>
+                                 </div>
+                               </div>
+                               
+                               {/* Bulk Actions */}
+                               <div className="flex gap-2">
+                                 <button 
+                                   onClick={() => setSelectedAngles(MOCKUP_ANGLES.map(a => a.id))}
+                                   disabled={selectedAngles.length === MOCKUP_ANGLES.length}
+                                   className="px-4 py-2 text-sm font-medium bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                 >
+                                   Select All
+                                 </button>
+                                 <button 
+                                   onClick={() => setSelectedAngles([])}
+                                   disabled={selectedAngles.length === 0}
+                                   className="px-4 py-2 text-sm font-medium bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                 >
+                                   Clear All
+                                 </button>
+                               </div>
+                            </div>
+
+                            {/* Grid */}
+                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-4">
+                                {MOCKUP_ANGLES.map((angle) => {
+                                  const isSelected = selectedAngles.includes(angle.id);
+                                  return (
+                                    <div
+                                      key={angle.id}
+                                      onClick={() => {
+                                        if (isSelected) {
+                                          setSelectedAngles(selectedAngles.filter(id => id !== angle.id));
+                                        } else {
+                                          setSelectedAngles([...selectedAngles, angle.id]);
+                                        }
+                                      }}
+                                      className={cn(
+                                        "relative p-4 rounded-xl border-2 text-left transition-all duration-200 flex flex-col justify-between cursor-pointer min-h-[140px]",
+                                        isSelected 
+                                          ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-md shadow-indigo-500/10" 
+                                          : "border-border bg-card hover:border-indigo-300 dark:hover:border-indigo-700"
+                                      )}
+                                    >
+                                      {/* Top Section */}
+                                      <div>
+                                        <div className="flex justify-between items-start mb-3">
+                                          <div className={cn(
+                                            "p-2 rounded-lg transition-colors",
+                                            isSelected ? "bg-indigo-100 dark:bg-indigo-900/40" : "bg-muted"
+                                          )}>
+                                            <angle.icon className={cn(
+                                              "h-5 w-5",
+                                              isSelected ? "text-indigo-600 dark:text-indigo-400" : "text-muted-foreground"
+                                            )} />
+                                          </div>
+                                          {angle.recommended && (
+                                            <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold uppercase border-0">
+                                              Recommended
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        
+                                        <h3 className={cn(
+                                          "text-sm font-bold mb-1 transition-colors",
+                                          isSelected ? "text-indigo-900 dark:text-indigo-100" : "text-foreground"
+                                        )}>
+                                          {angle.name}
+                                        </h3>
+                                        <p className={cn(
+                                          "text-xs transition-colors",
+                                          isSelected ? "text-indigo-700 dark:text-indigo-300" : "text-muted-foreground"
+                                        )}>
+                                          {angle.description}
+                                        </p>
+                                      </div>
+
+                                      {/* Bottom Section */}
+                                      <div className="mt-3 flex justify-end">
+                                        <div className={cn(
+                                          "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all",
+                                          isSelected 
+                                            ? "border-indigo-600 bg-indigo-600" 
+                                            : "border-muted-foreground/30 bg-background"
+                                        )}>
+                                          {isSelected && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            
+                            {/* Bottom Controls */}
+                            <div className="pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 mt-auto shrink-0">
+                              <div className="flex gap-2 w-full sm:w-auto">
+                                <button
+                                  onClick={() => setSelectedAngles(['front', 'three-quarter'])}
+                                  className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
+                                >
+                                  Standard Pack (2)
+                                </button>
+                                <button
+                                  onClick={() => setSelectedAngles(MOCKUP_ANGLES.map(a => a.id))}
+                                  className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-bold bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-colors"
+                                >
+                                  Full Collection ({MOCKUP_ANGLES.length})
+                                </button>
+                              </div>
+                              
+                              {selectedAngles.length > 0 && (
+                                <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-lg px-3 py-2 text-xs font-medium w-full sm:w-auto text-center shadow-lg">
+                                  <span className="font-bold text-indigo-300">{selectedAngles.length}</span> Angles × <span className="font-bold text-indigo-300">{selectedColors.length}</span> Colors = <span className="font-bold text-green-400">{selectedAngles.length * selectedColors.length}</span> Total Mockups
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <h2 className="text-2xl font-bold mb-2">Step: {currentStep}</h2>
-                          <p className="text-muted-foreground">This step content would be fully implemented here.</p>
+
+                          {/* Footer Navigation */}
+                          <div className="mt-6 pt-6 border-t border-border flex flex-col gap-2 shrink-0">
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    variant="ghost"
+                                    onClick={handleBack}
+                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                    Back
+                                </Button>
+                                <Button
+                                    onClick={handleNext}
+                                    disabled={selectedAngles.length === 0}
+                                    className={cn(
+                                        "gap-2 px-6 transition-all",
+                                        selectedAngles.length > 0
+                                            ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
+                                            : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
+                                    )}
+                                >
+                                    Next Step
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            
+                            <div className="flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
+                                <span className="flex items-center gap-1">
+                                    <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Enter</kbd> 
+                                    Next
+                                </span>
+                                <span className="mx-1">•</span>
+                                <span className="flex items-center gap-1">
+                                    <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Esc</kbd> 
+                                    Back
+                                </span>
+                            </div>
+                          </div>
                         </div>
                       )}
 

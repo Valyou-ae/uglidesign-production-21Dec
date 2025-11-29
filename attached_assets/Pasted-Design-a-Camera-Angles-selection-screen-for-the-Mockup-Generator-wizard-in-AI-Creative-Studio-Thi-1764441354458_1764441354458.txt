@@ -1,0 +1,590 @@
+Design a Camera Angles selection screen for the Mockup Generator wizard in "AI Creative Studio". This is Step 5 in the DTG journey (8 steps total) and Step 6 in the AOP journey (9 steps total). Users select one or more camera angles for their product mockup photoshoot. This is a multi-select interface. Follow the established wizard layout. Dark/light theme support. Use Lucide icons - NO emojis.
+
+=== PAGE STRUCTURE ===
+Full viewport height
+Layout: Fixed left sidebar (280px) + Main wizard content area
+Background: #0A0A0B (dark) / #F8F8F8 (light)
+
+=== LEFT SIDEBAR ===
+Same as other mockup generator screens
+- "Mockup Generator" nav item ACTIVE (indigo highlight #4F46E5)
+
+=== MAIN CONTENT AREA ===
+Display: flex
+Flex-direction: column
+Height: 100vh
+Overflow: hidden
+
+=== TOP: WIZARD PROGRESS BAR ===
+Position: sticky
+Top: 0
+Background: #111113 (dark) / #FFFFFF (light)
+Border-bottom: 1px solid #1F1F23 (dark) / #E4E4E7 (light)
+Padding: 20px 40px
+Z-index: 50
+
+--- Progress Steps ---
+Display: flex
+Justify-content: space-between
+Align-items: center
+Position: relative
+
+Progress line background:
+- Position: absolute
+- Height: 4px
+- Background: #1F1F25 (dark) / #E2E8F0 (light)
+- Top: 50%
+- Transform: translateY(-50%)
+- Width: 100%
+- Z-index: -1
+
+Progress line fill:
+- Position: absolute
+- Height: 4px
+- Background: #4F46E5
+- Top: 50%
+- Transform: translateY(-50%)
+- Width: Based on current step percentage (Step 5 of 8 = ~57%)
+- Z-index: -1
+- Transition: width 300ms
+
+DTG Steps (8 total) - NEW ORDER:
+1. Upload (Upload icon) - Completed
+2. Product (ShoppingBag icon) - Completed
+3. Platform (Building2 icon) - Completed
+4. Style (Sparkles icon) - Completed
+5. Angles (Camera icon) - CURRENT ACTIVE
+6. Scene (MapPin icon) - Upcoming
+7. Colors (Palette icon) - Upcoming
+8. Generate (Wand2 icon) - Upcoming
+
+AOP Steps (9 total) - NEW ORDER:
+1. Upload (Upload icon) - Completed
+2. Seamless (Repeat icon) - Completed
+3. Product (ShoppingBag icon) - Completed
+4. Platform (Building2 icon) - Completed
+5. Style (Sparkles icon) - Completed
+6. Angles (Camera icon) - CURRENT ACTIVE
+7. Scene (MapPin icon) - Upcoming
+8. Colors (Palette icon) - Upcoming
+9. Generate (Wand2 icon) - Upcoming
+
+Each step node:
+- Circle: 32px diameter
+- Icon inside: 16px
+- Label below: 10px, bold, uppercase
+
+Step states:
+- Completed: bg #4F46E5, border #4F46E5, icon white
+- Current: bg #4F46E5, border #4F46E5, icon white
+- Upcoming: bg white (light) / #1F1F25 (dark), border #D1D5DB (light) / #3A3A40 (dark), icon #9CA3AF
+
+Tooltip on hover for Angles step:
+- "Choose the camera angles for the shots."
+
+=== MIDDLE: ANGLES CONTENT ===
+Flex: 1
+Overflow: hidden
+Padding: 24px
+Display: flex
+Flex-direction: column
+Gap: 24px
+
+--- Section Header ---
+Display: flex
+Align-items: flex-start
+Gap: 12px
+
+Icon:
+- PersonStanding icon (same as first angle's icon)
+- Width: 20px
+- Height: 20px
+- Color: #4F46E5
+- Margin-top: 2px
+- Flex-shrink: 0
+
+Text content:
+
+Title:
+- "Choose Camera Angles" - 16px, bold, #1E293B (light) / #F1F5F9 (dark)
+- Margin-bottom: 4px
+
+Description:
+- "Select the angles for your photoshoot. More angles provide a more comprehensive product view."
+- Font: 12px, #64748B (light) / #94A3B8 (dark)
+
+--- Bulk Action Buttons ---
+Display: flex
+Gap: 8px
+
+"Select All" button:
+- Padding: 8px 16px
+- Font: 14px, medium
+- Background: #E0E7FF (light) / #4F46E5/20 (dark)
+- Color: #4338CA (light) / #A5B4FC (dark)
+- Border-radius: 8px
+- Hover: bg #C7D2FE (light) / #4F46E5/30 (dark)
+- Disabled state (when all selected): opacity 0.5, cursor not-allowed
+
+"Clear All" button:
+- Padding: 8px 16px
+- Font: 14px, medium
+- Background: #F1F5F9 (light) / #1F1F25 (dark)
+- Color: #475569 (light) / #94A3B8 (dark)
+- Border-radius: 8px
+- Hover: bg #E2E8F0 (light) / #2A2A30 (dark)
+- Disabled state (when none selected): opacity 0.5, cursor not-allowed
+
+--- Angles Grid ---
+Display: grid
+Grid-template-columns: repeat(2, 1fr) at md breakpoint, 1 column on mobile
+Gap: 12px
+Flex: 1
+Overflow-y: auto
+Padding-right: 8px (for scrollbar spacing)
+Custom scrollbar styling
+
+=== ANGLE CARDS (5 Total, but Size Chart conditional) ===
+
+Each angle card is a button with multi-select toggle behavior.
+
+--- Angle Card Structure ---
+Position: relative
+Padding: 16px
+Border-radius: 12px
+Border: 2px solid
+Text-align: left
+Transition: all 200ms
+Height: 100% (fill grid cell)
+Display: flex
+Flex-direction: column
+Justify-content: space-between
+Cursor: pointer
+
+Unselected state:
+- Border-color: #E2E8F0 (light) / #2A2A30 (dark)
+- Background: #FFFFFF (light) / #111113 (dark)
+- Hover: border-color #A5B4FC (light) / #4F46E5/50 (dark)
+
+Selected state:
+- Border-color: #4F46E5
+- Background: #EEF2FF (light) / #4F46E5/10 (dark)
+- Box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15)
+
+--- Card Top Section ---
+
+Header row:
+- Display: flex
+- Justify-content: space-between
+- Align-items: center
+- Margin-bottom: 8px
+
+Icon container:
+- Padding: 8px
+- Border-radius: 8px
+- Unselected: bg #F1F5F9 (light) / #1F1F25 (dark)
+- Selected: bg #E0E7FF (light) / #4F46E5/20 (dark)
+
+Icon:
+- Width: 20px
+- Height: 20px
+- Unselected: color #64748B (light) / #71717A (dark)
+- Selected: color #4F46E5
+
+"Recommended" badge (on recommended angles only):
+- Font: 10px, bold, uppercase
+- Padding: 2px 8px
+- Background: #DCFCE7 (light) / #16A34A/20 (dark)
+- Color: #166534 (light) / #4ADE80 (dark)
+- Border-radius: 9999px
+
+Angle name:
+- Font: 14px, bold
+- Unselected: color #1E293B (light) / #F1F5F9 (dark)
+- Selected: color #312E81 (light) / #E0E7FF (dark)
+- Margin-bottom: 4px
+
+Angle description:
+- Font: 12px
+- Unselected: color #64748B (light) / #94A3B8 (dark)
+- Selected: color #4338CA (light) / #A5B4FC (dark)
+
+--- Card Bottom Section ---
+Margin-top: 12px
+
+Checkbox indicator:
+- Width: 20px
+- Height: 20px
+- Border-radius: 9999px (full circle)
+- Border: 2px solid
+- Display: flex
+- Align-items: center
+- Justify-content: center
+
+Unselected:
+- Border-color: #CBD5E1 (light) / #3A3A40 (dark)
+- Background: #FFFFFF (light) / #111113 (dark)
+
+Selected:
+- Border-color: #4F46E5
+- Background: #4F46E5
+
+Checkmark icon (when selected):
+- Check icon from Lucide
+- Width: 12px
+- Height: 12px
+- Color: white
+- Stroke-width: 3
+
+=== 5 ANGLE CARDS DATA (Exact from Project) ===
+
+Card 1 - Front View:
+- ID: 'front'
+- Icon: PersonStanding
+- Name: "Front View"
+- Description: "Direct frontal shot - the hero image."
+- Recommended: TRUE (show badge)
+
+Card 2 - Three-Quarter:
+- ID: 'three-quarter'
+- Icon: View
+- Name: "Three-Quarter"
+- Description: "45° angle to show dimension and fit."
+- Recommended: TRUE (show badge)
+
+Card 3 - Side Profile:
+- ID: 'side'
+- Icon: Combine
+- Name: "Side Profile"
+- Description: "90° side view to showcase silhouette."
+- Recommended: FALSE (no badge)
+
+Card 4 - Close-up View:
+- ID: 'closeup'
+- Icon: Search
+- Name: "Close-up View"
+- Description: "Detailed shot of the design and fabric."
+- Recommended: TRUE (show badge)
+
+Card 5 - Size Chart (CONDITIONAL):
+- ID: 'size-chart'
+- Icon: Shirt
+- Name: "Size Chart"
+- Description: "A graphic for Amazon listings."
+- Recommended: FALSE (no badge)
+- CONDITION: Only show this card if selectedPlatform === 'amazon'
+- If platform is NOT Amazon, hide this card completely
+
+=== BOTTOM SECTION (Inside Content Area) ===
+Display: flex
+Flex-direction: column at mobile, row at sm breakpoint
+Gap: 12px
+Align-items: center
+Justify-content: space-between
+Padding-top: 16px
+Border-top: 1px solid #F1F5F9 (light) / #1F1F23 (dark)
+Flex-shrink: 0
+
+--- Quick Select Buttons (Left Side) ---
+Display: flex
+Gap: 8px
+
+"Standard Pack (2)" button:
+- Padding: 6px 12px
+- Font: 12px, bold
+- Background: #E0E7FF (light) / #4F46E5/20 (dark)
+- Color: #4338CA (light) / #A5B4FC (dark)
+- Border-radius: 6px
+- Hover: bg #C7D2FE (light) / #4F46E5/30 (dark)
+- Click action: Sets selectedAngles to ['front', 'three-quarter']
+
+"Full Collection (X)" button:
+- X = total available angles (4 or 5 depending on platform)
+- Padding: 6px 12px
+- Font: 12px, bold
+- Background: #F1F5F9 (light) / #1F1F25 (dark)
+- Color: #475569 (light) / #94A3B8 (dark)
+- Border-radius: 6px
+- Hover: bg #E2E8F0 (light) / #2A2A30 (dark)
+- Click action: Selects all available angles
+
+--- Mockup Counter (Right Side) ---
+Only shows when totalMockups > 0
+
+Container:
+- Background: #0F172A (light) / #18181B (dark)
+- Color: white
+- Border-radius: 8px
+- Padding: 8px 12px
+- Text-align: center
+
+Content:
+- Font: 12px, medium
+- Format: "{selectedAngles.length} Angles × {selectedColors.length} Colors = {totalMockups} Total Mockups"
+
+Styled numbers:
+- Angles count: font-bold, color #A5B4FC
+- Colors count: font-bold, color #A5B4FC
+- Total mockups: font-bold, color #4ADE80 (green)
+
+Calculation:
+- totalMockups = selectedAngles.length × selectedColors.length
+
+NOTE: Since Colors step now comes AFTER Angles in the new order, the counter may show:
+- If colors not yet selected: "{selectedAngles.length} Angles × 0 Colors = 0 Total Mockups"
+- Or hide the counter entirely until colors are selected
+- Alternative: Show only angles count "{selectedAngles.length} Angles selected"
+
+=== BOTTOM: NAVIGATION FOOTER ===
+Background: #F8FAFC (light) / #111113 (dark)
+Border-top: 1px solid #E2E8F0 (light) / #1F1F23 (dark)
+Padding: 12px 24px
+Flex-shrink: 0
+
+--- Footer Content ---
+Display: flex
+Flex-direction: column
+Gap: 8px
+
+--- Button Row ---
+Display: flex
+Justify-content: space-between
+Align-items: center
+
+Back button:
+- Display: flex
+- Align-items: center
+- Gap: 8px
+- Padding: 8px 16px
+- Border-radius: 8px
+- Font: 14px, medium
+- ChevronLeft icon, 16px
+- "Back" text
+- Color: #475569 (light) / #A1A1AA (dark)
+- Hover: bg #E2E8F0 (light) / #1F1F25 (dark)
+
+Next button:
+- Display: flex
+- Align-items: center
+- Gap: 8px
+- Padding: 10px 24px
+- Border-radius: 8px
+- Font: 14px, bold
+- Box-shadow: sm
+- "Next Step" text
+- ChevronRight icon, 16px
+
+Enabled state:
+- Background: #4F46E5
+- Color: white
+- Hover: bg #4338CA
+
+Disabled state (no angles selected):
+- Background: #E2E8F0 (light) / #1F1F25 (dark)
+- Color: #94A3B8 (light) / #52525B (dark)
+- Pointer-events: none
+
+--- Keyboard Hints ---
+Display: flex
+Justify-content: center
+Gap: 8px
+Font: 12px, #94A3B8 (light) / #52525B (dark)
+
+Kbd elements:
+- Background: #E2E8F0 (light) / #1F1F25 (dark)
+- Padding: 2px 8px
+- Border-radius: 4px
+- Color: #64748B (light) / #71717A (dark)
+
+Content:
+- "Enter" kbd + "Next" text
+- "•" separator
+- "Esc" kbd + "Back" text
+
+=== VALIDATION LOGIC ===
+
+Next button enabled when:
+- selectedAngles.length > 0 (at least one angle selected)
+
+Next button disabled when:
+- selectedAngles is empty (length === 0)
+
+=== STATE MANAGEMENT ===
+
+State variables:
+- selectedAngles: MockupAngle[] (array of angle IDs)
+- Initially set to: ['front'] (front view pre-selected)
+
+- selectedColors: ProductColor[] (may be empty since Colors step is now after Angles)
+- selectedPlatform: string (used to conditionally show Size Chart)
+
+Toggle behavior:
+- If angle is selected, clicking removes it from array
+- If angle is not selected, clicking adds it to array
+- Multiple angles can be selected simultaneously
+
+Select All:
+- Sets selectedAngles to all available angle IDs
+- If platform is Amazon: ['front', 'three-quarter', 'side', 'closeup', 'size-chart']
+- If platform is NOT Amazon: ['front', 'three-quarter', 'side', 'closeup']
+
+Clear All:
+- Sets selectedAngles to empty array []
+
+Standard Pack:
+- Sets selectedAngles to ['front', 'three-quarter']
+
+Full Collection:
+- Same as Select All
+
+isAllSelected:
+- true if selectedAngles.length === allAvailableAngles.length
+
+=== CONDITIONAL LOGIC ===
+
+Size Chart visibility:
+- Only show Size Chart angle card when selectedPlatform === 'amazon'
+- Hide completely for all other platforms (etsy, shopify, general, etc.)
+
+Available angles calculation:
+- Filter MOCKUP_ANGLES to exclude 'size-chart' if platform !== 'amazon'
+- This affects:
+  - Grid display (4 or 5 cards)
+  - Select All functionality
+  - Full Collection button count
+  - isAllSelected calculation
+
+Mockup Counter logic (Updated for new step order):
+- Since Colors step is now AFTER Angles:
+  - Option A: Hide counter completely on Angles step (show only on Colors step)
+  - Option B: Show only angles count: "{selectedAngles.length} Angles selected"
+  - Option C: Keep counter but show 0 for colors until selected
+
+=== KEYBOARD NAVIGATION ===
+
+Enter key:
+- If validation passes (at least 1 angle selected), proceed to next step (Scene)
+- Blocked if in textarea/input (not applicable on this screen)
+
+Escape key:
+- Go back to previous step (Style)
+
+=== RESPONSIVE BEHAVIOR ===
+
+Desktop/Laptop (md breakpoint and up):
+- 2-column grid for angle cards
+- Horizontal layout for bottom section
+
+Tablet/Mobile (below md):
+- 1-column grid for angle cards
+- Vertical stack for bottom section (quick buttons above, counter below)
+
+=== SCROLLING BEHAVIOR ===
+
+Angles grid area:
+- Overflow-y: auto
+- Custom scrollbar styling
+- Padding-right for scrollbar space
+- Flex: 1 to take remaining space
+
+=== COLOR TOKENS ===
+
+Light Mode:
+- Background: #F8FAFC
+- Card: #FFFFFF
+- Card Selected: #EEF2FF
+- Border: #E2E8F0
+- Border Selected: #4F46E5
+- Text Primary: #1E293B
+- Text Secondary: #475569
+- Text Muted: #64748B
+- Text Selected: #312E81
+- Primary: #4F46E5
+- Primary Light: #E0E7FF
+- Primary Hover: #C7D2FE
+- Success: #166534
+- Success Light: #DCFCE7
+- Counter BG: #0F172A
+- Counter Accent: #A5B4FC
+- Counter Success: #4ADE80
+
+Dark Mode:
+- Background: #0A0A0B
+- Card: #111113
+- Card Selected: rgba(79, 70, 229, 0.1)
+- Surface: #1A1A1F
+- Border: #2A2A30
+- Border Selected: #4F46E5
+- Text Primary: #F1F5F9
+- Text Secondary: #94A3B8
+- Text Muted: #71717A
+- Text Selected: #E0E7FF
+- Primary: #4F46E5
+- Primary Light: rgba(79, 70, 229, 0.2)
+- Success: #4ADE80
+- Success Light: rgba(22, 163, 74, 0.2)
+- Counter BG: #18181B
+- Counter Accent: #A5B4FC
+- Counter Success: #4ADE80
+
+=== TYPOGRAPHY ===
+
+Section title: 16px, bold
+Section description: 12px, regular
+Button text: 14px, medium
+Quick select buttons: 12px, bold
+Angle card title: 14px, bold
+Angle card description: 12px, regular
+Badge text: 10px, bold, uppercase
+Counter text: 12px, medium
+Kbd: 12px, regular
+
+=== ICONS USED (Lucide) ===
+
+Progress bar (NEW ORDER):
+- Upload, ShoppingBag, Building2, Sparkles, Camera, MapPin, Palette, Wand2 (DTG)
+- Upload, Repeat, ShoppingBag, Building2, Sparkles, Camera, MapPin, Palette, Wand2 (AOP)
+
+Angle cards:
+- PersonStanding (Front View)
+- View (Three-Quarter)
+- Combine (Side Profile)
+- Search (Close-up View)
+- Shirt (Size Chart)
+
+Selection indicator:
+- Check (checkmark in selected circle)
+
+Navigation:
+- ChevronLeft (Back)
+- ChevronRight (Next)
+
+=== INTERACTION STATES ===
+
+Angle card hover (unselected):
+- Border color lightens
+- Subtle scale or lift optional
+
+Angle card click:
+- Toggle selection state
+- Visual feedback immediate
+
+Select All button:
+- Disabled when all angles already selected
+- Enabled when at least one angle not selected
+
+Clear All button:
+- Disabled when no angles selected
+- Enabled when at least one angle selected
+
+=== ACCESSIBILITY ===
+
+Angle cards:
+- Role: button (or checkbox for multi-select)
+- aria-pressed or aria-checked for selection state
+- Keyboard focusable
+- Focus ring visible
+
+Buttons:
+- Disabled state properly communicated
+- Clear labels
