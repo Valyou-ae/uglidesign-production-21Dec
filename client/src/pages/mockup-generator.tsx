@@ -76,6 +76,7 @@ export default function MockupGenerator() {
   const [journey, setJourney] = useState<JourneyType>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>("Men's Clothing");
   const [environmentPrompt, setEnvironmentPrompt] = useState("");
   const [selectedColors, setSelectedColors] = useState<string[]>(["White"]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["L"]);
@@ -376,27 +377,17 @@ export default function MockupGenerator() {
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
                           {/* Categories */}
                           <div className="lg:col-span-3 border-r border-border pr-6 flex flex-col gap-6">
-                            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                              <Menu className="h-4 w-4" />
-                              <span className="text-xs font-bold uppercase tracking-wider">Select Category</span>
+                            <div className="flex items-center gap-2 text-foreground mb-2">
+                              <Menu className="h-4 w-4 text-indigo-600" />
+                              <h3 className="text-lg font-bold">Select Category</h3>
                             </div>
 
                             <div className="space-y-1">
-                              {/* Men's Clothing Category - Expanded by default */}
-                              <div className="space-y-1">
-                                <button 
-                                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 transition-colors"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <User className="h-4 w-4" />
-                                    Men's Clothing
-                                  </div>
-                                  <ChevronDown className="h-4 w-4 opacity-50" />
-                                </button>
-
-                                {/* Sub items */}
-                                <div className="pl-4 space-y-0.5 pt-1">
-                                  {[
+                              {[
+                                { 
+                                  name: "Men's Clothing", 
+                                  icon: User,
+                                  items: [
                                     { name: "T-shirts", icon: Shirt },
                                     { name: "Polo shirts", icon: Shirt },
                                     { name: "Tank tops", icon: Shirt },
@@ -404,45 +395,86 @@ export default function MockupGenerator() {
                                     { name: "Long sleeve shirts", icon: Shirt },
                                     { name: "Embroidered shirts", icon: Tag },
                                     { name: "Jackets & vests", icon: Layers },
-                                    { name: "Hoodies", icon: Cloud }, // Using Cloud as placeholder for Hoodie "fluffiness" or shape
+                                    { name: "Hoodies", icon: Cloud },
                                     { name: "Sweatshirts", icon: Shirt },
                                     { name: "Knitwear", icon: Grid },
-                                  ].map((item) => (
+                                  ]
+                                },
+                                { 
+                                  name: "Women's Clothing", 
+                                  icon: User,
+                                  items: [
+                                    { name: "T-shirts", icon: Shirt },
+                                    { name: "Polo shirts", icon: Shirt },
+                                    { name: "Tank tops", icon: Shirt },
+                                    { name: "Crop tops", icon: Shirt },
+                                    { name: "Embroidered shirts", icon: Tag },
+                                    { name: "3/4 sleeve shirts", icon: Shirt },
+                                    { name: "Long sleeve shirts", icon: Shirt },
+                                    { name: "Dresses", icon: Layers }, // Placeholder
+                                    { name: "Knitwear", icon: Grid },
+                                    { name: "Jackets", icon: Layers },
+                                    { name: "Hoodies", icon: Cloud },
+                                    { name: "Sweatshirts", icon: Shirt },
+                                  ]
+                                },
+                                { name: "Kids' Clothing", icon: User, items: [] }, 
+                                { name: "Accessories", icon: ShoppingBag, items: [] },
+                                { name: "Home & Living", icon: Coffee, items: [] }
+                              ].map((cat) => {
+                                const isExpanded = expandedCategory === cat.name;
+                                return (
+                                  <div key={cat.name} className="space-y-1">
                                     <button 
-                                      key={item.name}
-                                      className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors group"
+                                      onClick={() => setExpandedCategory(isExpanded ? null : cat.name)}
+                                      className={cn(
+                                        "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                                        isExpanded 
+                                          ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300" 
+                                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                      )}
                                     >
-                                      <item.icon className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100 group-hover:text-indigo-600 transition-colors" />
-                                      {item.name}
+                                      <div className="flex items-center gap-3">
+                                        <cat.icon className="h-4 w-4" />
+                                        {cat.name}
+                                      </div>
+                                      {isExpanded ? (
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                      ) : (
+                                        <ChevronRight className="h-4 w-4 opacity-30" />
+                                      )}
                                     </button>
-                                  ))}
-                                </div>
-                              </div>
 
-                              {/* Other Categories (Collapsed) */}
-                              {[
-                                { name: "Women's Clothing", icon: User },
-                                { name: "Kids' Clothing", icon: User }, // Using User as generic placeholder
-                                { name: "Accessories", icon: ShoppingBag },
-                                { name: "Home & Living", icon: Coffee }
-                              ].map((cat) => (
-                                <button 
-                                  key={cat.name}
-                                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <cat.icon className="h-4 w-4" />
-                                    {cat.name}
+                                    {isExpanded && cat.items && cat.items.length > 0 && (
+                                      <motion.div 
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="pl-4 space-y-0.5 pt-1 overflow-hidden"
+                                      >
+                                        {cat.items.map((item) => (
+                                          <button 
+                                            key={item.name}
+                                            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors group"
+                                          >
+                                            <item.icon className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100 group-hover:text-indigo-600 transition-colors" />
+                                            {item.name}
+                                          </button>
+                                        ))}
+                                      </motion.div>
+                                    )}
                                   </div>
-                                  <ChevronRight className="h-4 w-4 opacity-30" />
-                                </button>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
 
                           {/* Product Grid */}
                           <div className="lg:col-span-6">
-                            <h3 className="text-lg font-bold mb-4">Choose Product</h3>
+                            <div className="flex items-center gap-2 text-foreground mb-4">
+                              <ShoppingBag className="h-4 w-4 text-indigo-600" />
+                              <h3 className="text-lg font-bold">Choose Product</h3>
+                            </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                               {[1, 2, 3, 4, 5, 6].map(i => (
                                 <div key={i} className="group relative border border-border rounded-xl p-4 cursor-pointer hover:border-indigo-600 hover:shadow-lg transition-all">
@@ -462,10 +494,10 @@ export default function MockupGenerator() {
                           {/* Model Config */}
                           <div className="lg:col-span-3 border-l border-border pl-6">
                             <div className="sticky top-6">
-                              <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
+                              <div className="flex items-center gap-2 text-foreground mb-4">
                                 <Sparkles className="h-4 w-4 text-indigo-600" />
-                                Configuration
-                              </h3>
+                                <h3 className="text-lg font-bold">Configuration</h3>
+                              </div>
                               
                               <div className="space-y-6 bg-card/50 rounded-xl p-1">
                                 {/* Size Selection */}
