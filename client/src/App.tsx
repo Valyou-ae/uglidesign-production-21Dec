@@ -13,12 +13,14 @@ import Favorites from "@/pages/favorites";
 import Billing from "@/pages/billing";
 import Settings from "@/pages/settings";
 import HelpSupport from "@/pages/help-support";
+import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
       <Route path="/discover" component={Discover} />
       <Route path="/image-gen" component={ImageGenerator} />
       <Route path="/bg-remover" component={BackgroundRemover} />
