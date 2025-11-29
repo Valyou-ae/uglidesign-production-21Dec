@@ -49,6 +49,31 @@ export default function Profile() {
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 opacity-90" />
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
           <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+          
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            className="absolute top-6 right-6 z-20 shadow-lg bg-black/20 hover:bg-red-600 backdrop-blur-md border border-white/10"
+            onClick={() => window.location.href = '/login'}
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              className="h-4 w-4 mr-2"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" x2="9" y1="12" y2="12" />
+            </svg>
+            Sign Out
+          </Button>
         </div>
 
         <div className="max-w-6xl mx-auto w-full px-6 pb-12 -mt-20 relative z-10">

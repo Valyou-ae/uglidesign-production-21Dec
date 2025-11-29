@@ -93,6 +93,11 @@ export function Sidebar({ className }: SidebarProps) {
     { name: "Help & Support", icon: HelpCircle, href: "/help" },
   ];
 
+  const handleLogout = () => {
+    // Mock logout
+    window.location.href = "/login";
+  };
+
   return (
     <aside 
       className={cn(
@@ -237,6 +242,39 @@ export function Sidebar({ className }: SidebarProps) {
               </Tooltip>
             </TooltipProvider>
           ))}
+
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div 
+                  onClick={handleLogout}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg font-medium text-red-500/70 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/10 transition-colors cursor-pointer select-none",
+                    collapsed ? "justify-center w-10 h-10 mx-auto p-0" : "px-3.5 py-3 text-sm"
+                  )}
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="h-5 w-5 flex-shrink-0"
+                  >
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" x2="9" y1="12" y2="12" />
+                  </svg>
+                  {!collapsed && <span>Logout</span>}
+                </div>
+              </TooltipTrigger>
+              {collapsed && <TooltipContent side="right"><p>Logout</p></TooltipContent>}
+            </Tooltip>
+          </TooltipProvider>
         </nav>
       </div>
 
