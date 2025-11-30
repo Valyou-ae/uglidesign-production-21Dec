@@ -24,7 +24,14 @@ import {
   Clock,
   Eye,
   Database,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Moon,
+  Sun,
+  Laptop,
+  Command,
+  AlertTriangle,
+  FileText,
+  FolderArchive
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -34,6 +41,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Sidebar } from "@/components/sidebar";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("Profile");
@@ -86,6 +112,20 @@ export default function Settings() {
         return <NotificationsSettings />;
       case "Privacy":
         return <PrivacySettings />;
+      case "Appearance":
+        return <AppearanceSettings />;
+      case "Generation Defaults":
+        return <GenerationDefaultsSettings />;
+      case "Keyboard Shortcuts":
+        return <KeyboardShortcutsSettings />;
+      case "Language & Region":
+        return <LanguageRegionSettings />;
+      case "Storage":
+        return <StorageSettings />;
+      case "Export Data":
+        return <ExportDataSettings />;
+      case "Delete Account":
+        return <DeleteAccountSettings />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-[60vh] text-[#71717A]">
@@ -593,6 +633,369 @@ function PrivacySettings() {
              <div className="text-[13px] text-[#71717A]">Allow other users to use your public creations as references</div>
           </div>
           <Switch defaultChecked={true} />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function AppearanceSettings() {
+  const { toast } = useToast();
+  const [theme, setTheme] = useState("system");
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.3 }}
+    >
+      <div className="mb-8">
+        <h2 className="text-[22px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Appearance</h2>
+        <p className="text-sm text-[#71717A] mt-1">Customize the look and feel of your interface</p>
+      </div>
+
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6 mb-6">
+        <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA] mb-5">Theme</h3>
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { id: "light", name: "Light", icon: Sun },
+            { id: "dark", name: "Dark", icon: Moon },
+            { id: "system", name: "System", icon: Laptop },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTheme(t.id)}
+              className={cn(
+                "flex flex-col items-center justify-center gap-3 p-4 rounded-xl border transition-all",
+                theme === t.id 
+                  ? "bg-[#7C3AED]/5 border-[#7C3AED] text-[#7C3AED]" 
+                  : "bg-[#F4F4F5] dark:bg-[#1A1A1F] border-transparent text-[#71717A] hover:bg-[#E4E4E7] dark:hover:bg-[#2A2A30]"
+              )}
+            >
+              <t.icon className="h-6 w-6" />
+              <span className="text-sm font-medium">{t.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+           <div>
+             <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Reduced Motion</h3>
+             <p className="text-xs text-[#71717A] mt-1">Minimize animations for a simplified experience</p>
+           </div>
+           <Switch />
+        </div>
+        <div className="flex items-center justify-between">
+           <div>
+             <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">High Contrast</h3>
+             <p className="text-xs text-[#71717A] mt-1">Increase contrast for better visibility</p>
+           </div>
+           <Switch />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function GenerationDefaultsSettings() {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.3 }}
+    >
+      <div className="mb-8">
+        <h2 className="text-[22px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Generation Defaults</h2>
+        <p className="text-sm text-[#71717A] mt-1">Set your preferred settings for new creations</p>
+      </div>
+
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6 mb-6 space-y-6">
+        <div className="space-y-3">
+          <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Default Model</label>
+          <Select defaultValue="v5.2">
+            <SelectTrigger>
+              <SelectValue placeholder="Select model" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="v5.2">Ugli V5.2 (Recommended)</SelectItem>
+              <SelectItem value="v5.1">Ugli V5.1</SelectItem>
+              <SelectItem value="v5.0">Ugli V5.0</SelectItem>
+              <SelectItem value="niji">Niji (Anime)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Default Aspect Ratio</label>
+          <div className="flex gap-2">
+            {["1:1", "16:9", "9:16", "4:3", "3:4"].map(ratio => (
+              <button 
+                key={ratio}
+                className={cn(
+                  "px-3 py-2 rounded-md text-xs font-medium border transition-colors",
+                  ratio === "1:1" 
+                    ? "bg-[#7C3AED]/10 border-[#7C3AED] text-[#7C3AED]" 
+                    : "bg-[#F4F4F5] dark:bg-[#1A1A1F] border-transparent text-[#71717A] hover:bg-[#E4E4E7] dark:hover:bg-[#2A2A30]"
+                )}
+              >
+                {ratio}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex justify-between">
+            <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Default Steps</label>
+            <span className="text-xs font-mono text-[#71717A]">30</span>
+          </div>
+          <Slider defaultValue={[30]} max={50} step={1} />
+        </div>
+      </div>
+
+       <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6">
+        <div className="flex items-center justify-between">
+           <div>
+             <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Private Mode</h3>
+             <p className="text-xs text-[#71717A] mt-1">Make all generations private by default</p>
+           </div>
+           <Switch />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function KeyboardShortcutsSettings() {
+  const shortcuts = [
+    { keys: ["⌘", "K"], action: "Open command palette" },
+    { keys: ["⌘", "Enter"], action: "Generate image" },
+    { keys: ["/"], action: "Focus prompt input" },
+    { keys: ["Esc"], action: "Close modal / Clear selection" },
+    { keys: ["⌘", "S"], action: "Save current image" },
+    { keys: ["⌘", "D"], action: "Download selected" },
+    { keys: ["⌘", "Shift", "L"], action: "Toggle dark mode" },
+  ];
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.3 }}
+    >
+      <div className="mb-8">
+        <h2 className="text-[22px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Keyboard Shortcuts</h2>
+        <p className="text-sm text-[#71717A] mt-1">Speed up your workflow with these hotkeys</p>
+      </div>
+
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl overflow-hidden">
+        {shortcuts.map((shortcut, i) => (
+          <div key={i} className="flex items-center justify-between px-6 py-4 border-b border-[#F4F4F5] dark:border-[#1F1F23] last:border-0">
+            <span className="text-sm text-[#18181B] dark:text-[#FAFAFA]">{shortcut.action}</span>
+            <div className="flex gap-1.5">
+              {shortcut.keys.map((key, k) => (
+                <kbd key={k} className="px-2 py-1 bg-[#F4F4F5] dark:bg-[#27272A] rounded-[6px] border border-[#E4E4E7] dark:border-[#3F3F46] text-[11px] font-mono font-semibold text-[#71717A] dark:text-[#A1A1AA] min-w-[24px] text-center">
+                  {key}
+                </kbd>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+function LanguageRegionSettings() {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.3 }}
+    >
+      <div className="mb-8">
+        <h2 className="text-[22px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Language & Region</h2>
+        <p className="text-sm text-[#71717A] mt-1">Customize your language and regional preferences</p>
+      </div>
+
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6 mb-6 space-y-6">
+        <div className="space-y-3">
+          <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Display Language</label>
+          <Select defaultValue="en">
+            <SelectTrigger>
+              <SelectValue placeholder="Select language" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">English (US)</SelectItem>
+              <SelectItem value="uk">English (UK)</SelectItem>
+              <SelectItem value="es">Español</SelectItem>
+              <SelectItem value="fr">Français</SelectItem>
+              <SelectItem value="de">Deutsch</SelectItem>
+              <SelectItem value="ja">日本語</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+         <div className="space-y-3">
+          <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Region</label>
+          <Select defaultValue="us">
+            <SelectTrigger>
+              <SelectValue placeholder="Select region" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="us">United States</SelectItem>
+              <SelectItem value="eu">Europe</SelectItem>
+              <SelectItem value="asia">Asia Pacific</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function StorageSettings() {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.3 }}
+    >
+      <div className="mb-8">
+        <h2 className="text-[22px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Storage</h2>
+        <p className="text-sm text-[#71717A] mt-1">Manage your cloud storage and local cache</p>
+      </div>
+
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Cloud Storage</h3>
+          <span className="text-xs font-medium text-[#7C3AED]">Upgrade Plan</span>
+        </div>
+        
+        <div className="mb-2 flex justify-between text-sm">
+          <span className="text-[#71717A]">12.5 GB used</span>
+          <span className="text-[#18181B] dark:text-[#FAFAFA] font-medium">50 GB total</span>
+        </div>
+        <div className="w-full h-2 bg-[#F4F4F5] dark:bg-[#27272A] rounded-full overflow-hidden mb-6">
+          <div className="h-full bg-[#7C3AED] w-[25%] rounded-full" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 rounded-xl bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30]">
+            <div className="flex items-center gap-2 mb-2">
+              <ImageIcon className="h-4 w-4 text-[#7C3AED]" />
+              <span className="text-sm font-medium text-[#18181B] dark:text-[#FAFAFA]">Images</span>
+            </div>
+            <span className="text-xl font-bold text-[#18181B] dark:text-[#FAFAFA]">8.2 GB</span>
+          </div>
+          <div className="p-4 rounded-xl bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30]">
+            <div className="flex items-center gap-2 mb-2">
+              <FolderArchive className="h-4 w-4 text-[#EC4899]" />
+              <span className="text-sm font-medium text-[#18181B] dark:text-[#FAFAFA]">Archives</span>
+            </div>
+            <span className="text-xl font-bold text-[#18181B] dark:text-[#FAFAFA]">4.3 GB</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6">
+         <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA] mb-2">Local Cache</h3>
+         <p className="text-sm text-[#71717A] mb-4">Clear temporary files to free up space on your device.</p>
+         <Button variant="outline" className="text-[#DC2626] hover:text-[#DC2626] border-[#DC2626]/20 hover:bg-[#DC2626]/5">
+           Clear Cache (142 MB)
+         </Button>
+      </div>
+    </motion.div>
+  );
+}
+
+function ExportDataSettings() {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.3 }}
+    >
+      <div className="mb-8">
+        <h2 className="text-[22px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Export Data</h2>
+        <p className="text-sm text-[#71717A] mt-1">Download a copy of your data</p>
+      </div>
+
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6 mb-6">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="h-12 w-12 bg-[#F4F4F5] dark:bg-[#1F1F25] rounded-full flex items-center justify-center">
+            <Download className="h-6 w-6 text-[#18181B] dark:text-[#FAFAFA]" />
+          </div>
+          <div>
+            <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Download your archive</h3>
+            <p className="text-sm text-[#71717A]">Get a copy of your creations, prompts, and settings.</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 border border-[#E4E4E7] dark:border-[#2A2A30] rounded-xl">
+            <div className="flex items-center gap-3">
+              <FileText className="h-5 w-5 text-[#71717A]" />
+              <div className="text-sm font-medium text-[#18181B] dark:text-[#FAFAFA]">JSON Data (Prompts & Settings)</div>
+            </div>
+            <Button variant="outline" size="sm">Download</Button>
+          </div>
+          <div className="flex items-center justify-between p-3 border border-[#E4E4E7] dark:border-[#2A2A30] rounded-xl">
+            <div className="flex items-center gap-3">
+              <ImageIcon className="h-5 w-5 text-[#71717A]" />
+              <div className="text-sm font-medium text-[#18181B] dark:text-[#FAFAFA]">All Generated Images (ZIP)</div>
+            </div>
+            <Button variant="outline" size="sm">Request Archive</Button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function DeleteAccountSettings() {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.3 }}
+    >
+      <div className="mb-8">
+        <h2 className="text-[22px] font-semibold text-[#DC2626]">Delete Account</h2>
+        <p className="text-sm text-[#71717A] mt-1">Permanently remove your account and data</p>
+      </div>
+
+      <div className="bg-[#FEF2F2] dark:bg-[#7F1D1D]/10 border border-[#FECACA] dark:border-[#7F1D1D]/30 rounded-2xl p-6 mb-6">
+        <div className="flex items-start gap-4">
+          <AlertTriangle className="h-6 w-6 text-[#DC2626] shrink-0" />
+          <div>
+            <h3 className="text-[15px] font-bold text-[#DC2626] mb-2">Warning: This action is irreversible</h3>
+            <p className="text-sm text-[#B91C1C] dark:text-[#FCA5A5] leading-relaxed mb-4">
+              If you delete your account, you will lose access to all your generated images, projects, settings, and credits. This action cannot be undone.
+            </p>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="bg-[#DC2626] hover:bg-[#B91C1C]">
+                  Delete my account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your account and remove your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction className="bg-[#DC2626] hover:bg-[#B91C1C]">Delete Account</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </div>
     </motion.div>
