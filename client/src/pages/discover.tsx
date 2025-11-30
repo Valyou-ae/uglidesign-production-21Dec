@@ -287,9 +287,6 @@ export default function Discover() {
                 <span className="text-xs font-medium text-[#16A34A]">Live</span>
               </div>
             </div>
-            <button className="flex items-center gap-1 text-sm font-medium text-[#7C3AED] hover:underline">
-              View all trending <ArrowRight className="h-4 w-4 ml-0.5" />
-            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -361,55 +358,6 @@ export default function Discover() {
           </div>
         </div>
 
-        {/* FEATURED COLLECTIONS */}
-        <div className="px-12 pb-20 max-w-[1400px] mx-auto w-full">
-          <div className="flex justify-between items-center mb-7">
-            <div className="flex items-center gap-3">
-              <Layers className="h-6 w-6 text-[#7C3AED]" />
-              <h2 className="text-2xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Featured Collections</h2>
-            </div>
-            <button className="flex items-center gap-1 text-sm font-medium text-[#7C3AED] hover:underline">
-              Browse all collections <ArrowRight className="h-4 w-4 ml-0.5" />
-            </button>
-          </div>
-
-          <div className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory no-scrollbar">
-            {collections.map((collection, i) => (
-              <div 
-                key={i}
-                className="min-w-[320px] max-w-[320px] bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-[20px] overflow-hidden cursor-pointer hover:border-[#D4D4D8] dark:hover:border-[#2A2A30] hover:-translate-y-1 transition-all duration-250 snap-start"
-              >
-                {/* Preview Grid */}
-                <div className="h-[180px] grid grid-cols-[2fr_1fr] grid-rows-2 gap-0.5 bg-[#E4E4E7] dark:bg-[#1F1F23]">
-                  <img src={collection.preview1} className="w-full h-full object-cover row-span-2" alt="" />
-                  <img src={collection.preview2} className="w-full h-full object-cover" alt="" />
-                  <img src={collection.preview3} className="w-full h-full object-cover" alt="" />
-                </div>
-
-                <div className="p-5">
-                  <h3 className="text-lg font-semibold text-[#18181B] dark:text-[#FAFAFA]">{collection.title}</h3>
-                  
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-[#71717A]">Curated by</span>
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500" />
-                    <span className="text-xs text-[#A1A1AA]">{collection.curator}</span>
-                  </div>
-
-                  <div className="flex gap-4 mt-3">
-                    <div className="flex items-center gap-1.5 text-xs text-[#71717A] dark:text-[#52525B]">
-                      <Layers className="h-3.5 w-3.5" />
-                      <span>{collection.styles} styles</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#71717A] dark:text-[#52525B]">
-                      <Heart className="h-3.5 w-3.5" />
-                      <span>{collection.saves} saves</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
       </main>
     </div>
