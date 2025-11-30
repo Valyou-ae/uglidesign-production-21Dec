@@ -81,7 +81,6 @@ export default function Settings() {
         { name: "Appearance", icon: Palette },
         { name: "Generation Defaults", icon: Sliders },
         { name: "Keyboard Shortcuts", icon: Keyboard },
-        { name: "Language & Region", icon: Globe },
       ]
     },
     {
@@ -118,8 +117,6 @@ export default function Settings() {
         return <GenerationDefaultsSettings />;
       case "Keyboard Shortcuts":
         return <KeyboardShortcutsSettings />;
-      case "Language & Region":
-        return <LanguageRegionSettings />;
       case "Storage":
         return <StorageSettings />;
       case "Export Data":
@@ -803,54 +800,6 @@ function KeyboardShortcutsSettings() {
             </div>
           </div>
         ))}
-      </div>
-    </motion.div>
-  );
-}
-
-function LanguageRegionSettings() {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      transition={{ duration: 0.3 }}
-    >
-      <div className="mb-8">
-        <h2 className="text-[22px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Language & Region</h2>
-        <p className="text-sm text-[#71717A] mt-1">Customize your language and regional preferences</p>
-      </div>
-
-      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6 mb-6 space-y-6">
-        <div className="space-y-3">
-          <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Display Language</label>
-          <Select defaultValue="en">
-            <SelectTrigger>
-              <SelectValue placeholder="Select language" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="en">English (US)</SelectItem>
-              <SelectItem value="uk">English (UK)</SelectItem>
-              <SelectItem value="es">Español</SelectItem>
-              <SelectItem value="fr">Français</SelectItem>
-              <SelectItem value="de">Deutsch</SelectItem>
-              <SelectItem value="ja">日本語</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-         <div className="space-y-3">
-          <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Region</label>
-          <Select defaultValue="us">
-            <SelectTrigger>
-              <SelectValue placeholder="Select region" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="us">United States</SelectItem>
-              <SelectItem value="eu">Europe</SelectItem>
-              <SelectItem value="asia">Asia Pacific</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
     </motion.div>
   );

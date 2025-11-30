@@ -100,18 +100,46 @@ export default function MyCreations() {
     }
   };
 
-  const downloadImage = (url: string, filename: string) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast({
-      title: "Download Started",
-      description: "Your image is being downloaded.",
-    });
+  const downloadImage = async (url: string, filename: string) => {
+    try {
+      toast({
+        title: "Download Started",
+        description: "Preparing your download...",
+      });
+
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+      toast({
+        title: "Download Complete",
+        description: "Image saved to your device.",
+      });
+    } catch (error) {
+      console.error("Download failed:", error);
+      
+      // Fallback for simple download if fetch fails (e.g. CORS)
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Download Started",
+        description: "If download didn't start, check your popup blocker.",
+      });
+    }
   };
 
   const handleAction = (action: string, item: typeof ITEMS[0]) => {
