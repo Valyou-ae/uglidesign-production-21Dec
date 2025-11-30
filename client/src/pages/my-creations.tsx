@@ -113,13 +113,13 @@ export default function Favorites() {
           <div className="flex items-start justify-between mb-8 flex-shrink-0">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <Star className="h-7 w-7 text-[#F59E0B] fill-[#F59E0B]" />
-                <h1 className="text-[28px] font-bold text-[#18181B] dark:text-[#FAFAFA]">Favorites</h1>
+                <Folder className="h-7 w-7 text-[#7C3AED]" />
+                <h1 className="text-[28px] font-bold text-[#18181B] dark:text-[#FAFAFA]">My Creations</h1>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#71717A]">
-                <span>Your starred creations in one place</span>
+                <span>Manage all your creative assets</span>
                 <span className="w-1 h-1 rounded-full bg-[#71717A]" />
-                <span>{favorites.length} items</span>
+                <span>{items.length} items total</span>
               </div>
             </div>
 
@@ -209,36 +209,68 @@ export default function Favorites() {
           </div>
 
           {/* TOOLBAR SECTION */}
-          <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-4 mb-6 flex items-center justify-between flex-shrink-0 shadow-sm">
-            {/* Filter Pills */}
-            <div className="flex items-center gap-2">
-              {[
-                { name: "All", icon: Star, count: 32, color: "#F59E0B" },
-                { name: "Images", icon: Wand2, count: 18, color: "#7C3AED" },
-                { name: "Mockups", icon: ShoppingBag, count: 10, color: "#4F46E5" },
-                { name: "BG Removed", icon: Scissors, count: 4, color: "#EC4899" }
-              ].map(filter => (
+          <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between flex-shrink-0 shadow-sm gap-4 md:gap-0">
+            
+            <div className="flex items-center gap-6">
+              {/* Main Tabs: All vs Favorites */}
+              <div className="flex items-center bg-[#F4F4F5] dark:bg-[#1F1F25] p-1 rounded-lg">
                 <button
-                  key={filter.name}
-                  onClick={() => setActiveFilter(filter.name)}
+                  onClick={() => setActiveTab("All")}
                   className={cn(
-                    "px-4 py-2 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 border",
-                    activeFilter === filter.name 
-                      ? "bg-[#F59E0B] text-[#18181B] border-[#F59E0B]" 
-                      : "bg-transparent text-[#71717A] border-[#E4E4E7] dark:border-[#2A2A30] hover:bg-[#F4F4F5] dark:hover:bg-[#1F1F25] hover:border-[#D4D4D8] dark:hover:border-[#3A3A40]"
+                    "px-4 py-1.5 rounded-md text-sm font-medium transition-all",
+                    activeTab === "All" 
+                      ? "bg-white dark:bg-[#2A2A30] text-foreground shadow-sm" 
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <filter.icon className={cn("h-3.5 w-3.5", activeFilter !== filter.name && `text-[${filter.color}]`)} />
-                  {filter.name}
-                  <span className={cn("ml-0.5 opacity-70", activeFilter === filter.name ? "text-[#18181B]" : "")}>
-                    ({filter.count})
-                  </span>
+                  All <span className="ml-1 opacity-60 text-xs">({items.length})</span>
                 </button>
-              ))}
+                <button
+                  onClick={() => setActiveTab("Favorites")}
+                  className={cn(
+                    "px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5",
+                    activeTab === "Favorites" 
+                      ? "bg-white dark:bg-[#2A2A30] text-foreground shadow-sm" 
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Star className={cn("h-3.5 w-3.5", activeTab === "Favorites" ? "text-[#F59E0B] fill-[#F59E0B]" : "")} />
+                  Favorites <span className="ml-1 opacity-60 text-xs">({items.filter(i => i.favorite).length})</span>
+                </button>
+              </div>
+
+              <div className="h-6 w-px bg-[#E4E4E7] dark:bg-[#2A2A30] hidden md:block" />
+
+              {/* Filter Pills */}
+              <div className="flex items-center gap-2">
+                {[
+                  { name: "All", icon: LayoutGrid, count: items.length, color: "#F59E0B" },
+                  { name: "Images", icon: Wand2, count: items.filter(i => i.type === "image").length, color: "#7C3AED" },
+                  { name: "Mockups", icon: ShoppingBag, count: items.filter(i => i.type === "mockup").length, color: "#4F46E5" },
+                  { name: "BG Removed", icon: Scissors, count: items.filter(i => i.type === "bg-removed").length, color: "#EC4899" }
+                ].map(filter => (
+                  <button
+                    key={filter.name}
+                    onClick={() => setActiveFilter(filter.name)}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 border",
+                      activeFilter === filter.name 
+                        ? "bg-[#18181B] dark:bg-[#FAFAFA] text-white dark:text-black border-transparent" 
+                        : "bg-transparent text-[#71717A] border-[#E4E4E7] dark:border-[#2A2A30] hover:bg-[#F4F4F5] dark:hover:bg-[#1F1F25] hover:border-[#D4D4D8] dark:hover:border-[#3A3A40]"
+                    )}
+                  >
+                    <filter.icon className={cn("h-3.5 w-3.5", activeFilter !== filter.name && `text-[${filter.color}]`)} />
+                    {filter.name}
+                    <span className={cn("ml-0.5 opacity-70", activeFilter === filter.name ? "text-white dark:text-black" : "")}>
+                      ({filter.count})
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 self-end md:self-auto">
               <button
                 onClick={() => {
                   setSelectMode(!selectMode);
