@@ -271,25 +271,88 @@ const ARTICLES: Record<string, Article> = {
     updated: "1 month ago",
     content: "Follow these simple steps to generate your first image..."
   },
-  "api-intro": {
-    id: "api-intro",
-    title: "Introduction to the Ugli API",
-    category: "API & Integrations",
-    time: "10 min",
+  "mockup-guide": {
+    id: "mockup-guide",
+    title: "Getting started with Mockup Generator",
+    category: "Mockup Generator",
+    time: "4 min",
+    updated: "5 days ago",
+    content: (
+      <div className="space-y-6 text-[#18181B] dark:text-[#FAFAFA]">
+        <p className="text-lg leading-relaxed text-[#71717A] dark:text-[#A1A1AA]">
+          Turn your designs into professional product photos in seconds. No photoshoots required.
+        </p>
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">How it works</h3>
+          <ol className="list-decimal pl-5 space-y-3 text-[#71717A] dark:text-[#A1A1AA]">
+            <li><strong className="text-[#18181B] dark:text-[#FAFAFA]">Upload your design:</strong> Drag and drop your pattern, logo, or artwork.</li>
+            <li><strong className="text-[#18181B] dark:text-[#FAFAFA]">Choose a product:</strong> Select from our library of t-shirts, mugs, packaging, and more.</li>
+            <li><strong className="text-[#18181B] dark:text-[#FAFAFA]">Customize:</strong> Adjust the scale, rotation, and displacement map for realistic warping.</li>
+            <li><strong className="text-[#18181B] dark:text-[#FAFAFA]">Download:</strong> Export in 4K resolution ready for your store.</li>
+          </ol>
+        </div>
+      </div>
+    )
+  },
+  "mockup-export": {
+    id: "mockup-export",
+    title: "Best export settings for e-commerce",
+    category: "Mockup Generator",
+    time: "3 min",
     updated: "1 week ago",
-    content: "Learn how to integrate Ugli's generation capabilities into your own applications..."
+    content: "Learn the optimal resolution and formats for Shopify, Etsy, and Amazon..."
+  },
+  "account-security": {
+    id: "account-security",
+    title: "Securing your account with 2FA",
+    category: "Account & Security",
+    time: "2 min",
+    updated: "1 month ago",
+    content: "Step-by-step guide to enabling two-factor authentication..."
+  },
+  "password-reset": {
+    id: "password-reset",
+    title: "Resetting your password",
+    category: "Account & Security",
+    time: "1 min",
+    updated: "3 months ago",
+    content: "Lost your password? Here is how to recover it..."
+  },
+  "billing-upgrade": {
+    id: "billing-upgrade",
+    title: "Upgrading to Pro or Business",
+    category: "Billing & Credits",
+    time: "2 min",
+    updated: "2 weeks ago",
+    content: "Compare plans and learn how to upgrade your workspace..."
+  },
+  "api-auth": {
+    id: "api-auth",
+    title: "API Authentication & Keys",
+    category: "API & Integrations",
+    time: "5 min",
+    updated: "3 weeks ago",
+    content: "How to generate and manage your API keys securely..."
+  },
+  "api-limits": {
+    id: "api-limits",
+    title: "Understanding Rate Limits",
+    category: "API & Integrations",
+    time: "3 min",
+    updated: "1 month ago",
+    content: "Details on request limits for different subscription tiers..."
   }
 };
 
 const CATEGORIES: Category[] = [
   { id: "getting-started", icon: Rocket, color: "#7C3AED", title: "Getting Started", desc: "Learn the basics and set up your account", articleIds: ["getting-started-1"] },
   { id: "image-gen", icon: Wand2, color: "#7C3AED", title: "Image Generation", desc: "Create stunning AI-generated images", articleIds: ["prompt-guide"] },
-  { id: "mockup", icon: ShoppingBag, color: "#4F46E5", title: "Mockup Generator", desc: "Create product mockups for your designs", articleIds: ["seamless-patterns"] },
+  { id: "mockup", icon: ShoppingBag, color: "#4F46E5", title: "Mockup Generator", desc: "Create product mockups for your designs", articleIds: ["seamless-patterns", "mockup-guide", "mockup-export"] },
   { id: "bg-remover", icon: Scissors, color: "#EC4899", title: "Background Removal", desc: "Remove and replace image backgrounds", articleIds: ["bg-removal-tips"] },
   { id: "ai-agents", icon: BrainCircuit, color: "#10B981", title: "AI Agents", desc: "Understand the 5 AI agents and how they work", articleIds: ["ai-agents"] },
-  { id: "billing", icon: CreditCard, color: "#F59E0B", title: "Billing & Credits", desc: "Manage subscriptions, payments, and credits", articleIds: ["credits-guide"] },
-  { id: "account", icon: Shield, color: "#3B82F6", title: "Account & Security", desc: "Secure your account and manage settings", articleIds: [] },
-  { id: "api", icon: Code, color: "#8B5CF6", title: "API & Integrations", desc: "Connect apps and use our API", articleIds: ["api-intro"] },
+  { id: "billing", icon: CreditCard, color: "#F59E0B", title: "Billing & Credits", desc: "Manage subscriptions, payments, and credits", articleIds: ["credits-guide", "billing-upgrade"] },
+  { id: "account", icon: Shield, color: "#3B82F6", title: "Account & Security", desc: "Secure your account and manage settings", articleIds: ["account-security", "password-reset"] },
+  { id: "api", icon: Code, color: "#8B5CF6", title: "API & Integrations", desc: "Connect apps and use our API", articleIds: ["api-intro", "api-auth", "api-limits"] },
   { id: "troubleshooting", icon: AlertCircle, color: "#DC2626", title: "Troubleshooting", desc: "Fix common issues and errors", articleIds: ["troubleshoot-failed"] },
 ];
 
