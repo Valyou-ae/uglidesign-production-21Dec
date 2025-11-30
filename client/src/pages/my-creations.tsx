@@ -6,6 +6,7 @@ import {
   LayoutGrid, 
   List, 
   MoreVertical, 
+  MoreHorizontal,
   Download, 
   Star, 
   Trash2, 
@@ -506,38 +507,28 @@ export default function MyCreations() {
                       key={item.id}
                       onClick={() => selectMode ? toggleSelection(item.id) : setSelectedItem(item)}
                       className={cn(
-                        "group relative bg-white dark:bg-[#111113] border rounded-2xl overflow-hidden cursor-pointer transition-all duration-250",
-                        viewMode === "masonry" && "mb-5 break-inside-avoid",
+                        "break-inside-avoid relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border transition-all duration-200",
+                        viewMode === "masonry" ? "mb-6" : "h-full",
+                        !selectMode && "hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]",
                         selectMode && selectedItems.includes(item.id) 
                           ? "border-[#F59E0B] ring-4 ring-[#F59E0B]/15" 
-                          : "border-[#E4E4E7] dark:border-[#1F1F23] hover:border-[#2A2A30] hover:-translate-y-1.5 hover:shadow-2xl dark:hover:shadow-black/40"
+                          : ""
                       )}
                     >
-                      {/* Thumbnail */}
-                      <div className="aspect-square bg-[#0A0A0B] relative overflow-hidden">
+                      {/* Image Container */}
+                      <div className={cn(
+                        "w-full relative overflow-hidden bg-muted/20",
+                        viewMode === "grid" ? "aspect-square" : ""
+                      )}>
                         <img 
                           src={item.src} 
                           alt={item.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="w-full h-full object-cover"
                         />
                         
-                        {/* Permanent Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
-
-                        {/* Type Badge */}
-                        <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10">
-                          <TypeIcon className="h-3.5 w-3.5" style={{ color: typeConfig.color }} />
-                          <span className="text-[11px] font-bold text-white uppercase">{typeConfig.label}</span>
-                        </div>
-
-                        {/* Favorite Star (Always Visible) */}
-                        <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-md p-2 rounded-full hover:scale-110 transition-transform cursor-pointer group/star">
-                          <Star className="h-5 w-5 text-[#F59E0B] fill-[#F59E0B] group-hover/star:text-[#F59E0B]" />
-                        </div>
-
-                        {/* Selection Checkbox (In Select Mode) */}
-                        {selectMode && (
-                          <div className="absolute top-3 left-3 z-20">
+                        {/* Type Badge (Top Left) */}
+                        <div className="absolute top-3 left-3 z-10">
+                           {selectMode ? (
                             <div className={cn(
                               "h-6 w-6 rounded-md border-2 flex items-center justify-center transition-all backdrop-blur-md",
                               selectedItems.includes(item.id)
@@ -546,83 +537,68 @@ export default function MyCreations() {
                             )}>
                               {selectedItems.includes(item.id) && <Check className="h-3.5 w-3.5 text-white" />}
                             </div>
-                          </div>
-                        )}
+                           ) : (
+                            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10">
+                              <TypeIcon className="h-3.5 w-3.5" style={{ color: typeConfig.color }} />
+                              <span className="text-[11px] font-bold text-white uppercase">{typeConfig.label}</span>
+                            </div>
+                           )}
+                        </div>
 
-                        {/* Hover Actions Overlay */}
-                        <div className={cn(
-                          "absolute inset-0 bg-black/70 backdrop-blur-[4px] opacity-0 flex flex-col items-center justify-center gap-3 transition-opacity duration-200",
-                          !selectMode && "group-hover:opacity-100"
-                        )}>
-                          <Button className="bg-white text-[#18181B] hover:bg-white/90 font-semibold h-10 px-5 rounded-xl">
-                            <ArrowUpRight className="h-4 w-4 mr-2" /> Open
-                          </Button>
+                        {/* Overlay (Matches Image Generator) */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-5">
+                          <p className="text-white text-sm line-clamp-2 mb-4 font-medium leading-relaxed">{item.name}</p>
                           
-                          <div className="flex gap-2">
-                            {[
-                              { icon: Download, label: "Download" },
-                              { icon: Copy, label: "Duplicate" },
-                              { icon: Pencil, label: "Edit" },
-                              { icon: Trash2, label: "Delete" }
-                            ].map((action, i) => (
-                              <div 
-                                key={i} 
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              size="sm" 
+                              className="h-8 px-3 text-xs bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAction("Download", item);
+                              }}
+                            >
+                              <Download className="h-3.5 w-3.5 mr-1.5" />
+                              Download
+                            </Button>
+                            <div className="flex items-center gap-1 ml-auto">
+                              <Button 
+                                size="icon" 
+                                className="h-8 w-8 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleAction(action.label, item);
+                                  toggleFavorite(item.id);
                                 }}
-                                className="h-10 w-10 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center hover:bg-white/25 transition-colors cursor-pointer"
                               >
-                                <action.icon className="h-5 w-5 text-white" />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                                <Star className={cn("h-3.5 w-3.5", item.favorite && "fill-yellow-400 text-yellow-400")} />
+                              </Button>
+                              
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="icon" className="h-8 w-8 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg">
+                                    <MoreHorizontal className="h-3.5 w-3.5" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-[#1F1F25] border-[#2A2A30] text-[#E4E4E7]">
+                                  <DropdownMenuItem onClick={() => handleAction("Open", item)} className="hover:bg-[#2A2A30] cursor-pointer"><ArrowUpRight className="h-4 w-4 mr-2" /> Open</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleAction("Edit", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Pencil className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleAction("Duplicate", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Copy className="h-4 w-4 mr-2" /> Duplicate</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleAction("Move", item)} className="hover:bg-[#2A2A30] cursor-pointer"><FolderInput className="h-4 w-4 mr-2" /> Move to Folder</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
 
-                      {/* Card Info */}
-                      <div className="p-4 bg-white dark:bg-[#111113]">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA] truncate pr-2 group-hover:text-[#F59E0B] transition-colors">
-                            {item.name}
-                          </h3>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="h-6 w-6 flex items-center justify-center text-[#52525B] hover:text-[#A1A1AA] transition-colors">
-                                <MoreVertical className="h-4.5 w-4.5" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-[#1F1F25] border-[#2A2A30] text-[#E4E4E7] min-w-[180px] p-1.5">
-                              <DropdownMenuItem onClick={() => handleAction("Open", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><ArrowUpRight className="h-4 w-4 mr-2.5" /> Open</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleAction("Edit", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Pencil className="h-4 w-4 mr-2.5" /> Edit</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleAction("Duplicate", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Copy className="h-4 w-4 mr-2.5" /> Duplicate</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleAction("Move", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><FolderInput className="h-4 w-4 mr-2.5" /> Move to Folder</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleAction("Download", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Download className="h-4 w-4 mr-2.5" /> Download</DropdownMenuItem>
-                              <DropdownMenuSeparator className="bg-[#2A2A30] my-1" />
-                              <DropdownMenuItem onClick={() => handleAction("Unfavorite", item)} className="text-[#F59E0B] hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><StarOff className="h-4 w-4 mr-2.5" /> Unfavorite</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleAction("Delete", item)} className="text-[#DC2626] hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Trash2 className="h-4 w-4 mr-2.5" /> Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-
-                        <div className="flex items-center gap-2 mb-2.5 flex-wrap">
-                          <div className="flex items-center text-xs text-[#71717A]">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {item.date}
+                              <Button 
+                                size="icon" 
+                                className="h-8 w-8 bg-white/10 hover:bg-red-500/20 text-white hover:text-red-400 border-0 backdrop-blur-md rounded-lg transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAction("Delete", item);
+                                }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </div>
-                          <span className="text-[#71717A]">·</span>
-                          <div className="flex items-center text-xs text-[#71717A]">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {item.time}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1.5">
-                          {item.tags.map(tag => (
-                            <span key={tag} className="px-2 py-1 rounded-md bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30] text-[11px] text-[#71717A]">
-                              {tag}
-                            </span>
-                          ))}
                         </div>
                       </div>
                     </motion.div>
