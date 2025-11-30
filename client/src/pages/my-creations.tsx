@@ -416,7 +416,7 @@ export default function MyCreations() {
                 {filteredItems.map((item) => (
                   <div 
                     key={item.id}
-                    onClick={() => selectMode && toggleSelection(item.id)}
+                    onClick={() => selectMode ? toggleSelection(item.id) : setSelectedItem(item)}
                     className={cn(
                       "grid grid-cols-[40px_80px_2fr_1fr_1fr_1fr_100px] gap-4 px-6 py-3 border-b border-[#E4E4E7] dark:border-[#1F1F23] items-center hover:bg-[#F9FAFB] dark:hover:bg-[#1A1A1F] transition-colors cursor-pointer group last:border-0",
                       selectedItems.includes(item.id) && "bg-[#F59E0B]/5 dark:bg-[#F59E0B]/10"
@@ -504,7 +504,7 @@ export default function MyCreations() {
                     <motion.div
                       layoutId={item.id}
                       key={item.id}
-                      onClick={() => selectMode && toggleSelection(item.id)}
+                      onClick={() => selectMode ? toggleSelection(item.id) : setSelectedItem(item)}
                       className={cn(
                         "group relative bg-white dark:bg-[#111113] border rounded-2xl overflow-hidden cursor-pointer transition-all duration-250",
                         viewMode === "masonry" && "mb-5 break-inside-avoid",
