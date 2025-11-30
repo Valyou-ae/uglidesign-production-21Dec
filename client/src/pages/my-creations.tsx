@@ -241,67 +241,49 @@ export default function MyCreations() {
       <main className="flex-1 flex flex-col relative h-full overflow-hidden bg-[#F8F8F8] dark:bg-[#0A0A0B] text-foreground">
         <div className="flex flex-col h-full p-8 md:px-10 md:py-8 overflow-y-auto pb-24 md:pb-8">
           
-          {/* PAGE HEADER */}
-          <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 md:mb-8 flex-shrink-0 gap-4 md:gap-0">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <Folder className="h-6 w-6 md:h-7 md:w-7 text-[#7C3AED]" />
-                <h1 className="text-2xl md:text-[28px] font-bold text-[#18181B] dark:text-[#FAFAFA]">My Creations</h1>
-              </div>
-              <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 text-sm text-[#71717A]">
-                <span className="line-clamp-1">Manage and organize all your AI-generated assets</span>
-                <span className="hidden md:block w-1 h-1 rounded-full bg-[#71717A]" />
-                <span className="text-xs md:text-sm font-medium">{items.length} items total</span>
+          {/* PAGE HEADER & CONTROLS - COMPACT MOBILE */}
+          <div className="flex flex-col gap-4 mb-6 flex-shrink-0">
+            {/* Title Row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Folder className="h-6 w-6 text-[#7C3AED]" />
+                <h1 className="text-xl font-bold text-[#18181B] dark:text-[#FAFAFA]">My Creations</h1>
+                <span className="text-xs text-[#71717A] ml-1 bg-[#F4F4F5] dark:bg-[#1F1F25] px-2 py-0.5 rounded-full">{items.length}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+            {/* Controls Row - Unified */}
+            <div className="grid grid-cols-[1fr_auto_auto] gap-2">
               {/* Search */}
               <div className={cn(
-                "flex items-center transition-all duration-300 bg-white dark:bg-[#1F1F25] rounded-xl border border-[#E4E4E7] dark:border-transparent overflow-hidden flex-shrink-0",
-                searchOpen ? "w-full md:w-[300px] border-[#E4E4E7] dark:border-[#2A2A30]" : "w-11 h-11 cursor-pointer hover:bg-[#F4F4F5] dark:hover:bg-[#2A2A30]"
+                "flex items-center bg-white dark:bg-[#1F1F25] rounded-lg border border-[#E4E4E7] dark:border-transparent overflow-hidden h-10",
+                searchOpen ? "border-[#E4E4E7] dark:border-[#2A2A30]" : ""
               )}>
-                 {searchOpen || window.innerWidth < 768 ? (
-                   <>
-                     <Search className="h-4 w-4 text-muted-foreground ml-3 shrink-0" />
-                     <Input 
-                       autoFocus={searchOpen && window.innerWidth >= 768}
-                       value={searchQuery}
-                       onChange={(e) => setSearchQuery(e.target.value)}
-                       placeholder="Search..." 
-                       className="border-0 bg-transparent focus-visible:ring-0 h-10 text-sm min-w-[100px]"
-                     />
-                     {searchOpen && (
-                       <Button 
-                         variant="ghost" 
-                         size="icon" 
-                         className="h-8 w-8 mr-1 text-muted-foreground hover:text-foreground"
-                         onClick={() => {
-                           setSearchOpen(false);
-                           setSearchQuery("");
-                         }}
-                       >
-                         <X className="h-4 w-4" />
-                       </Button>
-                     )}
-                   </>
-                 ) : (
-                   <div 
-                     className="w-full h-full flex items-center justify-center"
-                     onClick={() => setSearchOpen(true)}
+                 <Search className="h-4 w-4 text-muted-foreground ml-3 shrink-0" />
+                 <Input 
+                   value={searchQuery}
+                   onChange={(e) => setSearchQuery(e.target.value)}
+                   placeholder="Search..." 
+                   className="border-0 bg-transparent focus-visible:ring-0 h-full text-sm min-w-0"
+                 />
+                 {searchQuery && (
+                   <Button 
+                     variant="ghost" 
+                     size="icon" 
+                     className="h-8 w-8 mr-1 text-muted-foreground hover:text-foreground"
+                     onClick={() => setSearchQuery("")}
                    >
-                     <Search className="h-5 w-5 text-foreground" />
-                   </div>
+                     <X className="h-3.5 w-3.5" />
+                   </Button>
                  )}
               </div>
 
               {/* Sort */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center justify-center gap-2 h-11 px-3 md:px-4 bg-white dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-xl text-sm font-medium hover:bg-[#F4F4F5] dark:hover:bg-[#2A2A30] transition-colors whitespace-nowrap flex-shrink-0">
+                  <button className="flex items-center justify-center gap-1.5 h-10 px-3 bg-white dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-lg text-sm font-medium hover:bg-[#F4F4F5] dark:hover:bg-[#2A2A30] transition-colors whitespace-nowrap">
                     <ArrowUpDown className="h-4 w-4 text-[#71717A]" />
                     <span className="hidden sm:inline">{sortMode}</span>
-                    <ChevronDown className="h-4 w-4 text-[#71717A]" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40 bg-[#1F1F25] border-[#2A2A30] text-[#E4E4E7]">
@@ -319,17 +301,16 @@ export default function MyCreations() {
               </DropdownMenu>
 
               {/* View Toggle */}
-              <div className="flex p-1 bg-white dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-xl h-11 items-center flex-shrink-0">
+              <div className="flex p-1 bg-white dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-lg h-10 items-center">
                 {[
                   { id: "grid", icon: LayoutGrid },
                   { id: "list", icon: List },
-                  { id: "masonry", icon: StretchHorizontal }
                 ].map((view) => (
                   <button
                     key={view.id}
                     onClick={() => setViewMode(view.id as any)}
                     className={cn(
-                      "p-2 rounded-lg transition-all",
+                      "p-1.5 rounded-md transition-all",
                       viewMode === view.id 
                         ? "bg-[#F4F4F5] dark:bg-[#2A2A30] text-foreground shadow-sm" 
                         : "text-[#71717A] hover:text-foreground"
@@ -340,41 +321,33 @@ export default function MyCreations() {
                 ))}
               </div>
             </div>
-          </div>
 
-          {/* TOOLBAR SECTION */}
-          <div className="bg-transparent md:bg-white md:dark:bg-[#111113] md:border md:border-[#E4E4E7] md:dark:border-[#1F1F23] md:rounded-2xl md:p-4 mb-6 flex items-center justify-between flex-shrink-0 md:shadow-sm gap-3">
-            {/* Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar flex-1 mask-linear-fade">
+            {/* Filter Row */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
               {[
-                { name: "All", icon: LayoutGrid, count: items.length, color: "#71717A" },
-                { name: "My Favourites", icon: Star, count: items.filter(i => i.favorite).length, color: "#F59E0B" },
-                { name: "Images", icon: Wand2, count: items.filter(i => i.type === "image").length, color: "#7C3AED" },
-                { name: "Mockups", icon: ShoppingBag, count: items.filter(i => i.type === "mockup").length, color: "#4F46E5" },
-                { name: "BG Removed", icon: Scissors, count: items.filter(i => i.type === "bg-removed").length, color: "#EC4899" }
+                { name: "All", count: items.length },
+                { name: "My Favourites", count: items.filter(i => i.favorite).length },
+                { name: "Images", count: items.filter(i => i.type === "image").length },
+                { name: "Mockups", count: items.filter(i => i.type === "mockup").length },
               ].map(filter => (
                 <button
                   key={filter.name}
                   onClick={() => setActiveFilter(filter.name)}
                   className={cn(
-                    "px-4 py-2 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 border whitespace-nowrap flex-shrink-0 shadow-sm md:shadow-none",
+                    "px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 border whitespace-nowrap flex-shrink-0",
                     activeFilter === filter.name 
                       ? "bg-[#F59E0B] text-[#18181B] border-[#F59E0B]" 
-                      : "bg-white dark:bg-[#1F1F25] md:bg-transparent text-[#71717A] border-[#E4E4E7] dark:border-[#2A2A30] hover:bg-[#F4F4F5] dark:hover:bg-[#1F1F25] hover:border-[#D4D4D8] dark:hover:border-[#3A3A40]"
+                      : "bg-white dark:bg-[#1F1F25] text-[#71717A] border-[#E4E4E7] dark:border-[#2A2A30]"
                   )}
                 >
-                  <filter.icon className={cn("h-3.5 w-3.5", activeFilter !== filter.name && `text-[${filter.color}]`)} />
                   {filter.name}
-                  <span className={cn("ml-0.5 opacity-70", activeFilter === filter.name ? "text-[#18181B]" : "")}>
-                    ({filter.count})
+                  <span className={cn("opacity-70", activeFilter === filter.name ? "text-[#18181B]" : "")}>
+                    {filter.count}
                   </span>
                 </button>
               ))}
-            </div>
-
-            {/* Right Side Actions */}
-            <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 pb-2 md:pb-0">
-               <div className="h-8 w-px bg-[#E4E4E7] dark:bg-[#2A2A30] hidden md:block" />
+              
+              <div className="w-px h-6 bg-border mx-1 flex-shrink-0" />
               
               <button
                 onClick={() => {
@@ -382,14 +355,14 @@ export default function MyCreations() {
                   setSelectedItems([]);
                 }}
                 className={cn(
-                  "flex items-center gap-2 px-3.5 py-2 rounded-[10px] border text-sm font-medium transition-all h-[38px] shadow-sm md:shadow-none",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all flex-shrink-0",
                   selectMode 
                     ? "bg-[#F59E0B]/10 border-[#F59E0B] text-[#F59E0B]" 
-                    : "bg-white dark:bg-[#1F1F25] md:bg-white md:dark:bg-[#1F1F25] border-[#E4E4E7] dark:border-[#2A2A30] text-[#71717A] hover:border-[#D4D4D8] dark:hover:border-[#3A3A40]"
+                    : "bg-white dark:bg-[#1F1F25] border-[#E4E4E7] dark:border-[#2A2A30] text-[#71717A]"
                 )}
               >
-                <CheckSquare className="h-4.5 w-4.5" />
-                <span className="hidden md:inline">{selectMode ? "Cancel" : "Select"}</span>
+                <CheckSquare className="h-3.5 w-3.5" />
+                {selectMode ? "Cancel" : "Select"}
               </button>
             </div>
           </div>

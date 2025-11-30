@@ -416,74 +416,69 @@ function SecuritySettings() {
         </div>
       </div>
 
-      {/* Active Sessions */}
-      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6 mb-6">
+      {/* Active Sessions - Compact Mobile */}
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-5 mb-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">Active Sessions</h3>
-          <button className="text-[13px] text-[#DC2626] hover:underline">Sign out all</button>
+          <button className="text-xs font-medium text-[#DC2626] hover:underline bg-red-50 dark:bg-red-900/10 px-2 py-1 rounded-md">Sign out all</button>
         </div>
         
-        <div className="space-y-0">
+        <div className="space-y-4">
           {[
-            { icon: Monitor, name: "MacBook Pro - Chrome", loc: "San Francisco, CA · Active now", current: true },
-            { icon: Smartphone, name: "iPhone 15 - Safari", loc: "San Francisco, CA · Last active 2h ago", current: false },
-            { icon: Monitor, name: "Windows PC - Firefox", loc: "Unknown · Last active 5 days ago", current: false }
+            { icon: Monitor, name: "MacBook Pro", browser: "Chrome", loc: "San Francisco, CA", active: "Active now", current: true },
+            { icon: Smartphone, name: "iPhone 15", browser: "Safari", loc: "San Francisco, CA", active: "2h ago", current: false },
+            { icon: Monitor, name: "Windows PC", browser: "Firefox", loc: "Unknown", active: "5 days ago", current: false }
           ].map((session, i) => (
-            <div key={i} className="flex justify-between items-center py-4 border-b border-[#F4F4F5] dark:border-[#1F1F23] last:border-0">
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-10 bg-[#F4F4F5] dark:bg-[#1F1F25] rounded-full flex items-center justify-center">
-                  <session.icon className="h-5 w-5 text-[#71717A]" />
+            <div key={i} className="flex justify-between items-start">
+              <div className="flex gap-3">
+                <div className="h-8 w-8 bg-[#F4F4F5] dark:bg-[#1F1F25] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <session.icon className="h-4 w-4 text-[#71717A]" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-[#18181B] dark:text-[#FAFAFA]">{session.name}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-[#18181B] dark:text-[#FAFAFA]">{session.name} <span className="text-[#71717A] font-normal">- {session.browser}</span></span>
                     {session.current && (
-                      <span className="px-2 py-0.5 bg-[#7C3AED]/20 text-[#7C3AED] text-[10px] font-bold rounded-full uppercase">Current</span>
+                      <span className="px-1.5 py-0.5 bg-[#7C3AED]/10 text-[#7C3AED] text-[9px] font-bold rounded-md uppercase border border-[#7C3AED]/20">Current</span>
                     )}
                   </div>
-                  <div className="text-xs text-[#71717A] dark:text-[#52525B] mt-0.5">{session.loc}</div>
+                  <div className="text-xs text-[#71717A] dark:text-[#52525B] mt-0.5 flex items-center gap-1.5">
+                    <span>{session.loc}</span>
+                    <span className="w-0.5 h-0.5 rounded-full bg-[#71717A]" />
+                    <span>{session.active}</span>
+                  </div>
                 </div>
               </div>
-              <button className="text-[13px] text-[#71717A] hover:text-[#DC2626] transition-colors">Sign out</button>
+              <button className="text-xs text-[#71717A] border border-border px-2 py-1 rounded hover:bg-muted transition-colors">Sign out</button>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Login History */}
-      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-6">
+      {/* Login History - Compact List for Mobile */}
+      <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-5">
         <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA] mb-4">Recent Login Activity</h3>
-        <div className="overflow-hidden rounded-lg border border-[#E4E4E7] dark:border-[#1F1F23]">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#F4F4F5] dark:bg-[#1A1A1F] text-[#71717A] text-xs uppercase font-semibold">
-              <tr>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Location</th>
-                <th className="px-4 py-3">Device</th>
-                <th className="px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F4F4F5] dark:divide-[#1F1F23]">
-              <tr>
-                <td className="px-4 py-3 text-[#18181B] dark:text-[#FAFAFA]">Dec 15, 2:30 PM</td>
-                <td className="px-4 py-3 text-[#71717A] dark:text-[#A1A1AA]">San Francisco, CA</td>
-                <td className="px-4 py-3 text-[#71717A] dark:text-[#A1A1AA]">Chrome on Mac</td>
-                <td className="px-4 py-3"><span className="text-[#16A34A] text-xs font-medium bg-[#16A34A]/10 px-2 py-1 rounded-full">Success</span></td>
-              </tr>
-              <tr>
-                <td className="px-4 py-3 text-[#18181B] dark:text-[#FAFAFA]">Dec 14, 9:15 AM</td>
-                <td className="px-4 py-3 text-[#71717A] dark:text-[#A1A1AA]">San Francisco, CA</td>
-                <td className="px-4 py-3 text-[#71717A] dark:text-[#A1A1AA]">Safari on iPhone</td>
-                <td className="px-4 py-3"><span className="text-[#16A34A] text-xs font-medium bg-[#16A34A]/10 px-2 py-1 rounded-full">Success</span></td>
-              </tr>
-              <tr>
-                <td className="px-4 py-3 text-[#18181B] dark:text-[#FAFAFA]">Dec 13, 11:00 PM</td>
-                <td className="px-4 py-3 text-[#71717A] dark:text-[#A1A1AA]">Unknown</td>
-                <td className="px-4 py-3 text-[#71717A] dark:text-[#A1A1AA]">Firefox on Windows</td>
-                <td className="px-4 py-3"><span className="text-[#DC2626] text-xs font-medium bg-[#DC2626]/10 px-2 py-1 rounded-full">Blocked</span></td>
-              </tr>
-            </tbody>
-          </table>
+        
+        {/* Mobile List View */}
+        <div className="space-y-3">
+          {[
+            { date: "Dec 15, 2:30 PM", loc: "San Francisco, CA", device: "Chrome on Mac", status: "Success", statusColor: "text-[#16A34A] bg-[#16A34A]/10" },
+            { date: "Dec 14, 9:15 AM", loc: "San Francisco, CA", device: "Safari on iPhone", status: "Success", statusColor: "text-[#16A34A] bg-[#16A34A]/10" },
+            { date: "Dec 13, 11:00 PM", loc: "Unknown", device: "Firefox on Windows", status: "Blocked", statusColor: "text-[#DC2626] bg-[#DC2626]/10" }
+          ].map((login, i) => (
+            <div key={i} className="flex items-center justify-between p-3 bg-[#F9FAFB] dark:bg-[#1A1A1F] rounded-xl border border-[#E4E4E7] dark:border-[#1F1F23]">
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-medium text-[#18181B] dark:text-[#FAFAFA]">{login.device}</div>
+                <div className="text-xs text-[#71717A] flex items-center gap-1.5">
+                  <span>{login.date}</span>
+                  <span className="w-0.5 h-0.5 rounded-full bg-[#71717A]" />
+                  <span>{login.loc}</span>
+                </div>
+              </div>
+              <span className={cn("text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide", login.statusColor)}>
+                {login.status}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </motion.div>

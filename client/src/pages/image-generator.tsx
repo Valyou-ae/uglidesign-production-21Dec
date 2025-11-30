@@ -712,38 +712,48 @@ export default function ImageGenerator() {
           
           {/* Gallery Filter Bar */}
           {generations.length > 0 && (
-             <div className="max-w-[1800px] mx-auto mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-               <Button
-                 variant={activeFilter === "all" ? "default" : "outline"}
-                 size="sm"
-                 onClick={() => setActiveFilter("all")}
-                 className="rounded-full h-8 text-xs"
-               >
-                 All Generations ({generations.length})
-               </Button>
-               <Button
-                 variant={activeFilter === "favorites" ? "default" : "outline"}
-                 size="sm"
-                 onClick={() => setActiveFilter("favorites")}
-                 className="rounded-full h-8 text-xs gap-1.5"
-               >
-                 <Star className="h-3.5 w-3.5" />
-                 Favorites ({generations.filter(g => g.isFavorite).length})
-               </Button>
-               <div className="w-px h-4 bg-border mx-1" />
-               {Array.from(new Set(generations.map(g => g.style))).map(style => (
-                 <Button
-                   key={style}
-                   variant={activeFilter === style ? "default" : "ghost"}
-                   size="sm"
-                   onClick={() => setActiveFilter(style)}
+             <div className="max-w-[1800px] mx-auto mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
+               <div className="flex p-1 bg-muted/50 rounded-lg shrink-0 h-8 items-center">
+                 <button
+                   onClick={() => setActiveFilter("all")}
                    className={cn(
-                     "rounded-full h-8 text-xs capitalize",
-                     activeFilter === style ? "" : "text-muted-foreground hover:text-foreground bg-muted/30"
+                     "px-3 rounded-md text-[11px] font-medium transition-all h-6 flex items-center",
+                     activeFilter === "all" 
+                       ? "bg-background text-foreground shadow-sm" 
+                       : "text-muted-foreground hover:text-foreground"
                    )}
                  >
-                   {STYLE_PRESETS.find(s => s.id === style)?.name || style} ({generations.filter(g => g.style === style).length})
-                 </Button>
+                   All ({generations.length})
+                 </button>
+                 <button
+                   onClick={() => setActiveFilter("favorites")}
+                   className={cn(
+                     "px-3 rounded-md text-[11px] font-medium transition-all h-6 flex items-center gap-1",
+                     activeFilter === "favorites" 
+                       ? "bg-background text-foreground shadow-sm" 
+                       : "text-muted-foreground hover:text-foreground"
+                   )}
+                 >
+                   <Star className="h-3 w-3" />
+                   Favs
+                 </button>
+               </div>
+
+               <div className="w-px h-4 bg-border mx-1 shrink-0" />
+               
+               {Array.from(new Set(generations.map(g => g.style))).map(style => (
+                 <button
+                   key={style}
+                   onClick={() => setActiveFilter(style)}
+                   className={cn(
+                     "rounded-full h-7 px-3 text-[11px] capitalize border transition-all whitespace-nowrap",
+                     activeFilter === style 
+                       ? "bg-primary/10 border-primary/20 text-primary" 
+                       : "bg-background border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                   )}
+                 >
+                   {STYLE_PRESETS.find(s => s.id === style)?.name || style}
+                 </button>
                ))}
              </div>
           )}
