@@ -291,10 +291,10 @@ export default function MockupGenerator() {
               <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-16 mb-1">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-bold tracking-tight text-indigo-600">
                       Mockup Generator
                     </h1>
-                    <Shirt className="h-6 w-6 text-indigo-600" />
+                    <Shirt className="h-6 w-6 text-indigo-600 animate-cut" />
                   </div>
                   <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-2 py-0.5 text-[11px]">
                     Professional
