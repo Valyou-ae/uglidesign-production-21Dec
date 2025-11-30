@@ -210,50 +210,43 @@ export default function ImageGenerator() {
   };
 
   const toggleVoiceInput = () => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      if (isListening) {
-        setIsListening(false);
-        // Logic to stop would require keeping the instance in a ref, 
-        // but for this simple implementation, we'll just rely on it stopping or state update.
-        // Ideally we should call recognition.stop() here.
-        window.location.reload(); // Force stop for mockup simplicity if needed or just let it timeout
-      } else {
-        setIsListening(true);
-        // @ts-ignore
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        
-        recognition.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          setPrompt(prev => (prev ? prev + " " : "") + transcript);
-          setIsListening(false);
-        };
-        
-        recognition.onerror = (event: any) => {
-          console.error(event.error);
-          setIsListening(false);
-          toast({
-            title: "Voice Input Error",
-            description: "Could not recognize voice. Please try again.",
-            variant: "destructive"
-          });
-        };
-        
-        recognition.onend = () => {
-          setIsListening(false);
-        };
-        
-        recognition.start();
-      }
-    } else {
-      toast({
-        title: "Not Supported",
-        description: "Voice input is not supported in this browser.",
-        variant: "destructive"
-      });
+    if (isListening) {
+      setIsListening(false);
+      toast({ title: "Voice input stopped" });
+      return;
     }
+
+    setIsListening(true);
+    toast({
+      title: "Listening...",
+      description: "Speak now to add to your prompt.",
+      className: "bg-blue-50 border-blue-200 text-blue-800"
+    });
+
+    // Simulate voice recognition for consistent mockup experience
+    setTimeout(() => {
+      const simulatedPhrases = [
+        "with cinematic lighting and dramatic shadows",
+        "in high resolution 8k detail",
+        "trending on artstation",
+        "with a golden hour sunset background",
+        "photorealistic style",
+        "vibrant neon colors",
+        "minimalist composition"
+      ];
+      const randomPhrase = simulatedPhrases[Math.floor(Math.random() * simulatedPhrases.length)];
+      
+      setPrompt(prev => {
+        const newPrompt = prev.trim() ? `${prev.trim()} ${randomPhrase}` : randomPhrase;
+        return newPrompt;
+      });
+      
+      setIsListening(false);
+      toast({
+        title: "Voice Recognized",
+        description: `Added: "${randomPhrase}"`,
+      });
+    }, 2000);
   };
 
   // Initialize prompt from URL if available
