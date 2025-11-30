@@ -10,6 +10,7 @@ import {
   Star, 
   Trash2, 
   FolderInput, 
+  Folder, 
   ArrowUpRight, 
   Eye, 
   Pencil, 
@@ -113,13 +114,13 @@ export default function Favorites() {
           <div className="flex items-start justify-between mb-8 flex-shrink-0">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <Star className="h-7 w-7 text-[#F59E0B] fill-[#F59E0B]" />
-                <h1 className="text-[28px] font-bold text-[#18181B] dark:text-[#FAFAFA]">Favorites</h1>
+                <Folder className="h-7 w-7 text-[#7C3AED]" />
+                <h1 className="text-[28px] font-bold text-[#18181B] dark:text-[#FAFAFA]">My Creations</h1>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#71717A]">
-                <span>Your starred creations in one place</span>
+                <span>Manage and organize all your AI-generated assets</span>
                 <span className="w-1 h-1 rounded-full bg-[#71717A]" />
-                <span>{favorites.length} items</span>
+                <span>{favorites.length} items total</span>
               </div>
             </div>
 
