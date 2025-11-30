@@ -274,8 +274,8 @@ export default function Discover() {
         </div>
 
         {/* TRENDING NOW SECTION */}
-        <div className="px-12 py-12 max-w-[1400px] mx-auto w-full">
-          <div className="flex justify-between items-center mb-7">
+        <div className="px-6 md:px-12 py-8 md:py-12 max-w-[1400px] mx-auto w-full">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-7 gap-4 sm:gap-0">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-6 w-6 text-[#EC4899]" />
               <h2 className="text-2xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Trending Now</h2>

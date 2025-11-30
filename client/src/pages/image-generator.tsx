@@ -412,7 +412,7 @@ export default function ImageGenerator() {
       <main className="flex-1 flex flex-col relative h-full overflow-hidden bg-background text-foreground">
         
         {/* TOP SECTION: PROMPT BAR (Minimalistic) */}
-        <div className="fixed bottom-[60px] left-0 right-0 md:relative md:bottom-auto md:top-0 z-50 bg-background/80 backdrop-blur-xl border-t md:border-t-0 md:border-b border-border px-4 md:px-6 py-3 md:py-4 transition-all order-last md:order-first">
+        <div className="fixed bottom-[70px] left-0 right-0 md:relative md:bottom-auto md:top-0 z-[60] bg-background/80 backdrop-blur-xl border-t md:border-t-0 md:border-b border-border px-4 md:px-6 py-3 md:py-4 transition-all order-last md:order-first pb-safe">
           <div className="max-w-[1800px] mx-auto w-full space-y-4">
             
             {/* Prompt Input & Controls */}

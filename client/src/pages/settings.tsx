@@ -39,7 +39,8 @@ import {
   Store,
   Shirt,
   Package,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -71,7 +72,13 @@ import {
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("Profile");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(true);
   const { toast } = useToast();
+
+  const handleTabSelect = (tabName: string) => {
+    setActiveTab(tabName);
+    setMobileMenuOpen(false);
+  };
 
   const navGroups = [
     {
@@ -149,9 +156,12 @@ export default function Settings() {
       {/* Main Sidebar */}
       <Sidebar className="hidden md:flex border-r border-border/50" />
       
-      <main className="flex-1 flex h-full overflow-hidden bg-[#F8F8F8] dark:bg-[#0A0A0B] text-[#18181B] dark:text-[#FAFAFA]">
+      <main className="flex-1 flex h-full overflow-hidden bg-[#F8F8F8] dark:bg-[#0A0A0B] text-[#18181B] dark:text-[#FAFAFA] relative">
         {/* Settings Navigation Panel */}
-        <div className="w-[260px] flex-shrink-0 border-r border-[#E4E4E7] dark:border-[#1F1F23] bg-[#F8F8F8] dark:bg-[#0A0A0B] h-full overflow-y-auto py-8">
+        <div className={cn(
+          "w-full md:w-[260px] flex-shrink-0 border-r border-[#E4E4E7] dark:border-[#1F1F23] bg-[#F8F8F8] dark:bg-[#0A0A0B] h-full overflow-y-auto py-8 transition-all absolute md:relative z-20",
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}>
           <div className="px-6 mb-8">
             <h1 className="text-2xl font-bold text-[#18181B] dark:text-[#FAFAFA] mb-4">Settings</h1>
             <div className="relative">
@@ -174,7 +184,7 @@ export default function Settings() {
                   {group.items.map((item) => (
                     <button
                       key={item.name}
-                      onClick={() => setActiveTab(item.name)}
+                      onClick={() => handleTabSelect(item.name)}
                       className={cn(
                         "w-full flex items-center gap-3 px-6 py-2.5 text-sm transition-all border-l-2 border-transparent",
                         activeTab === item.name 
@@ -194,8 +204,19 @@ export default function Settings() {
         </div>
 
         {/* Settings Content Panel */}
-        <div className="flex-1 h-full overflow-y-auto bg-white dark:bg-[#09090B] p-8 md:px-12">
+        <div className={cn(
+          "flex-1 h-full overflow-y-auto bg-white dark:bg-[#09090B] p-6 md:p-12 w-full absolute md:relative transition-all",
+          mobileMenuOpen ? "translate-x-full md:translate-x-0" : "translate-x-0"
+        )}>
           <div className="max-w-[720px] mx-auto pb-20">
+            {/* Mobile Back Button */}
+            <button 
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden flex items-center gap-2 text-sm text-muted-foreground mb-6 hover:text-foreground transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back to Settings
+            </button>
             {renderContent()}
           </div>
         </div>

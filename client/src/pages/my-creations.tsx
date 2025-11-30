@@ -242,7 +242,7 @@ export default function MyCreations() {
         <div className="flex flex-col h-full p-8 md:px-10 md:py-8 overflow-y-auto pb-24 md:pb-8">
           
           {/* PAGE HEADER */}
-          <div className="flex items-start justify-between mb-8 flex-shrink-0">
+          <div className="flex flex-col md:flex-row md:items-start justify-between mb-8 flex-shrink-0 gap-4 md:gap-0">
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <Folder className="h-7 w-7 text-[#7C3AED]" />
@@ -255,33 +255,35 @@ export default function MyCreations() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full md:w-auto">
               {/* Search */}
               <div className={cn(
-                "flex items-center transition-all duration-300 bg-white dark:bg-[#1F1F25] rounded-xl border border-[#E4E4E7] dark:border-transparent overflow-hidden",
-                searchOpen ? "w-[300px] border-[#E4E4E7] dark:border-[#2A2A30]" : "w-11 h-11 cursor-pointer hover:bg-[#F4F4F5] dark:hover:bg-[#2A2A30]"
+                "flex items-center transition-all duration-300 bg-white dark:bg-[#1F1F25] rounded-xl border border-[#E4E4E7] dark:border-transparent overflow-hidden flex-1 md:flex-none",
+                searchOpen ? "w-full md:w-[300px] border-[#E4E4E7] dark:border-[#2A2A30]" : "w-full md:w-11 h-11 cursor-pointer hover:bg-[#F4F4F5] dark:hover:bg-[#2A2A30]"
               )}>
-                 {searchOpen ? (
+                 {searchOpen || window.innerWidth < 768 ? (
                    <>
                      <Search className="h-4 w-4 text-muted-foreground ml-3 shrink-0" />
                      <Input 
-                       autoFocus
+                       autoFocus={searchOpen && window.innerWidth >= 768}
                        value={searchQuery}
                        onChange={(e) => setSearchQuery(e.target.value)}
-                       placeholder="Search favorites..." 
+                       placeholder="Search..." 
                        className="border-0 bg-transparent focus-visible:ring-0 h-10 text-sm"
                      />
-                     <Button 
-                       variant="ghost" 
-                       size="icon" 
-                       className="h-8 w-8 mr-1 text-muted-foreground hover:text-foreground"
-                       onClick={() => {
-                         setSearchOpen(false);
-                         setSearchQuery("");
-                       }}
-                     >
-                       <X className="h-4 w-4" />
-                     </Button>
+                     {searchOpen && (
+                       <Button 
+                         variant="ghost" 
+                         size="icon" 
+                         className="h-8 w-8 mr-1 text-muted-foreground hover:text-foreground"
+                         onClick={() => {
+                           setSearchOpen(false);
+                           setSearchQuery("");
+                         }}
+                       >
+                         <X className="h-4 w-4" />
+                       </Button>
+                     )}
                    </>
                  ) : (
                    <div 
@@ -296,9 +298,9 @@ export default function MyCreations() {
               {/* Sort */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 h-11 px-4 bg-white dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-xl text-sm font-medium hover:bg-[#F4F4F5] dark:hover:bg-[#2A2A30] transition-colors">
+                  <button className="flex items-center gap-2 h-11 px-4 bg-white dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-xl text-sm font-medium hover:bg-[#F4F4F5] dark:hover:bg-[#2A2A30] transition-colors whitespace-nowrap">
                     <ArrowUpDown className="h-4 w-4 text-[#71717A]" />
-                    <span>{sortMode}</span>
+                    <span className="hidden sm:inline">{sortMode}</span>
                     <ChevronDown className="h-4 w-4 text-[#71717A]" />
                   </button>
                 </DropdownMenuTrigger>
@@ -341,9 +343,9 @@ export default function MyCreations() {
           </div>
 
           {/* TOOLBAR SECTION */}
-          <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-4 mb-6 flex items-center justify-between flex-shrink-0 shadow-sm">
+          <div className="bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-2xl p-4 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between flex-shrink-0 shadow-sm gap-4 md:gap-0">
             {/* Filter Pills */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full overflow-x-auto pb-2 md:pb-0 no-scrollbar">
               {[
                 { name: "All", icon: LayoutGrid, count: items.length, color: "#71717A" },
                 { name: "My Favourites", icon: Star, count: items.filter(i => i.favorite).length, color: "#F59E0B" },
@@ -355,7 +357,7 @@ export default function MyCreations() {
                   key={filter.name}
                   onClick={() => setActiveFilter(filter.name)}
                   className={cn(
-                    "px-4 py-2 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 border",
+                    "px-4 py-2 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 border whitespace-nowrap flex-shrink-0",
                     activeFilter === filter.name 
                       ? "bg-[#F59E0B] text-[#18181B] border-[#F59E0B]" 
                       : "bg-transparent text-[#71717A] border-[#E4E4E7] dark:border-[#2A2A30] hover:bg-[#F4F4F5] dark:hover:bg-[#1F1F25] hover:border-[#D4D4D8] dark:hover:border-[#3A3A40]"
@@ -371,7 +373,7 @@ export default function MyCreations() {
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end">
               <button
                 onClick={() => {
                   setSelectMode(!selectMode);
@@ -389,7 +391,7 @@ export default function MyCreations() {
               </button>
               
               {!selectMode && (
-                <div className="h-6 w-px bg-[#E4E4E7] dark:bg-[#2A2A30]" />
+                <div className="h-6 w-px bg-[#E4E4E7] dark:bg-[#2A2A30] hidden md:block" />
               )}
               
               {/* Additional actions when NOT in select mode could go here */}

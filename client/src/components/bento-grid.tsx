@@ -242,15 +242,15 @@ export function BentoGrid() {
       </div>
 
       {/* ROW 2 */}
-      <div className="lg:col-span-2 bg-card border border-sidebar-border/50 rounded-[24px] p-7 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+      <div className="lg:col-span-2 bg-card border border-sidebar-border/50 rounded-[24px] p-5 md:p-7 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-2">
           <h2 className="text-lg font-bold text-foreground">This Month's Stats</h2>
           <Button variant="outline" size="sm" className="h-8 text-xs rounded-full border-border">
             December 2024 <ArrowRight className="ml-2 h-3 w-3 rotate-90" />
           </Button>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard 
             icon={ImageIcon} 
             value="247" 
