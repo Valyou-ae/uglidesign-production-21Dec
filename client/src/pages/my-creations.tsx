@@ -181,7 +181,21 @@ export default function MyCreations() {
     return false;
   }).filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).sort((a, b) => {
+    if (sortMode === "Date Added") {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    }
+    if (sortMode === "Name") {
+      return a.name.localeCompare(b.name);
+    }
+    if (sortMode === "Type") {
+      return a.type.localeCompare(b.type);
+    }
+    if (sortMode === "Size") {
+      return parseFloat(b.size) - parseFloat(a.size);
+    }
+    return 0;
+  });
 
   const getTypeConfig = (type: string) => {
     switch (type) {

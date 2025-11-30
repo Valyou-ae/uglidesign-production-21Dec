@@ -170,28 +170,23 @@ export function Sidebar({ className }: SidebarProps) {
                           collapsed ? "justify-center w-10 h-10 mx-auto p-0" : "px-3.5 py-3 text-sm",
                           isActive 
                             ? "text-primary bg-primary/5" 
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-                          // Special styling for Discover when active
-                          isActive && isDiscover && "bg-gradient-to-r from-[#7C3AED]/15 to-[#EC4899]/15 text-[#FAFAFA] border-l-[3px] border-l-transparent border-image-[linear-gradient(180deg,#7C3AED,#EC4899)] border-image-slice-1"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                         )}
-                        style={isActive && isDiscover ? { borderImageSource: 'linear-gradient(180deg, #7C3AED, #EC4899)', borderImageSlice: 1, borderLeftWidth: '3px', borderStyle: 'solid', borderTop: 'none', borderRight: 'none', borderBottom: 'none' } : {}}
                       >
-                        {isActive && !collapsed && !isDiscover && (
+                        {isActive && !collapsed && (
                           <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-primary rounded-r-full" />
                         )}
                         
                         <item.icon 
                           className={cn(
                             "h-5 w-5 flex-shrink-0", 
-                            isActive ? "text-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground",
-                            isDiscover && isActive && "text-[#7C3AED]" // Fallback or gradient if possible via style
+                            isActive ? "text-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground"
                           )} 
-                          style={isDiscover && isActive ? { color: '#7C3AED' } : {}}
                         />
                         
                         {!collapsed && (
                           <>
-                            <span className={cn("flex-1 truncate", isDiscover && isActive && "font-semibold")}>{item.name}</span>
+                            <span className="flex-1 truncate">{item.name}</span>
                             {item.badge && (
                               <span className={cn(
                                 "text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
