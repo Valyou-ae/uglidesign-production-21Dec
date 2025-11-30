@@ -39,6 +39,16 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
@@ -64,6 +74,8 @@ export default function MyCreations() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [items, setItems] = useState(ITEMS);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   const toggleSelection = (id: string) => {
@@ -71,6 +83,35 @@ export default function MyCreations() {
       setSelectedItems(selectedItems.filter(item => item !== id));
     } else {
       setSelectedItems([...selectedItems, id]);
+    }
+  };
+
+  const handleAction = (action: string, item: typeof ITEMS[0]) => {
+    if (action === "Delete") {
+      setItemToDelete(item.id);
+      setDeleteDialogOpen(true);
+      return;
+    }
+
+    if (action === "Duplicate") {
+      const newItem = { ...item, id: Date.now().toString(), name: `${item.name} (Copy)` };
+      setItems([newItem, ...items]);
+      toast({ title: "Item Duplicated", description: `${item.name} has been duplicated.` });
+      return;
+    }
+
+    toast({
+      title: `${action} Item`,
+      description: `Performed ${action} on ${item.name}`,
+    });
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      setItems(items.filter(i => i.id !== itemToDelete));
+      toast({ title: "Item Deleted", description: "The item has been permanently deleted." });
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
     }
   };
 
@@ -420,11 +461,12 @@ export default function MyCreations() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-[#1F1F25] border-[#2A2A30] text-[#E4E4E7]">
-                          <DropdownMenuItem className="hover:bg-[#2A2A30] cursor-pointer"><ArrowUpRight className="h-4 w-4 mr-2" /> Open</DropdownMenuItem>
-                          <DropdownMenuItem className="hover:bg-[#2A2A30] cursor-pointer"><Eye className="h-4 w-4 mr-2" /> Quick View</DropdownMenuItem>
-                          <DropdownMenuItem className="hover:bg-[#2A2A30] cursor-pointer"><Download className="h-4 w-4 mr-2" /> Download</DropdownMenuItem>
-                          <DropdownMenuItem className="text-[#F59E0B] hover:bg-[#2A2A30] cursor-pointer"><StarOff className="h-4 w-4 mr-2" /> Unfavorite</DropdownMenuItem>
-                          <DropdownMenuItem className="text-[#DC2626] hover:bg-[#2A2A30] cursor-pointer"><Trash2 className="h-4 w-4 mr-2" /> Delete</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAction("Open", item)} className="hover:bg-[#2A2A30] cursor-pointer"><ArrowUpRight className="h-4 w-4 mr-2" /> Open</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAction("Edit", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Pencil className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAction("Download", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Download className="h-4 w-4 mr-2" /> Download</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAction("Duplicate", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Copy className="h-4 w-4 mr-2" /> Duplicate</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAction("Unfavorite", item)} className="text-[#F59E0B] hover:bg-[#2A2A30] cursor-pointer"><StarOff className="h-4 w-4 mr-2" /> Unfavorite</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAction("Delete", item)} className="text-[#DC2626] hover:bg-[#2A2A30] cursor-pointer"><Trash2 className="h-4 w-4 mr-2" /> Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -508,7 +550,14 @@ export default function MyCreations() {
                               { icon: Pencil, label: "Edit" },
                               { icon: Trash2, label: "Delete" }
                             ].map((action, i) => (
-                              <div key={i} className="h-10 w-10 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center hover:bg-white/25 transition-colors cursor-pointer">
+                              <div 
+                                key={i} 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAction(action.label, item);
+                                }}
+                                className="h-10 w-10 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center hover:bg-white/25 transition-colors cursor-pointer"
+                              >
                                 <action.icon className="h-5 w-5 text-white" />
                               </div>
                             ))}
@@ -529,16 +578,14 @@ export default function MyCreations() {
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-[#1F1F25] border-[#2A2A30] text-[#E4E4E7] min-w-[180px] p-1.5">
-                              <DropdownMenuItem className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><ArrowUpRight className="h-4 w-4 mr-2.5" /> Open</DropdownMenuItem>
-                              <DropdownMenuItem className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Eye className="h-4 w-4 mr-2.5" /> Quick View</DropdownMenuItem>
-                              <DropdownMenuItem className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Pencil className="h-4 w-4 mr-2.5" /> Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleAction("Open", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><ArrowUpRight className="h-4 w-4 mr-2.5" /> Open</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleAction("Edit", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Pencil className="h-4 w-4 mr-2.5" /> Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleAction("Duplicate", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Copy className="h-4 w-4 mr-2.5" /> Duplicate</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleAction("Move", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><FolderInput className="h-4 w-4 mr-2.5" /> Move to Folder</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleAction("Download", item)} className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Download className="h-4 w-4 mr-2.5" /> Download</DropdownMenuItem>
                               <DropdownMenuSeparator className="bg-[#2A2A30] my-1" />
-                              <DropdownMenuItem className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Copy className="h-4 w-4 mr-2.5" /> Duplicate</DropdownMenuItem>
-                              <DropdownMenuItem className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><FolderInput className="h-4 w-4 mr-2.5" /> Move to Folder</DropdownMenuItem>
-                              <DropdownMenuItem className="hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Download className="h-4 w-4 mr-2.5" /> Download</DropdownMenuItem>
-                              <DropdownMenuSeparator className="bg-[#2A2A30] my-1" />
-                              <DropdownMenuItem className="text-[#F59E0B] hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><StarOff className="h-4 w-4 mr-2.5" /> Unfavorite</DropdownMenuItem>
-                              <DropdownMenuItem className="text-[#DC2626] hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Trash2 className="h-4 w-4 mr-2.5" /> Delete</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleAction("Unfavorite", item)} className="text-[#F59E0B] hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><StarOff className="h-4 w-4 mr-2.5" /> Unfavorite</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleAction("Delete", item)} className="text-[#DC2626] hover:bg-[#2A2A30] rounded-lg cursor-pointer py-2.5"><Trash2 className="h-4 w-4 mr-2.5" /> Delete</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -572,6 +619,21 @@ export default function MyCreations() {
 
         </div>
       </main>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-[#18181B] border-[#2A2A30] text-[#FAFAFA]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#A1A1AA]">
+              This action cannot be undone. This will permanently delete this item from your creations.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-[#2A2A30] text-[#FAFAFA] hover:bg-[#2A2A30] hover:text-[#FAFAFA]">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-[#DC2626] hover:bg-[#B91C1C] text-white border-0">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
