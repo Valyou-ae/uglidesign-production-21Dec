@@ -83,7 +83,7 @@ export function Sidebar({ className }: SidebarProps) {
     { name: "Image Generator", icon: ImageIcon, href: "/image-gen", badge: "5 agents" },
     { name: "Mockup Generator", icon: Shirt, href: "/mockup", badge: "New" },
     { name: "Background Remover", icon: Scissors, href: "/bg-remover", count: null },
-    { name: "Favorites", icon: Star, href: "/favorites", count: "32" },
+    { name: "My Creations", icon: Star, href: "/my-creations", count: "32" },
   ];
 
   const account = [
