@@ -19,10 +19,22 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export default function AffiliateProgram() {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const affiliateLink = "https://aistudio.com/ref/johndoe";
 
   const handleCopy = () => {
@@ -33,6 +45,21 @@ export default function AffiliateProgram() {
       description: "Your affiliate link has been copied to clipboard.",
     });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWithdraw = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsWithdrawOpen(false);
+      toast({
+        title: "Withdrawal Requested",
+        description: "Your withdrawal request has been submitted successfully. Funds will be deposited within 3-5 business days.",
+      });
+    }, 1500);
   };
 
   return (
@@ -48,10 +75,49 @@ export default function AffiliateProgram() {
               <h1 className="text-3xl font-bold tracking-tight">Affiliate Program</h1>
               <p className="text-muted-foreground mt-1">Earn 20% recurring commission for every referral</p>
             </div>
-            <Button className="bg-green-600 hover:bg-green-700 text-white gap-2 shadow-lg shadow-green-600/20">
-              <Wallet className="h-4 w-4" />
-              Withdraw Earnings
-            </Button>
+            
+            <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-green-600 hover:bg-green-700 text-white gap-2 shadow-lg shadow-green-600/20">
+                  <Wallet className="h-4 w-4" />
+                  Withdraw Earnings
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Withdraw Earnings</DialogTitle>
+                  <DialogDescription>
+                    Enter your bank account details to receive your payments.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleWithdraw} className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="account-name">Account Holder Name</Label>
+                    <Input id="account-name" placeholder="John Doe" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bank-name">Bank Name</Label>
+                    <Input id="bank-name" placeholder="Chase Bank" required />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="routing">Routing Number</Label>
+                      <Input id="routing" placeholder="123456789" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="account">Account Number</Label>
+                      <Input id="account" placeholder="000123456789" required />
+                    </div>
+                  </div>
+                  <DialogFooter className="pt-4">
+                    <Button type="button" variant="outline" onClick={() => setIsWithdrawOpen(false)}>Cancel</Button>
+                    <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isSubmitting}>
+                        {isSubmitting ? "Submitting..." : "Submit Request"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Hero Card */}
