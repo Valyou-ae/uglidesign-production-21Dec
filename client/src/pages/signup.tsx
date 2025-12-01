@@ -112,20 +112,20 @@ export default function Signup() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background relative overflow-y-auto">
-        <div className="w-full max-w-[440px] space-y-8 py-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 md:p-8 bg-background relative overflow-y-auto">
+        <div className="w-full max-w-[440px] space-y-6 md:space-y-8 py-4 md:py-8">
           
           <div className="text-center lg:text-left">
-            <img src={logo} alt="Logo" className="h-12 lg:hidden mx-auto mb-6 object-contain" />
-            <h2 className="text-3xl font-bold tracking-tight">Create an account</h2>
-            <p className="text-muted-foreground mt-2">
+            <img src={logo} alt="Logo" className="h-10 md:h-12 lg:hidden mx-auto mb-4 md:mb-6 object-contain" />
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Create an account</h2>
+            <p className="text-muted-foreground mt-2 text-sm md:text-base">
               Enter your details to get started for free
             </p>
           </div>
 
-          <div className="grid gap-6">
-            <form onSubmit={handleSignup} className="grid gap-4">
-              <div className="grid gap-2">
+          <div className="grid gap-4 md:gap-6">
+            <form onSubmit={handleSignup} className="grid gap-3 md:gap-4">
+              <div className="grid gap-1.5 md:gap-2">
                 <Label htmlFor="name">Full Name</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -137,13 +137,13 @@ export default function Signup() {
                     disabled={isLoading}
                     value={formData.name}
                     onChange={handleChange}
-                    className="pl-10 h-11 rounded-xl"
+                    className="pl-10 h-10 md:h-11 rounded-xl"
                     required
                   />
                 </div>
               </div>
 
-              <div className="grid gap-2">
+              <div className="grid gap-1.5 md:gap-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -157,13 +157,13 @@ export default function Signup() {
                     disabled={isLoading}
                     value={formData.email}
                     onChange={handleChange}
-                    className="pl-10 h-11 rounded-xl"
+                    className="pl-10 h-10 md:h-11 rounded-xl"
                     required
                   />
                 </div>
               </div>
               
-              <div className="grid gap-2">
+              <div className="grid gap-1.5 md:gap-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -173,7 +173,7 @@ export default function Signup() {
                     disabled={isLoading}
                     value={formData.password}
                     onChange={handleChange}
-                    className="pl-10 h-11 rounded-xl pr-10"
+                    className="pl-10 h-10 md:h-11 rounded-xl pr-10"
                     required
                   />
                   <button
@@ -190,7 +190,7 @@ export default function Signup() {
                 </div>
               </div>
 
-              <div className="grid gap-2">
+              <div className="grid gap-1.5 md:gap-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -200,7 +200,7 @@ export default function Signup() {
                     disabled={isLoading}
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="pl-10 h-11 rounded-xl pr-10"
+                    className="pl-10 h-10 md:h-11 rounded-xl pr-10"
                     required
                   />
                 </div>
@@ -209,7 +209,7 @@ export default function Signup() {
               <Button 
                 type="submit" 
                 disabled={isLoading} 
-                className="h-11 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#9333EA] hover:brightness-110 text-white font-bold shadow-lg shadow-purple-600/20 transition-all hover:-translate-y-[1px] mt-2"
+                className="h-10 md:h-11 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#9333EA] hover:brightness-110 text-white font-bold shadow-lg shadow-purple-600/20 transition-all hover:-translate-y-[1px] mt-2"
               >
                 {isLoading ? (
                   <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
