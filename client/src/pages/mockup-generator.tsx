@@ -282,15 +282,15 @@ export default function MockupGenerator() {
         {!journey ? (
           <div className="p-4 md:p-8 lg:p-10 max-w-[1400px] mx-auto min-h-full flex flex-col animate-fade-in">
             {/* Header with USPs */}
-            <div className="mb-6 md:mb-8">
+            <div className="mb-4 md:mb-8">
               <div className="flex items-center text-[13px] text-muted-foreground mb-2">
                 <span>Home</span>
                 <span className="mx-2">/</span>
                 <span>Mockup Generator</span>
               </div>
               
-              <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-16 mb-1">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-16 mb-1">
+                <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
                     <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-indigo-600">
                       Mockup Generator
@@ -317,49 +317,49 @@ export default function MockupGenerator() {
                   </div>
                 </div>
               </div>
-              <p className="text-sm md:text-[15px] text-muted-foreground mt-2">
+              <p className="text-sm md:text-[15px] text-muted-foreground mt-1 md:mt-2">
                 Create professional product photos in seconds without a photoshoot
               </p>
             </div>
 
             <div className="flex-1 flex flex-col items-center justify-center">
-              <div className="max-w-[800px] w-full text-center mb-8 md:mb-12">
+              <div className="max-w-[800px] w-full text-center mb-4 md:mb-12">
                 <p className="text-base md:text-lg text-muted-foreground">Choose your print method to get started</p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full max-w-[900px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 w-full max-w-[900px]">
                 {/* DTG Card */}
                 <div 
                   onClick={() => handleJourneySelect("DTG")}
-                  className="bg-card border-2 border-border rounded-[24px] p-6 md:p-10 text-left cursor-pointer transition-all duration-300 hover:border-indigo-600 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/15 group"
+                  className="bg-card border-2 border-border rounded-[20px] md:rounded-[24px] p-5 md:p-10 text-left cursor-pointer transition-all duration-300 hover:border-indigo-600 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/15 group"
                 >
-                  <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform">
-                    <Shirt className="h-6 w-6 md:h-8 md:w-8 text-indigo-600" />
+                  <div className="h-10 w-10 md:h-16 md:w-16 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-3 md:mb-6 group-hover:scale-110 transition-transform">
+                    <Shirt className="h-5 w-5 md:h-8 md:w-8 text-indigo-600" />
                   </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2 md:mb-3">Direct-to-Garment (DTG)</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4 md:mb-6">
+                  <h3 className="text-lg md:text-2xl font-bold text-foreground mb-1 md:mb-3">Direct-to-Garment (DTG)</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-3 md:mb-6">
                     For designs placed on a specific area of a product, like a logo on the chest of a t-shirt or a graphic on a tote bag.
                   </p>
-                  <span className="text-sm font-bold text-indigo-600 group-hover:underline flex items-center">
-                    Choose DTG <ChevronRight className="h-4 w-4 ml-1" />
+                  <span className="text-xs md:text-sm font-bold text-indigo-600 group-hover:underline flex items-center">
+                    Choose DTG <ChevronRight className="h-3 w-3 md:h-4 md:w-4 ml-1" />
                   </span>
                 </div>
 
                 {/* AOP Card */}
                 <div 
                   onClick={() => handleJourneySelect("AOP")}
-                  className="bg-card border-2 border-border rounded-[24px] p-6 md:p-10 text-left cursor-pointer transition-all duration-300 hover:border-purple-600 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/15 group relative overflow-hidden"
+                  className="bg-card border-2 border-border rounded-[20px] md:rounded-[24px] p-5 md:p-10 text-left cursor-pointer transition-all duration-300 hover:border-purple-600 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/15 group relative overflow-hidden"
                 >
-                  <Badge className="absolute top-4 right-4 md:top-6 md:right-6 bg-amber-500 text-white hover:bg-amber-600 text-[11px]">Pro</Badge>
-                  <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform">
-                    <Grid className="h-6 w-6 md:h-8 md:w-8 text-purple-600" />
+                  <Badge className="absolute top-3 right-3 md:top-6 md:right-6 bg-amber-500 text-white hover:bg-amber-600 text-[10px] md:text-[11px]">Pro</Badge>
+                  <div className="h-10 w-10 md:h-16 md:w-16 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mb-3 md:mb-6 group-hover:scale-110 transition-transform">
+                    <Grid className="h-5 w-5 md:h-8 md:w-8 text-purple-600" />
                   </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2 md:mb-3">All-Over Print (AOP)</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4 md:mb-6">
+                  <h3 className="text-lg md:text-2xl font-bold text-foreground mb-1 md:mb-3">All-Over Print (AOP)</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-3 md:mb-6">
                     For seamless patterns that cover the entire surface of a product, like leggings, backpacks, or custom-cut apparel.
                   </p>
-                  <span className="text-sm font-bold text-purple-600 group-hover:underline flex items-center">
-                    Choose AOP <ChevronRight className="h-4 w-4 ml-1" />
+                  <span className="text-xs md:text-sm font-bold text-purple-600 group-hover:underline flex items-center">
+                    Choose AOP <ChevronRight className="h-3 w-3 md:h-4 md:w-4 ml-1" />
                   </span>
                 </div>
               </div>
