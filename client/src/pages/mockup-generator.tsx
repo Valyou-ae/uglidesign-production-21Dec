@@ -1065,40 +1065,39 @@ export default function MockupGenerator() {
                       )}
 
                       {currentStep === "angles" && (
-                        <div className="flex flex-col h-full overflow-hidden animate-fade-in">
+                        <div className="flex flex-col h-full overflow-hidden animate-fade-in max-w-[640px] mx-auto w-full">
                           <div className="flex-1 flex flex-col overflow-hidden">
                             {/* Header */}
-                            <div className="mb-6 shrink-0">
-                               <div className="flex items-start gap-3 mb-4">
-                                 <PersonStanding className="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
-                                 <div>
-                                   <h2 className="text-base font-bold text-foreground mb-1">Choose Camera Angles</h2>
-                                   <p className="text-xs text-muted-foreground">Select the angles for your photoshoot. More angles provide a more comprehensive product view.</p>
+                            <div className="mb-4 shrink-0">
+                               <div className="flex items-center justify-between mb-2">
+                                 <div className="flex items-center gap-2">
+                                   <PersonStanding className="h-4 w-4 text-indigo-600" />
+                                   <h2 className="text-sm font-bold text-foreground">Choose Camera Angles</h2>
                                  </div>
-                               </div>
-                               
-                               {/* Bulk Actions */}
-                               <div className="flex gap-2">
-                                 <button 
-                                   onClick={() => setSelectedAngles(MOCKUP_ANGLES.map(a => a.id))}
-                                   disabled={selectedAngles.length === MOCKUP_ANGLES.length}
-                                   className="px-4 py-2 text-sm font-medium bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                 >
-                                   Select All
-                                 </button>
-                                 <button 
-                                   onClick={() => setSelectedAngles([])}
-                                   disabled={selectedAngles.length === 0}
-                                   className="px-4 py-2 text-sm font-medium bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                 >
-                                   Clear All
-                                 </button>
+                                 
+                                 <div className="flex gap-2">
+                                   <button 
+                                     onClick={() => setSelectedAngles(MOCKUP_ANGLES.map(a => a.id))}
+                                     disabled={selectedAngles.length === MOCKUP_ANGLES.length}
+                                     className="text-[10px] font-medium text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                   >
+                                     Select All
+                                   </button>
+                                   <span className="text-border text-[10px]">|</span>
+                                   <button 
+                                     onClick={() => setSelectedAngles([])}
+                                     disabled={selectedAngles.length === 0}
+                                     className="text-[10px] font-medium text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                                   >
+                                     Clear
+                                   </button>
+                                 </div>
                                </div>
                             </div>
 
                             {/* Grid */}
-                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-4">
+                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-4">
+                              <div className="grid grid-cols-2 gap-2 md:gap-3 pb-4">
                                 {MOCKUP_ANGLES.map((angle) => {
                                   const isSelected = selectedAngles.includes(angle.id);
                                   return (
@@ -1112,39 +1111,39 @@ export default function MockupGenerator() {
                                         }
                                       }}
                                       className={cn(
-                                        "relative p-4 rounded-xl border-2 text-left transition-all duration-200 flex flex-col justify-between cursor-pointer min-h-[140px]",
+                                        "relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col justify-between cursor-pointer min-h-[100px]",
                                         isSelected 
-                                          ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-md shadow-indigo-500/10" 
+                                          ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-sm" 
                                           : "border-border bg-card hover:border-indigo-300 dark:hover:border-indigo-700"
                                       )}
                                     >
                                       {/* Top Section */}
                                       <div>
-                                        <div className="flex justify-between items-start mb-3">
+                                        <div className="flex justify-between items-start mb-2">
                                           <div className={cn(
-                                            "p-2 rounded-lg transition-colors",
+                                            "p-1.5 rounded-lg transition-colors",
                                             isSelected ? "bg-indigo-100 dark:bg-indigo-900/40" : "bg-muted"
                                           )}>
                                             <angle.icon className={cn(
-                                              "h-5 w-5",
+                                              "h-4 w-4",
                                               isSelected ? "text-indigo-600 dark:text-indigo-400" : "text-muted-foreground"
                                             )} />
                                           </div>
                                           {angle.recommended && (
-                                            <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold uppercase border-0">
-                                              Recommended
+                                            <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[9px] font-bold uppercase border-0 px-1.5 h-5">
+                                              Rec
                                             </Badge>
                                           )}
                                         </div>
                                         
                                         <h3 className={cn(
-                                          "text-sm font-bold mb-1 transition-colors",
+                                          "text-xs font-bold mb-0.5 transition-colors",
                                           isSelected ? "text-indigo-900 dark:text-indigo-100" : "text-foreground"
                                         )}>
                                           {angle.name}
                                         </h3>
                                         <p className={cn(
-                                          "text-xs transition-colors",
+                                          "text-[10px] leading-tight transition-colors line-clamp-2",
                                           isSelected ? "text-indigo-700 dark:text-indigo-300" : "text-muted-foreground"
                                         )}>
                                           {angle.description}
@@ -1152,14 +1151,14 @@ export default function MockupGenerator() {
                                       </div>
 
                                       {/* Bottom Section */}
-                                      <div className="mt-3 flex justify-end">
+                                      <div className="absolute top-2 right-2">
                                         <div className={cn(
-                                          "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all",
+                                          "h-4 w-4 rounded-full border-2 flex items-center justify-center transition-all",
                                           isSelected 
                                             ? "border-indigo-600 bg-indigo-600" 
-                                            : "border-muted-foreground/30 bg-background"
+                                            : "border-muted-foreground/20 bg-transparent"
                                         )}>
-                                          {isSelected && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                                          {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
                                         </div>
                                       </div>
                                     </div>
@@ -1169,32 +1168,35 @@ export default function MockupGenerator() {
                             </div>
                             
                             {/* Bottom Controls */}
-                            <div className="pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 mt-auto shrink-0">
-                              <div className="flex gap-2 w-full sm:w-auto">
+                            <div className="pt-3 border-t border-border flex flex-col gap-3 mt-auto shrink-0">
+                              <div className="flex gap-2 w-full">
                                 <button
                                   onClick={() => setSelectedAngles(['front', 'three-quarter'])}
-                                  className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
+                                  className="flex-1 px-3 py-2 text-[10px] md:text-xs font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors border border-indigo-100 dark:border-indigo-900/50"
                                 >
                                   Standard Pack (2)
                                 </button>
                                 <button
                                   onClick={() => setSelectedAngles(MOCKUP_ANGLES.map(a => a.id))}
-                                  className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-bold bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-colors"
+                                  className="flex-1 px-3 py-2 text-[10px] md:text-xs font-bold bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 transition-colors border border-border"
                                 >
                                   Full Collection ({MOCKUP_ANGLES.length})
                                 </button>
                               </div>
                               
                               {selectedAngles.length > 0 && (
-                                <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-lg px-3 py-2 text-xs font-medium w-full sm:w-auto text-center shadow-lg">
-                                  <span className="font-bold text-indigo-300">{selectedAngles.length}</span> Angles × <span className="font-bold text-indigo-300">{selectedColors.length}</span> Colors = <span className="font-bold text-green-400">{selectedAngles.length * selectedColors.length}</span> Total Mockups
+                                <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-lg px-3 py-2 text-[10px] md:text-xs font-medium w-full text-center shadow-sm flex justify-between items-center">
+                                  <span>Total Output:</span>
+                                  <span>
+                                    <span className="font-bold text-indigo-300">{selectedAngles.length}</span> Angles × <span className="font-bold text-indigo-300">{selectedColors.length}</span> Colors = <span className="font-bold text-green-400">{selectedAngles.length * selectedColors.length}</span> Mockups
+                                  </span>
                                 </div>
                               )}
                             </div>
                           </div>
 
                           {/* Footer Navigation */}
-                          <div className="mt-6 pt-6 border-t border-border flex flex-col gap-2 shrink-0">
+                          <div className="mt-auto pt-4 md:pt-6 border-t border-border flex flex-col gap-2 shrink-0 bg-background/80 backdrop-blur-sm sticky bottom-0 -mx-4 px-4 md:static md:mx-0 md:px-0 md:bg-transparent">
                             <div className="flex items-center justify-between">
                                 <Button
                                     variant="ghost"
@@ -1219,7 +1221,7 @@ export default function MockupGenerator() {
                                 </Button>
                             </div>
                             
-                            <div className="flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
+                            <div className="hidden md:flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
                                 <span className="flex items-center gap-1">
                                     <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Enter</kbd> 
                                     Next
