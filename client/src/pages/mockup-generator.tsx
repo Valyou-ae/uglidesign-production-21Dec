@@ -1200,7 +1200,7 @@ export default function MockupGenerator() {
                                     >
                                       {/* Top Section */}
                                       <div>
-                                        <div className="flex justify-between items-start mb-2">
+                                        <div className="flex items-center gap-2 mb-2">
                                           <div className={cn(
                                             "p-1.5 rounded-lg transition-colors",
                                             isSelected ? "bg-indigo-100 dark:bg-indigo-900/40" : "bg-muted"
