@@ -534,8 +534,6 @@ export default function BackgroundRemover() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>Download Options</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => {
                                 selectedImages.forEach((img, i) => downloadImage(img, `removed_bg_${i}.png`));
                             }}>
