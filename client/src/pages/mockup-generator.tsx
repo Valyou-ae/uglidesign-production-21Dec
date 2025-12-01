@@ -604,7 +604,7 @@ export default function MockupGenerator() {
                               <ShoppingBag className="h-4 w-4 text-indigo-600" />
                               <h3 className="text-lg font-bold">Choose Product</h3>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:overflow-y-auto pr-2 pb-4 content-start h-auto lg:h-full min-h-0">
+                            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 lg:gap-3 lg:overflow-y-auto pr-2 pb-4 content-start h-auto lg:h-full min-h-0">
                               {[
                                 { 
                                   name: "Men's Clothing", 
@@ -697,23 +697,23 @@ export default function MockupGenerator() {
                                     key={item.name} 
                                     onClick={() => setSelectedProductType(item.name)}
                                     className={cn(
-                                      "group relative border rounded-xl p-3 md:p-4 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-3 h-[120px] md:h-[140px]",
+                                      "group relative border rounded-xl p-2 md:p-4 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 md:gap-3 h-[100px] md:h-[140px]",
                                       isSelected 
                                         ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-sm" 
                                         : "border-border hover:border-indigo-300 hover:shadow-md bg-card"
                                     )}
                                   >
                                     <div className={cn(
-                                      "h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center transition-colors",
+                                      "h-8 w-8 md:h-12 md:w-12 rounded-full flex items-center justify-center transition-colors",
                                       isSelected ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300" : "bg-muted text-muted-foreground group-hover:text-indigo-600 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20"
                                     )}>
-                                      <item.icon className="h-5 w-5 md:h-6 md:w-6" />
+                                      <item.icon className="h-4 w-4 md:h-6 md:w-6" />
                                     </div>
-                                    <p className={cn("font-medium text-xs md:text-sm", isSelected ? "text-indigo-700 dark:text-indigo-300" : "text-foreground")}>{item.name}</p>
+                                    <p className={cn("font-medium text-[10px] md:text-sm leading-tight", isSelected ? "text-indigo-700 dark:text-indigo-300" : "text-foreground")}>{item.name}</p>
                                     
                                     {isSelected && (
-                                      <div className="absolute top-2 right-2 h-4 w-4 md:h-5 md:w-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
-                                        <Check className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                                      <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 h-3.5 w-3.5 md:h-5 md:w-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                                        <Check className="h-2 w-2 md:h-3 md:w-3" />
                                       </div>
                                     )}
                                   </div>
