@@ -665,11 +665,11 @@ export default function MyCreations() {
             onClick={() => setSelectedItem(null)}
           >
             <div 
-              className="w-full max-w-7xl h-[85vh] bg-card rounded-2xl overflow-hidden flex border border-border shadow-2xl"
+              className="w-full max-w-7xl h-[90vh] md:h-[85vh] bg-card rounded-2xl overflow-hidden flex flex-col md:flex-row border border-border shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
               {/* Left: Image */}
-              <div className="flex-1 bg-muted/20 flex items-center justify-center p-8 relative group">
+              <div className="w-full h-[40vh] md:h-auto md:flex-1 bg-muted/20 flex items-center justify-center p-4 md:p-8 relative group bg-checkerboard">
                 <img 
                   src={selectedItem.src} 
                   alt={selectedItem.name} 
@@ -683,15 +683,15 @@ export default function MyCreations() {
               </div>
 
               {/* Right: Details */}
-              <div className="w-[400px] bg-card border-l border-border flex flex-col">
-                <div className="p-6 border-b border-border flex justify-between items-center">
+              <div className="w-full md:w-[400px] bg-card border-t md:border-t-0 md:border-l border-border flex flex-col h-[50vh] md:h-auto">
+                <div className="p-4 md:p-6 border-b border-border flex justify-between items-center shrink-0">
                   <h3 className="font-bold text-foreground">Creation Details</h3>
                   <Button variant="ghost" size="icon" onClick={() => setSelectedItem(null)} className="text-muted-foreground hover:text-foreground">
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8">
                   {/* Actions */}
                   <div className="grid grid-cols-4 gap-2">
                     <Button 
