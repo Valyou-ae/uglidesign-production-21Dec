@@ -475,7 +475,7 @@ export default function MockupGenerator() {
                       )}
 
                       {currentStep === "product" && (
-                        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8 h-full">
+                        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8 h-full min-h-full">
                           {/* Categories - Mobile: Horizontal Scroll, Desktop: Vertical List */}
                           <div className="lg:col-span-3 lg:border-r border-border lg:pr-6 flex flex-col gap-4 lg:gap-6 shrink-0">
                             <div className="flex items-center gap-2 text-foreground lg:mb-4">
@@ -599,12 +599,12 @@ export default function MockupGenerator() {
                           </div>
 
                           {/* Product Grid */}
-                          <div className="lg:col-span-6 flex-1 overflow-hidden flex flex-col">
-                            <div className="flex items-center gap-2 text-foreground mb-4">
+                          <div className="lg:col-span-6 flex-1 flex flex-col min-h-0">
+                            <div className="flex items-center gap-2 text-foreground mb-4 shrink-0">
                               <ShoppingBag className="h-4 w-4 text-indigo-600" />
                               <h3 className="text-lg font-bold">Choose Product</h3>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto pr-2 pb-20 lg:pb-4 content-start h-full min-h-[300px] lg:min-h-[500px]">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:overflow-y-auto pr-2 pb-4 content-start h-auto lg:h-full min-h-0">
                               {[
                                 { 
                                   name: "Men's Clothing", 
