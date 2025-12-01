@@ -28,7 +28,8 @@ import {
   Maximize2, 
   RefreshCw,
   Calendar,
-  Clock
+  Clock,
+  Scan
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -589,59 +590,28 @@ export default function MyCreations() {
                         </div>
 
                         {/* Overlay (Matches Image Generator) */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-5">
-                          <p className="text-white text-sm line-clamp-2 mb-4 font-medium leading-relaxed">{item.name}</p>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4 backdrop-blur-[2px]">
+                          <Button 
+                            size="icon" 
+                            className="h-12 w-12 rounded-full bg-[#3B82F6]/90 hover:bg-[#2563EB] text-white border-2 border-white shadow-lg hover:scale-110 transition-all duration-300 backdrop-blur-md"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction("Open", item);
+                            }}
+                          >
+                            <Scan className="h-5 w-5" />
+                          </Button>
                           
-                          <div className="flex items-center gap-2">
-                            <Button 
-                              size="sm" 
-                              className="h-8 px-3 text-xs bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAction("Download", item);
-                              }}
-                            >
-                              <Download className="h-3.5 w-3.5 mr-1.5" />
-                              Download
-                            </Button>
-                            <div className="flex items-center gap-1 ml-auto">
-                              <Button 
-                                size="icon" 
-                                className="h-8 w-8 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleFavorite(item.id);
-                                }}
-                              >
-                                <Star className={cn("h-3.5 w-3.5", item.favorite && "fill-yellow-400 text-yellow-400")} />
-                              </Button>
-                              
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button size="icon" className="h-8 w-8 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg">
-                                    <MoreHorizontal className="h-3.5 w-3.5" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-[#1F1F25] border-[#2A2A30] text-[#E4E4E7]">
-                                  <DropdownMenuItem onClick={() => handleAction("Open", item)} className="hover:bg-[#2A2A30] cursor-pointer"><ArrowUpRight className="h-4 w-4 mr-2" /> Open</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleAction("Edit", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Pencil className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleAction("Duplicate", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Copy className="h-4 w-4 mr-2" /> Duplicate</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleAction("Move", item)} className="hover:bg-[#2A2A30] cursor-pointer"><FolderInput className="h-4 w-4 mr-2" /> Move to Folder</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-
-                              <Button 
-                                size="icon" 
-                                className="h-8 w-8 bg-white/10 hover:bg-red-500/20 text-white hover:text-red-400 border-0 backdrop-blur-md rounded-lg transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAction("Delete", item);
-                                }}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </div>
+                          <Button 
+                            size="icon" 
+                            className="h-12 w-12 rounded-full bg-[#3B82F6]/90 hover:bg-[#2563EB] text-white border-2 border-white shadow-lg hover:scale-110 transition-all duration-300 backdrop-blur-md"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction("Download", item);
+                            }}
+                          >
+                            <Download className="h-5 w-5" />
+                          </Button>
                         </div>
                       </div>
                     </motion.div>
