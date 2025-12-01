@@ -707,7 +707,7 @@ export default function ImageGenerator() {
         </div>
 
         {/* SCROLLABLE GALLERY */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-40 md:pb-10">
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-40 md:pb-10 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           
           {/* Gallery Filter Bar */}
           {generations.length > 0 && (
