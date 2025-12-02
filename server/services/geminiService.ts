@@ -696,58 +696,38 @@ export const generateImage = async (
   prompt: string,
   aspectRatio: string = '1:1',
   numberOfVariations: number = 1,
-  options?: { textPriorityMode?: boolean; temperature?: number; streamCallback?: (data: any) => void }
+  options?: { textPriorityMode?: boolean }
 ): Promise<GeneratedImageData[]> => {
   const ai = getAIClient();
-  const textPriorityMode = options?.textPriorityMode ?? false;
-  const temperature = textPriorityMode ? 0.2 : (options?.temperature ?? 1.0);
-  const streamCallback = options?.streamCallback;
-
-  const quality = textPriorityMode ? 'premium' : 'standard'; // Default to premium if text priority
 
   try {
     const results: GeneratedImageData[] = [];
-    const batchSize = Math.min(Math.max(numberOfVariations, 1), 4);
-    const negativePrompt = getNegativePrompts(await performInitialAnalysis(prompt, false).then(r => r.analysis), [], ''); // Basic negative prompt
 
-    // Use gemini-2.5-flash-image (premium model) for final generation
-    const model = 'gemini-2.5-flash-image';
+    for (let i = 0; i < numberOfVariations; i++) {
+      const response = await withRetry(() => ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          responseModalities: [Modality.TEXT, Modality.IMAGE],
+        },
+      }));
 
-    const response = await withRetry(() => ai.models.generateContent({
-      model: model,
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      config: {
-        temperature: temperature,
-        responseMimeType: "application/json", // Expecting JSON response for structured data
-      },
-    }));
-
-    // Process the response, assuming it contains image data or URLs
-    const generatedContent = JSON.parse(response.text || '{}');
-
-    if (generatedContent.candidates && generatedContent.candidates[0]?.content?.parts) {
-      for (const part of generatedContent.candidates[0].content.parts) {
-        if (part.inlineData) {
-          const base64Data = part.inlineData.data;
-          const mimeType = part.inlineData.mimeType || 'image/png';
-          results.push({
-            url: `data:${mimeType};base64,${base64Data}`,
-            prompt: prompt,
-            base64Data: base64Data,
-            mimeType: mimeType,
-          });
-        } else if (part.text) {
-          // Handle cases where the response might be text describing images or URLs
-          console.warn("Received text part in image generation response:", part.text);
-          // Attempt to parse URLs if any are present in the text
-          const urlMatches = part.text.match(/(https?:\/\/[^\s]+)/g);
-          if (urlMatches) {
-            urlMatches.forEach(url => results.push({ url: url, prompt: prompt, base64Data: '', mimeType: '' }));
+      const candidate = response.candidates?.[0];
+      if (candidate?.content?.parts) {
+        for (const part of candidate.content.parts) {
+          if (part.inlineData) {
+            const base64Data = part.inlineData.data;
+            const mimeType = part.inlineData.mimeType || 'image/png';
+            results.push({
+              url: `data:${mimeType};base64,${base64Data}`,
+              prompt: prompt,
+              base64Data: base64Data,
+              mimeType: mimeType,
+            });
           }
         }
       }
     }
-
 
     if (results.length === 0) {
       throw new Error("No images were generated");
