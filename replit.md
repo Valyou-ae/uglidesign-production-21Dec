@@ -6,17 +6,24 @@ An advanced AI-powered image generation application featuring a sophisticated 5-
 ## Recent Changes
 
 ### December 2, 2025 (Latest)
-- **NEW: Text Priority Mode / Dual Pathway System**
+- **NEW: Text Communication UX Features**
+  - Tooltip/info icon on prompt input with text rendering tips
+  - Smart warning badges (yellow/amber) for text-heavy prompts
+  - Collapsible "Text Tips" section with best practices
+  - Post-generation regeneration suggestions for text-heavy prompts
+  - Mode indicator badge showing "Text-Priority Mode" or "Cinematic Mode"
+
+- **Text Priority Mode / Dual Pathway System**
   - Intelligent detection of text-heavy and multilingual prompts
   - Automatic routing between Cinematic mode (visual focus) and Typographic mode (text accuracy)
   - Multilingual script detection (Japanese, Chinese, Korean, Arabic, Hebrew, Thai, Hindi, Russian, Greek)
-  - Low temperature (0.2) for text-priority generation to improve accuracy
-  - Clean, focused prompts for text-heavy requests matching Google AI Studio quality
+  - Clean, focused prompts for text-heavy requests
 
 - Text Priority Features:
   - `analyzeTextPriority()` - Detects quoted text, multilingual scripts, text instructions
   - `buildTypographicPrompt()` - Creates clean, text-first prompts
   - `generateImageSmart()` - Dual pathway routing based on text priority analysis
+  - `analyzePromptForText()` - Frontend text analysis for UI warnings
 
 ### December 2, 2025
 - Integrated comprehensive Cinematic DNA system with all 7 components:

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { 
   Wand2, 
   Sparkles, 
@@ -13,6 +13,7 @@ import {
   Layers, 
   Settings,
   ChevronDown,
+  ChevronUp,
   Paperclip,
   SlidersHorizontal,
   Check,
@@ -60,7 +61,10 @@ import {
   Brush,
   Crown,
   Lightbulb,
-  Paintbrush
+  Paintbrush,
+  AlertTriangle,
+  Type,
+  HelpCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -109,6 +113,8 @@ import scifiSpaceship from "@assets/generated_images/sci-fi_spaceship_landing_on
 // Types
 type GenerationStatus = "idle" | "generating" | "complete";
 
+type GenerationMode = "cinematic" | "typographic" | null;
+
 type GeneratedImage = {
   id: string;
   src: string;
@@ -118,6 +124,82 @@ type GeneratedImage = {
   timestamp: string;
   isNew?: boolean;
   isFavorite?: boolean;
+  generationMode?: GenerationMode;
+};
+
+type TextAnalysis = {
+  isTextHeavy: boolean;
+  wordCount: number;
+  hasQuotedText: boolean;
+  hasMultilingual: boolean;
+  warningLevel: "none" | "mild" | "strong";
+  warnings: string[];
+};
+
+const analyzePromptForText = (prompt: string): TextAnalysis => {
+  const words = prompt.trim().split(/\s+/).filter(w => w.length > 0);
+  const wordCount = words.length;
+  
+  const quotedTextMatches = prompt.match(/"[^"]+"|'[^']+'/g) || [];
+  const hasQuotedText = quotedTextMatches.length > 0;
+  
+  const multilingualPatterns = [
+    /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/, // Japanese/Chinese
+    /[\u0600-\u06FF]/, // Arabic
+    /[\u0400-\u04FF]/, // Cyrillic
+    /[\uAC00-\uD7AF]/, // Korean
+    /[\u0590-\u05FF]/, // Hebrew
+    /[\u0E00-\u0E7F]/, // Thai
+    /[\u0900-\u097F]/, // Hindi
+    /[\u0370-\u03FF]/, // Greek
+  ];
+  const hasMultilingual = multilingualPatterns.some(p => p.test(prompt));
+  
+  const textKeywords = [
+    'text', 'saying', 'says', 'with the words', 'displaying', 
+    'sign', 'poster', 'label', 'title', 'headline', 'caption',
+    'written', 'typography', 'font', 'lettering', 'inscription'
+  ];
+  const hasTextKeywords = textKeywords.some(kw => prompt.toLowerCase().includes(kw));
+  
+  const totalQuotedLength = quotedTextMatches.reduce((sum, m) => sum + m.length, 0);
+  
+  const warnings: string[] = [];
+  let warningLevel: "none" | "mild" | "strong" = "none";
+  
+  if (totalQuotedLength > 100) {
+    warnings.push("Long text blocks may have spelling errors");
+    warningLevel = "strong";
+  } else if (totalQuotedLength > 50) {
+    warnings.push("Medium-length text - check spelling after generation");
+    warningLevel = "mild";
+  }
+  
+  if (hasMultilingual) {
+    warnings.push("Multilingual text detected - accuracy may vary");
+    warningLevel = warningLevel === "none" ? "mild" : warningLevel;
+  }
+  
+  if (wordCount > 40 && hasTextKeywords) {
+    warnings.push("Complex text prompt - consider simplifying");
+    warningLevel = "strong";
+  }
+  
+  const isTextHeavy = hasQuotedText || hasTextKeywords || hasMultilingual;
+  
+  if (isTextHeavy && warningLevel === "none") {
+    warnings.push("Text detected - accuracy may vary for complex words");
+    warningLevel = "mild";
+  }
+  
+  return {
+    isTextHeavy,
+    wordCount,
+    hasQuotedText,
+    hasMultilingual,
+    warningLevel,
+    warnings
+  };
 };
 
 type Agent = {
@@ -211,9 +293,14 @@ export default function ImageGenerator() {
   });
   const [artisticStyles, setArtisticStyles] = useState<ArtisticStyle[]>([]);
   const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
+  const [showTextTips, setShowTextTips] = useState(false);
+  const [lastGenerationMode, setLastGenerationMode] = useState<GenerationMode>(null);
+  const [showRegenerateHint, setShowRegenerateHint] = useState(false);
 
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  const textAnalysis = useMemo(() => analyzePromptForText(prompt), [prompt]);
 
   const downloadImage = (url: string, filename: string) => {
     const link = document.createElement('a');
@@ -375,6 +462,9 @@ export default function ImageGenerator() {
       updateAgentStatus(4, "working");
       setProgress(95);
 
+      const generationMode: GenerationMode = data.generationMode || null;
+      setLastGenerationMode(generationMode);
+
       const newImages: GeneratedImage[] = data.images.map((img: any, index: number) => ({
         id: `${Date.now()}-${index}`,
         src: img.url,
@@ -383,7 +473,8 @@ export default function ImageGenerator() {
         aspectRatio: settings.aspectRatio,
         timestamp: "Just now",
         isNew: true,
-        isFavorite: false
+        isFavorite: false,
+        generationMode: generationMode
       }));
 
       setGenerations(prev => [...newImages, ...prev]);
@@ -391,9 +482,17 @@ export default function ImageGenerator() {
       setStatus("complete");
       setAgents(prev => prev.map(a => ({ ...a, status: "complete" })));
 
+      if (textAnalysis.isTextHeavy) {
+        setShowRegenerateHint(true);
+        setTimeout(() => setShowRegenerateHint(false), 10000);
+      }
+
+      const modeLabel = generationMode === 'typographic' ? 'Text-Priority Mode' : 
+                        generationMode === 'cinematic' ? 'Cinematic Mode' : '';
+      
       toast({
         title: "Image Generated!",
-        description: `${newImages.length} image${newImages.length > 1 ? 's' : ''} created successfully.`,
+        description: `${newImages.length} image${newImages.length > 1 ? 's' : ''} created${modeLabel ? ` in ${modeLabel}` : ''}.`,
         className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
       });
 
@@ -548,6 +647,23 @@ export default function ImageGenerator() {
                     rows={1}
                   />
                 </div>
+                
+                {/* Text Tips Info Icon */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={() => setShowTextTips(!showTextTips)}
+                        className="self-end mb-1.5 shrink-0 p-1 rounded-md hover:bg-muted/50 transition-colors"
+                      >
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/60 hover:text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[250px]">
+                      <p className="text-xs">Keep text under 30 words for best accuracy. Complex spellings may vary. Click for more tips.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
                 {/* Right Side Actions inside Input - Bottom Aligned */}
                 <div className="flex items-center gap-1 mb-0.5 shrink-0 self-end">
@@ -615,6 +731,104 @@ export default function ImageGenerator() {
               </div>
 
             </div>
+            
+            {/* Text Warning Badge & Mode Indicator Row */}
+            <AnimatePresence>
+              {(textAnalysis.warningLevel !== "none" || lastGenerationMode || showRegenerateHint) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-wrap items-center gap-2"
+                >
+                  {/* Text Warning Badge */}
+                  {textAnalysis.warningLevel !== "none" && (
+                    <div className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+                      textAnalysis.warningLevel === "strong" 
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                        : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20"
+                    )}>
+                      <AlertTriangle className="h-3 w-3" />
+                      <span>{textAnalysis.warnings[0]}</span>
+                    </div>
+                  )}
+                  
+                  {/* Mode Indicator - persists until next generation */}
+                  {lastGenerationMode && (
+                    <div className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+                      lastGenerationMode === "typographic"
+                        ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                        : "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"
+                    )}>
+                      {lastGenerationMode === "typographic" ? (
+                        <><Type className="h-3 w-3" /> Text-Priority Mode</>
+                      ) : (
+                        <><Clapperboard className="h-3 w-3" /> Cinematic Mode</>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Regeneration Hint - persists for 10 seconds */}
+                  {showRegenerateHint && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border">
+                      <RefreshCw className="h-3 w-3" />
+                      <span>Not happy with text? Try regenerating</span>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            {/* Collapsible Text Tips Section */}
+            <AnimatePresence>
+              {showTextTips && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                        <Type className="h-4 w-4" />
+                        <span className="font-semibold text-sm">Text Rendering Tips</span>
+                      </div>
+                      <button 
+                        onClick={() => setShowTextTips(false)}
+                        className="p-1 rounded-md hover:bg-blue-500/10 transition-colors"
+                      >
+                        <X className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-start gap-2">
+                        <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
+                        <span>Keep text <strong className="text-foreground">under 30 words</strong> for best accuracy</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
+                        <span>Avoid complex or <strong className="text-foreground">unusual spellings</strong></span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
+                        <span><strong className="text-foreground">Single fonts</strong> work better than mixed styles</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
+                        <span><strong className="text-foreground">Numbers and symbols</strong> render well</span>
+                      </div>
+                      <div className="flex items-start gap-2 sm:col-span-2">
+                        <Info className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+                        <span>Multilingual text (Japanese, Arabic, etc.) may have variable accuracy - regenerate if needed</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Settings Panel (Inline Expandable) */}
             <AnimatePresence>
