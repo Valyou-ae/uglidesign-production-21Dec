@@ -13,9 +13,11 @@ An advanced AI-powered image generation application featuring a sophisticated 5-
   - Removed text overlay approach (doesn't match AI Studio quality)
   
 - **AI Studio Model Routing (Correct Implementation)**:
-  - Final mode (all prompts) → `imagen-4.0-generate-001` (PRIMARY), fallback to `gemini-3-pro-image-preview`
-  - Draft mode WITHOUT text → `gemini-2.5-flash-image` (speed optimized)
+  - Final mode (all prompts) → `imagen-4.0-generate-001` (PRIMARY)
+  - Final fallback WITH text → `gemini-3-pro-image-preview` (high-fidelity text)
+  - Final fallback WITHOUT text → `gemini-2.5-flash-image` (speed/cost efficient)
   - Draft mode WITH text → `gemini-3-pro-image-preview` (better text accuracy)
+  - Draft mode WITHOUT text → `gemini-2.5-flash-image` (speed optimized)
 
 - **Text Priority Detection**
   - Intelligent detection of text-heavy and multilingual prompts

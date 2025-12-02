@@ -938,10 +938,10 @@ export const generateImageSmart = async (
       }
     }
 
-    // Fallback to gemini-3-pro-image-preview if Imagen 4 failed
+    // Text-aware fallback: use gemini-3-pro for text prompts, flash for non-text
     if (images.length === 0) {
-      const fallbackModel = 'gemini-3-pro-image-preview';
-      console.log(`[Smart Generation] Imagen 4 failed, using fallback: ${fallbackModel}`);
+      const fallbackModel = hasText ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
+      console.log(`[Smart Generation] Imagen 4 failed, using text-aware fallback: ${fallbackModel} (hasText: ${hasText})`);
       images = await generateWithGeminiImageModel(ai, enhancedPrompt, aspectRatio, negativePrompt, numVariations, fallbackModel);
       modelUsed = fallbackModel;
     }
