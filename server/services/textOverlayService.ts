@@ -37,27 +37,76 @@ export function parseBookCoverPrompt(prompt: string): ParsedBookCover {
     visualPrompt: prompt
   };
 
-  const titleMatch = prompt.match(/(?:book cover|title)[:\s]+['"]([^'"]+)['"]/i) ||
-                     prompt.match(/['"]([^'"]+)['"].*(?:book cover)/i) ||
-                     prompt.match(/(?:for|called|titled)\s+['"]([^'"]+)['"]/i);
+  const titlePatterns = [
+    /(?:book cover|title)[:\s]+['"]([^'"]+)['"]/i,
+    /['"]([^'"]+)['"].*(?:book cover)/i,
+    /(?:for|called|titled)\s+['"]([^'"]+)['"]/i,
+    /(?:titled|called)\s+([A-Z][^,."]+)/i,
+    /book cover[^'"]*['"]([^'"]+)['"]/i,
+  ];
   
-  const subtitleMatch = prompt.match(/subtitle[:\s]+['"]([^'"]+)['"]/i) ||
-                        prompt.match(/['"](An? [^'"]+)['"]/i);
+  for (const pattern of titlePatterns) {
+    const match = prompt.match(pattern);
+    if (match && match[1]) {
+      result.title = match[1].trim();
+      break;
+    }
+  }
   
-  const authorMatch = prompt.match(/(?:author|by)[:\s]+['"]?([^'",]+?)['"]?(?:\.|,|$)/i) ||
-                      prompt.match(/(?:By|Author:)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z\-]+)+(?:\s+[IVX]+)?)/);
+  const subtitlePatterns = [
+    /subtitle[:\s]+['"]([^'"]+)['"]/i,
+    /['"](An? (?:Inquiry|Study|Guide|Journey|Tale|Story|History)[^'"]*)['"]/i,
+  ];
   
-  const quoteMatch = prompt.match(/quote[:\s]+['"]([^'"]+)['"]/i) ||
-                     prompt.match(/['"]([^'"]{30,}?(?:\.{3}|\.)['""])/i);
+  for (const pattern of subtitlePatterns) {
+    const match = prompt.match(pattern);
+    if (match && match[1]) {
+      result.subtitle = match[1].trim();
+      break;
+    }
+  }
   
-  const publisherMatch = prompt.match(/publisher[:\s]+['"]([^'"]+)['"]/i) ||
-                         prompt.match(/([\w\s]+Press[^'"]*)/i);
-
-  if (titleMatch) result.title = titleMatch[1];
-  if (subtitleMatch) result.subtitle = subtitleMatch[1];
-  if (authorMatch) result.author = authorMatch[1].trim();
-  if (quoteMatch) result.quote = quoteMatch[1];
-  if (publisherMatch) result.publisher = publisherMatch[1].trim();
+  const authorPatterns = [
+    /(?:author|Author:)[:\s]+['"]?([^'",\n]+?)['"]?(?:\.|,|Include|Publisher|$)/i,
+    /\bBy\s+([A-Z][a-z]+(?:\s+[A-Z][\w\-]+)+(?:\s+[IVX]+)?)/,
+    /\bby\s+['"]([^'"]+)['"]/i,
+  ];
+  
+  for (const pattern of authorPatterns) {
+    const match = prompt.match(pattern);
+    if (match && match[1]) {
+      result.author = match[1].trim();
+      break;
+    }
+  }
+  
+  const quotePatterns = [
+    /quote[:\s]+['"]([^'"]+)['"]/i,
+    /quote on the cover:\s*['"]([^'"]+)['"]/i,
+    /['"]([^'"]{30,}?(?:\.{3}|…|\.))['"]/,
+  ];
+  
+  for (const pattern of quotePatterns) {
+    const match = prompt.match(pattern);
+    if (match && match[1]) {
+      result.quote = match[1].trim();
+      break;
+    }
+  }
+  
+  const publisherPatterns = [
+    /publisher[:\s]+['"]([^'"]+)['"]/i,
+    /Publisher at bottom:\s*['"]([^'"]+)['"]/i,
+    /([\w\s]+(?:Press|Publishing|Books)[^'".,]*(?:Est\.\s*\d+)?)/i,
+  ];
+  
+  for (const pattern of publisherPatterns) {
+    const match = prompt.match(pattern);
+    if (match && match[1]) {
+      result.publisher = match[1].trim();
+      break;
+    }
+  }
 
   const textPatterns = [
     /['"][^'"]+['"]/g,
@@ -84,72 +133,142 @@ export function parseBookCoverPrompt(prompt: string): ParsedBookCover {
   return result;
 }
 
+function extractGenericQuotedTexts(prompt: string): string[] {
+  const texts: string[] = [];
+  
+  const doubleQuoted = prompt.match(/"([^"]+)"/g) || [];
+  const singleQuoted = prompt.match(/'([^']+)'/g) || [];
+  
+  doubleQuoted.forEach(match => {
+    const text = match.slice(1, -1).trim();
+    if (text.length > 0 && text.length < 200) {
+      texts.push(text);
+    }
+  });
+  
+  singleQuoted.forEach(match => {
+    const text = match.slice(1, -1).trim();
+    if (text.length > 0 && text.length < 200 && !texts.includes(text)) {
+      texts.push(text);
+    }
+  });
+  
+  const instructionPatterns = [
+    /(?:that says|saying|with the text|with text|reads)\s*[:\s]*["']?([^"'\n,]+)["']?/gi,
+    /(?:title|headline|heading)\s*[:\s]*["']?([^"'\n,]+)["']?/gi,
+    /(?:slogan|tagline|subtitle)\s*[:\s]*["']?([^"'\n,]+)["']?/gi,
+  ];
+  
+  instructionPatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(prompt)) !== null) {
+      const text = match[1].trim();
+      if (text.length > 0 && text.length < 200 && !texts.includes(text)) {
+        texts.push(text);
+      }
+    }
+  });
+  
+  return texts;
+}
+
 export function extractTextFromPrompt(prompt: string): TextElement[] {
   const elements: TextElement[] = [];
   const parsed = parseBookCoverPrompt(prompt);
+  const isBookCover = /book\s*cover/i.test(prompt);
 
-  if (parsed.title) {
-    elements.push({
-      text: parsed.title.toUpperCase(),
-      type: 'title',
-      fontSize: 72,
-      fontFamily: 'serif',
-      fontWeight: 'bold',
-      color: '#1a1a1a',
-      position: 'top',
-      alignment: 'center'
-    });
+  if (isBookCover) {
+    if (parsed.title) {
+      elements.push({
+        text: parsed.title,
+        type: 'title',
+        fontSize: 64,
+        fontFamily: 'serif',
+        fontWeight: 'bold',
+        color: '#1a1a1a',
+        position: 'top',
+        alignment: 'center'
+      });
+    }
+
+    if (parsed.subtitle) {
+      elements.push({
+        text: parsed.subtitle,
+        type: 'subtitle',
+        fontSize: 28,
+        fontFamily: 'serif',
+        fontWeight: 'normal',
+        color: '#333333',
+        position: 'top',
+        alignment: 'center'
+      });
+    }
+
+    if (parsed.author) {
+      elements.push({
+        text: `By ${parsed.author}`,
+        type: 'author',
+        fontSize: 24,
+        fontFamily: 'serif',
+        fontWeight: 'normal',
+        color: '#333333',
+        position: 'top',
+        alignment: 'center'
+      });
+    }
+
+    if (parsed.quote) {
+      elements.push({
+        text: `"${parsed.quote}"`,
+        type: 'quote',
+        fontSize: 22,
+        fontFamily: 'serif',
+        fontWeight: 'normal',
+        color: '#2a2a2a',
+        position: 'bottom',
+        alignment: 'center'
+      });
+    }
+
+    if (parsed.publisher) {
+      elements.push({
+        text: parsed.publisher,
+        type: 'publisher',
+        fontSize: 16,
+        fontFamily: 'serif',
+        fontWeight: 'normal',
+        color: '#444444',
+        position: 'bottom',
+        alignment: 'center'
+      });
+    }
   }
 
-  if (parsed.subtitle) {
-    elements.push({
-      text: parsed.subtitle.toUpperCase(),
-      type: 'subtitle',
-      fontSize: 32,
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      color: '#333333',
-      position: 'top',
-      alignment: 'center'
-    });
-  }
-
-  if (parsed.author) {
-    elements.push({
-      text: `By ${parsed.author}`,
-      type: 'author',
-      fontSize: 28,
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      color: '#333333',
-      position: 'top',
-      alignment: 'center'
-    });
-  }
-
-  if (parsed.quote) {
-    elements.push({
-      text: `"${parsed.quote}"`,
-      type: 'quote',
-      fontSize: 24,
-      fontFamily: 'serif',
-      fontWeight: 'italic',
-      color: '#2a2a2a',
-      position: 'bottom',
-      alignment: 'center'
-    });
-  }
-
-  if (parsed.publisher) {
-    elements.push({
-      text: parsed.publisher.toUpperCase(),
-      type: 'publisher',
-      fontSize: 18,
-      fontFamily: 'serif',
-      fontWeight: 'normal',
-      color: '#444444',
-      position: 'bottom',
-      alignment: 'center'
+  if (elements.length === 0) {
+    const genericTexts = extractGenericQuotedTexts(prompt);
+    
+    genericTexts.forEach((text, index) => {
+      let position: 'top' | 'center' | 'bottom' = 'center';
+      let fontSize = 48;
+      
+      if (index === 0) {
+        position = genericTexts.length > 1 ? 'top' : 'center';
+        fontSize = 56;
+      } else if (index === genericTexts.length - 1 && genericTexts.length > 1) {
+        position = 'bottom';
+        fontSize = 32;
+      }
+      
+      elements.push({
+        text: text,
+        type: 'custom',
+        fontSize: fontSize,
+        fontFamily: 'serif',
+        fontWeight: index === 0 ? 'bold' : 'normal',
+        color: '#1a1a1a',
+        position: position,
+        alignment: 'center'
+      });
     });
   }
 
@@ -292,14 +411,34 @@ export async function overlayTextOnImage(
 
 export function isTextHeavyPrompt(prompt: string): boolean {
   const quotedTextCount = (prompt.match(/['"][^'"]+['"]/g) || []).length;
+  
   const hasTitle = /(?:title|book cover|called|titled)/i.test(prompt);
   const hasAuthor = /(?:author|by\s+[A-Z])/i.test(prompt);
-  const hasQuote = /(?:quote|saying|text)/i.test(prompt);
+  const hasQuote = /(?:quote|saying)/i.test(prompt);
   const hasPublisher = /(?:publisher|press|publishing)/i.test(prompt);
   
-  const textIndicators = [hasTitle, hasAuthor, hasQuote, hasPublisher].filter(Boolean).length;
+  const hasTextInstruction = /(?:says|reads|with\s+(?:the\s+)?text|includes?\s+text|that\s+says|saying)/i.test(prompt);
+  const hasSignage = /(?:sign|banner|poster|label|headline|header)/i.test(prompt);
   
-  return quotedTextCount >= 2 || textIndicators >= 2;
+  const textIndicators = [hasTitle, hasAuthor, hasQuote, hasPublisher, hasTextInstruction, hasSignage].filter(Boolean).length;
+  
+  if (quotedTextCount >= 1 && (hasTextInstruction || hasSignage || hasTitle)) {
+    return true;
+  }
+  
+  if (quotedTextCount >= 2) {
+    return true;
+  }
+  
+  if (textIndicators >= 2) {
+    return true;
+  }
+  
+  if (quotedTextCount >= 1 && textIndicators >= 1) {
+    return true;
+  }
+  
+  return false;
 }
 
 export async function generateWithTextOverlay(

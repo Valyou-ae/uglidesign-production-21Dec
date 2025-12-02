@@ -24,6 +24,13 @@ import {
   generateWithImagen,
   type ImagenModel
 } from "./imagen3Service";
+import {
+  isTextHeavyPrompt,
+  extractTextFromPrompt,
+  getVisualOnlyPrompt,
+  overlayTextOnImage,
+  parseBookCoverPrompt
+} from "./textOverlayService";
 
 const API_KEY = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || '';
 const BASE_URL = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
@@ -282,7 +289,7 @@ const COMMON_WORDS = new Set([
   'begin', 'end', 'never', 'always', 'forever', 'beyond', 'above', 'below', 'within'
 ]);
 
-export const extractTextFromPrompt = (prompt: string): string[] => {
+export const extractQuotedTexts = (prompt: string): string[] => {
   const textPatterns = [
     /"([^"]+)"/g,
     /'([^']+)'/g,
@@ -342,7 +349,7 @@ const TEXT_INSTRUCTION_KEYWORDS = [
 ];
 
 export const analyzeTextPriority = (prompt: string): TextPriorityAnalysis => {
-  const extractedTexts = extractTextFromPrompt(prompt);
+  const extractedTexts = extractQuotedTexts(prompt);
   const detectedLanguages: string[] = [];
 
   for (const [lang, pattern] of Object.entries(MULTILINGUAL_PATTERNS)) {
@@ -777,6 +784,7 @@ export interface SmartGenerationResult {
   originalPrompt: string;
   analysis?: PromptAnalysis;
   modelUsed?: string;
+  textOverlayApplied?: boolean;
 }
 
 export const generateImageSmart = async (
@@ -787,23 +795,31 @@ export const generateImageSmart = async (
   variations: number = 1
 ): Promise<SmartGenerationResult> => {
   const textPriorityAnalysis = analyzeTextPriority(userPrompt);
+  const shouldUseTextOverlay = isTextHeavyPrompt(userPrompt);
 
   console.log(`[Smart Generation] Text Priority Analysis:`, {
     isTextPriority: textPriorityAnalysis.isTextPriority,
     confidence: textPriorityAnalysis.confidence,
     hasMultilingual: textPriorityAnalysis.hasMultilingualText,
     languages: textPriorityAnalysis.detectedLanguages,
-    extractedTexts: textPriorityAnalysis.extractedTexts.length
+    extractedTexts: textPriorityAnalysis.extractedTexts.length,
+    willUseTextOverlay: shouldUseTextOverlay
   });
 
   let enhancedPrompt: string;
   let mode: 'cinematic' | 'typographic';
   let analysis: PromptAnalysis | undefined;
+  let textOverlayApplied = false;
 
-  if (textPriorityAnalysis.isTextPriority) {
+  if (shouldUseTextOverlay) {
+    mode = 'typographic';
+    console.log(`[Smart Generation] Using TEXT OVERLAY mode - generating visual-only image, then overlaying text programmatically`);
+    enhancedPrompt = getVisualOnlyPrompt(userPrompt);
+    console.log(`[Smart Generation] Visual-only prompt:`, enhancedPrompt);
+
+  } else if (textPriorityAnalysis.isTextPriority) {
     mode = 'typographic';
     console.log(`[Smart Generation] Using TYPOGRAPHIC mode - clean, text-focused prompt`);
-
     enhancedPrompt = buildTypographicPrompt(userPrompt, textPriorityAnalysis);
 
   } else {
@@ -822,7 +838,7 @@ export const generateImageSmart = async (
   let modelUsed = 'gemini';
 
   if (isImagenAvailable()) {
-    console.log(`[Smart Generation] Imagen available - trying Imagen 4 first (best text rendering)`);
+    console.log(`[Smart Generation] Imagen available - trying Imagen 4 first`);
     
     const modelsToTry: ImagenModel[] = [
       'imagen-4.0-generate-001',
@@ -869,6 +885,45 @@ export const generateImageSmart = async (
     modelUsed = 'gemini-2.5-flash-image';
   }
 
+  if (shouldUseTextOverlay && images.length > 0) {
+    console.log(`[Smart Generation] Applying text overlay to generated images...`);
+    const textElements = extractTextFromPrompt(userPrompt);
+    console.log(`[Smart Generation] Text elements to overlay:`, textElements.map(e => ({ type: e.type, text: e.text })));
+
+    if (textElements.length > 0) {
+      const overlaidImages: GeneratedImageData[] = [];
+      
+      for (const image of images) {
+        try {
+          if (image.base64Data) {
+            const overlaidBase64 = await overlayTextOnImage(
+              image.base64Data,
+              textElements,
+              image.mimeType || 'image/png'
+            );
+            
+            overlaidImages.push({
+              url: `data:image/png;base64,${overlaidBase64}`,
+              prompt: userPrompt,
+              base64Data: overlaidBase64,
+              mimeType: 'image/png'
+            });
+            console.log(`[Smart Generation] Text overlay applied successfully`);
+          } else {
+            overlaidImages.push(image);
+          }
+        } catch (error: any) {
+          console.error(`[Smart Generation] Text overlay failed:`, error.message);
+          overlaidImages.push(image);
+        }
+      }
+      
+      images = overlaidImages;
+      textOverlayApplied = true;
+      modelUsed = modelUsed + '+text-overlay';
+    }
+  }
+
   return {
     images,
     mode,
@@ -876,7 +931,8 @@ export const generateImageSmart = async (
     enhancedPrompt,
     originalPrompt: userPrompt,
     analysis,
-    modelUsed
+    modelUsed,
+    textOverlayApplied
   };
 };
 

@@ -4,6 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["libuuid", "cairo", "pango", "libjpeg", "giflib", "librsvg", "pixman"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -44,12 +45,12 @@ localPort = 36251
 externalPort = 5000
 
 [[ports]]
-localPort = 41153
-externalPort = 4200
+localPort = 37899
+externalPort = 6800
 
 [[ports]]
-localPort = 41373
-externalPort = 6800
+localPort = 41153
+externalPort = 4200
 
 [env]
 PORT = "5000"
