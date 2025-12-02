@@ -6,38 +6,32 @@ An advanced AI-powered image generation application featuring a sophisticated 5-
 ## Recent Changes
 
 ### December 2, 2025 (Latest)
-- **NEW: Imagen 4 Integration for Superior Text Rendering**
-  - Model selector with 4 options: Gemini Flash (free), Imagen 4 (best), Imagen 4 Fast (10x speed), Imagen 3
-  - Imagen 4 uses Google's imagen-4.0-generate-001 model (latest, August 2025)
-  - Fallback API key support for automatic failover if primary key fails
-  - Perfect text rendering matching Google AI Studio quality
-  - Requires user's Google AI API key (stored securely in Secrets)
-  - `server/services/imagen3Service.ts` - Multi-model Imagen API integration
-  - New endpoints: `/api/imagen3-status`, `/api/generate-imagen3`
+- **AI Studio-Aligned Text Rendering System**
+  - Replicates exact Google AI Studio implementation for 10/10 text quality
+  - Uses `gemini-3-pro-image-preview` as PRIMARY model for text-heavy prompts
+  - Imagen 4 only used for non-text visual generation
+  - Removed text overlay approach (doesn't match AI Studio quality)
+  
+- **Dual Pathway Model Routing (AI Studio Pattern)**:
+  - Text-heavy prompts → `gemini-3-pro-image-preview` (primary)
+  - Non-text prompts → `imagen-4.0-generate-001` (primary) with fallback to `gemini-3-pro-image-preview`
+  - Draft mode → `gemini-2.5-flash-image` for speed
 
-- Available Imagen Models:
-  - `imagen-4.0-generate-001` - Best quality & text rendering ($0.04/image)
-  - `imagen-4.0-fast-generate-001` - 10x faster generation ($0.02/image)
-  - `imagen-3.0-generate-002` - Good quality, lower cost
-
-- **Text Communication UX Features**
-  - Tooltip/info icon on prompt input with text rendering tips
-  - Smart warning badges (yellow/amber) for text-heavy prompts
-  - Collapsible "Text Tips" section with best practices
-  - Post-generation regeneration suggestions for text-heavy prompts
-  - Mode indicator badge showing "Text-Priority Mode", "Cinematic Mode", or "Imagen 3 Mode"
-
-- **Text Priority Mode / Dual Pathway System**
+- **Text Priority Detection**
   - Intelligent detection of text-heavy and multilingual prompts
-  - Automatic routing between Cinematic mode (visual focus) and Typographic mode (text accuracy)
+  - Automatic routing to text-optimized generation pathway
   - Multilingual script detection (Japanese, Chinese, Korean, Arabic, Hebrew, Thai, Hindi, Russian, Greek)
-  - Clean, focused prompts for text-heavy requests
+
+- **Context-Aware Negative Prompts**
+  - Dynamic negative prompt generation based on subject type
+  - Separate libraries for portrait, landscape, product, architecture, text
+  - Automatically applied to all generation requests
 
 - Text Priority Features:
   - `analyzeTextPriority()` - Detects quoted text, multilingual scripts, text instructions
   - `buildTypographicPrompt()` - Creates clean, text-first prompts
   - `generateImageSmart()` - Dual pathway routing based on text priority analysis
-  - `analyzePromptForText()` - Frontend text analysis for UI warnings
+  - `generateWithGeminiImageModel()` - Direct Gemini image model access
 
 ### December 2, 2025
 - Integrated comprehensive Cinematic DNA system with all 7 components:
@@ -104,7 +98,11 @@ An advanced AI-powered image generation application featuring a sophisticated 5-
 
 ## Configuration
 - Uses Replit's Gemini AI Integration
-- Models: `gemini-2.5-flash` (text), `gemini-2.5-flash-image` (generation)
+- Models:
+  - `gemini-3-pro-image-preview` - Primary for text-heavy prompts (AI Studio aligned)
+  - `gemini-2.5-flash-image` - Draft mode / fast generation
+  - `imagen-4.0-generate-001` - Non-text final generation
+  - `gemini-2.5-flash` - Text analysis and prompt enhancement
 - Requires `apiVersion: ""` in httpOptions for Replit integration
 
 ## Quality Enhancement

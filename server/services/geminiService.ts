@@ -24,13 +24,6 @@ import {
   generateWithImagen,
   type ImagenModel
 } from "./imagen3Service";
-import {
-  isTextHeavyPrompt,
-  extractTextFromPrompt,
-  getVisualOnlyPrompt,
-  overlayTextOnImage,
-  parseBookCoverPrompt
-} from "./textOverlayService";
 
 const API_KEY = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || '';
 const BASE_URL = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
@@ -704,48 +697,112 @@ export interface GenerateImageOptions {
   temperature?: number;
 }
 
+async function generateWithGeminiImageModel(
+  ai: any,
+  prompt: string,
+  aspectRatio: string,
+  negativePrompt: string,
+  count: number,
+  modelName: string,
+  referenceImage?: { base64Data: string, mimeType: string }
+): Promise<GeneratedImageData[]> {
+  const results: GeneratedImageData[] = [];
+  
+  for (let i = 0; i < count; i++) {
+    try {
+      const parts: any[] = [];
+      let finalPromptForModel = prompt;
+
+      if (referenceImage) {
+        parts.push({ inlineData: { data: referenceImage.base64Data, mimeType: referenceImage.mimeType } });
+        finalPromptForModel = `**PRIME DIRECTIVE: COMPOSITIONAL LOCK.** A reference image is provided. You MUST adhere to its core visual structure. The camera angle, subject, pose, and layout are LOCKED. Your task is to apply the changes from the prompt below to THIS EXACT composition, not to re-imagine the scene.\n\n**PROMPT:**\n${prompt}`;
+      }
+
+      const fullPromptWithNegatives = negativePrompt 
+        ? `${finalPromptForModel} --- AVOID --- ${negativePrompt}`
+        : finalPromptForModel;
+      parts.push({ text: fullPromptWithNegatives });
+
+      const response: any = await withRetry(() => ai.models.generateContent({
+        model: modelName,
+        contents: { parts },
+        config: { imageConfig: { aspectRatio } }
+      }));
+
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData) {
+          const base64 = part.inlineData.data;
+          const mimeType = 'image/png';
+          results.push({
+            url: `data:${mimeType};base64,${base64}`,
+            prompt: prompt,
+            base64Data: base64,
+            mimeType
+          });
+        }
+      }
+    } catch (e) {
+      console.error(`Gemini Image generation failed for iteration ${i}:`, e);
+    }
+  }
+  
+  return results;
+}
+
 export const generateImage = async (
   prompt: string,
   aspectRatio: string = '1:1',
   numberOfVariations: number = 1,
-  options?: { textPriorityMode?: boolean }
+  options?: { textPriorityMode?: boolean; hasText?: boolean; quality?: QualityLevel; negativePrompt?: string }
 ): Promise<GeneratedImageData[]> => {
   const ai = getAIClient();
+  const hasText = options?.hasText || false;
+  const quality = options?.quality || 'standard';
+  const negativePrompt = options?.negativePrompt || '';
 
   try {
-    const results: GeneratedImageData[] = [];
+    if (quality === 'draft') {
+      const draftModel = hasText ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
+      console.log(`[generateImage] Draft mode - using ${draftModel}`);
+      return generateWithGeminiImageModel(ai, prompt, aspectRatio, negativePrompt, numberOfVariations, draftModel);
+    }
 
-    for (let i = 0; i < numberOfVariations; i++) {
-      const response = await withRetry(() => ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        config: {
-          responseModalities: [Modality.TEXT, Modality.IMAGE],
-        },
+    console.log(`[generateImage] Final mode - trying Imagen 4 first (hasText: ${hasText})`);
+    
+    try {
+      const imagenResults = await generateWithImagen(prompt, {
+        model: 'imagen-4.0-generate-001',
+        aspectRatio,
+        numberOfImages: numberOfVariations,
+        negativePrompt: negativePrompt || undefined
+      });
+
+      const results = imagenResults.map(result => ({
+        url: `data:${result.mimeType};base64,${result.base64}`,
+        prompt: prompt,
+        base64Data: result.base64,
+        mimeType: result.mimeType
       }));
 
-      const candidate = response.candidates?.[0];
-      if (candidate?.content?.parts) {
-        for (const part of candidate.content.parts) {
-          if (part.inlineData) {
-            const base64Data = part.inlineData.data;
-            const mimeType = part.inlineData.mimeType || 'image/png';
-            results.push({
-              url: `data:${mimeType};base64,${base64Data}`,
-              prompt: prompt,
-              base64Data: base64Data,
-              mimeType: mimeType,
-            });
-          }
-        }
+      if (results.length > 0) {
+        console.log(`[generateImage] Imagen 4 succeeded - ${results.length} images`);
+        return results;
+      }
+    } catch (imagenError: any) {
+      console.warn("[generateImage] Imagen generation failed, attempting fallback...", imagenError.message);
+      if (imagenError.message?.includes("PERMISSION_DENIED") || imagenError.message?.includes("API key expired")) {
+        throw imagenError;
       }
     }
 
-    if (results.length === 0) {
-      throw new Error("No images were generated");
+    let fallbackModel: string;
+    if (quality === 'standard' || quality === 'premium' || quality === 'ultra' || hasText) {
+      fallbackModel = 'gemini-3-pro-image-preview';
+    } else {
+      fallbackModel = 'gemini-2.5-flash-image';
     }
-
-    return results;
+    console.log(`[generateImage] Using fallback model: ${fallbackModel}`);
+    return generateWithGeminiImageModel(ai, prompt, aspectRatio, negativePrompt, numberOfVariations, fallbackModel);
   } catch (error) {
     console.error("Image Generation Error:", error);
     throw error;
@@ -784,7 +841,7 @@ export interface SmartGenerationResult {
   originalPrompt: string;
   analysis?: PromptAnalysis;
   modelUsed?: string;
-  textOverlayApplied?: boolean;
+  negativePrompt?: string;
 }
 
 export const generateImageSmart = async (
@@ -794,133 +851,87 @@ export const generateImageSmart = async (
   quality: QualityLevel = 'standard',
   variations: number = 1
 ): Promise<SmartGenerationResult> => {
+  const ai = getAIClient();
   const textPriorityAnalysis = analyzeTextPriority(userPrompt);
-  const shouldUseTextOverlay = isTextHeavyPrompt(userPrompt);
-
+  
   console.log(`[Smart Generation] Text Priority Analysis:`, {
     isTextPriority: textPriorityAnalysis.isTextPriority,
     confidence: textPriorityAnalysis.confidence,
     hasMultilingual: textPriorityAnalysis.hasMultilingualText,
     languages: textPriorityAnalysis.detectedLanguages,
-    extractedTexts: textPriorityAnalysis.extractedTexts.length,
-    willUseTextOverlay: shouldUseTextOverlay
+    extractedTexts: textPriorityAnalysis.extractedTexts.length
   });
 
+  const result = await performInitialAnalysis(userPrompt, true);
+  const analysis = result.analysis;
+  const textInfo = result.textInfo;
+  const hasText = textInfo.length > 0 || textPriorityAnalysis.isTextPriority;
+  
   let enhancedPrompt: string;
   let mode: 'cinematic' | 'typographic';
-  let analysis: PromptAnalysis | undefined;
-  let textOverlayApplied = false;
 
-  if (shouldUseTextOverlay) {
+  if (hasText) {
     mode = 'typographic';
-    console.log(`[Smart Generation] Using TEXT OVERLAY mode - generating visual-only image, then overlaying text programmatically`);
-    enhancedPrompt = getVisualOnlyPrompt(userPrompt);
-    console.log(`[Smart Generation] Visual-only prompt:`, enhancedPrompt);
-
-  } else if (textPriorityAnalysis.isTextPriority) {
-    mode = 'typographic';
-    console.log(`[Smart Generation] Using TYPOGRAPHIC mode - clean, text-focused prompt`);
+    console.log(`[Smart Generation] Using TYPOGRAPHIC mode - text-focused prompt with gemini-3-pro-image-preview as PRIMARY`);
     enhancedPrompt = buildTypographicPrompt(userPrompt, textPriorityAnalysis);
-
   } else {
     mode = 'cinematic';
     console.log(`[Smart Generation] Using CINEMATIC mode - full enhancement pipeline`);
-
-    const result = await performInitialAnalysis(userPrompt, true);
-    analysis = result.analysis;
-    enhancedPrompt = await enhanceStyle(userPrompt, result.analysis, result.textInfo, selectedStyle, quality);
+    enhancedPrompt = await enhanceStyle(userPrompt, analysis, textInfo, selectedStyle, quality);
   }
 
+  const negativePrompt = getNegativePrompts(analysis, textInfo, selectedStyle);
+  
   console.log(`[Smart Generation] Final prompt (${mode} mode):`, enhancedPrompt.substring(0, 200) + '...');
+  console.log(`[Smart Generation] Negative prompt:`, negativePrompt.substring(0, 100) + '...');
 
   const numVariations = Math.min(Math.max(variations, 1), 4);
   let images: GeneratedImageData[] = [];
   let modelUsed = 'gemini';
 
-  if (isImagenAvailable()) {
-    console.log(`[Smart Generation] Imagen available - trying Imagen 4 first`);
+  if (hasText) {
+    const textModel = 'gemini-3-pro-image-preview';
+    console.log(`[Smart Generation] TEXT DETECTED - Using ${textModel} as PRIMARY for accurate text rendering`);
+    images = await generateWithGeminiImageModel(ai, enhancedPrompt, aspectRatio, negativePrompt, numVariations, textModel);
+    modelUsed = textModel;
+  } else if (quality === 'draft') {
+    const draftModel = 'gemini-2.5-flash-image';
+    console.log(`[Smart Generation] Draft mode (no text) - using ${draftModel}`);
+    images = await generateWithGeminiImageModel(ai, enhancedPrompt, aspectRatio, negativePrompt, numVariations, draftModel);
+    modelUsed = draftModel;
+  } else {
+    console.log(`[Smart Generation] Final mode (no text) - trying Imagen 4 first`);
     
-    const modelsToTry: ImagenModel[] = [
-      'imagen-4.0-generate-001',
-      'imagen-4.0-fast-generate-001',
-      'imagen-3.0-generate-002'
-    ];
+    try {
+      const imagenResults = await generateWithImagen(enhancedPrompt, {
+        model: 'imagen-4.0-generate-001',
+        aspectRatio,
+        numberOfImages: numVariations,
+        negativePrompt
+      });
 
-    for (const model of modelsToTry) {
-      try {
-        console.log(`[Smart Generation] Attempting ${model}...`);
-        const imagenResults = await generateWithImagen(enhancedPrompt, {
-          model,
-          aspectRatio,
-          numberOfImages: numVariations
-        });
+      images = imagenResults.map(r => ({
+        url: `data:${r.mimeType};base64,${r.base64}`,
+        prompt: enhancedPrompt,
+        base64Data: r.base64,
+        mimeType: r.mimeType
+      }));
 
-        images = imagenResults.map(result => ({
-          url: `data:${result.mimeType};base64,${result.base64}`,
-          prompt: enhancedPrompt,
-          base64Data: result.base64,
-          mimeType: result.mimeType
-        }));
-
-        modelUsed = model;
-        console.log(`[Smart Generation] Successfully generated ${images.length} image(s) with ${model}`);
-        break;
-      } catch (error: any) {
-        console.warn(`[Smart Generation] ${model} failed:`, error.message);
-        if (model === modelsToTry[modelsToTry.length - 1]) {
-          console.log(`[Smart Generation] All Imagen models failed, falling back to Gemini`);
-        }
+      modelUsed = 'imagen-4.0-generate-001';
+      console.log(`[Smart Generation] Imagen 4 succeeded - ${images.length} images`);
+    } catch (imagenError: any) {
+      console.warn(`[Smart Generation] Imagen generation failed:`, imagenError.message);
+      
+      if (imagenError.message?.includes("PERMISSION_DENIED") || imagenError.message?.includes("API key expired")) {
+        throw imagenError;
       }
     }
-  }
 
-  if (images.length === 0) {
-    console.log(`[Smart Generation] Using Gemini fallback`);
-    images = await generateImage(
-      enhancedPrompt,
-      aspectRatio,
-      numVariations,
-      { textPriorityMode: textPriorityAnalysis.isTextPriority }
-    );
-    modelUsed = 'gemini-2.5-flash-image';
-  }
-
-  if (shouldUseTextOverlay && images.length > 0) {
-    console.log(`[Smart Generation] Applying text overlay to generated images...`);
-    const textElements = extractTextFromPrompt(userPrompt);
-    console.log(`[Smart Generation] Text elements to overlay:`, textElements.map(e => ({ type: e.type, text: e.text })));
-
-    if (textElements.length > 0) {
-      const overlaidImages: GeneratedImageData[] = [];
-      
-      for (const image of images) {
-        try {
-          if (image.base64Data) {
-            const overlaidBase64 = await overlayTextOnImage(
-              image.base64Data,
-              textElements,
-              image.mimeType || 'image/png'
-            );
-            
-            overlaidImages.push({
-              url: `data:image/png;base64,${overlaidBase64}`,
-              prompt: userPrompt,
-              base64Data: overlaidBase64,
-              mimeType: 'image/png'
-            });
-            console.log(`[Smart Generation] Text overlay applied successfully`);
-          } else {
-            overlaidImages.push(image);
-          }
-        } catch (error: any) {
-          console.error(`[Smart Generation] Text overlay failed:`, error.message);
-          overlaidImages.push(image);
-        }
-      }
-      
-      images = overlaidImages;
-      textOverlayApplied = true;
-      modelUsed = modelUsed + '+text-overlay';
+    if (images.length === 0) {
+      const fallbackModel = 'gemini-3-pro-image-preview';
+      console.log(`[Smart Generation] Using fallback model: ${fallbackModel}`);
+      images = await generateWithGeminiImageModel(ai, enhancedPrompt, aspectRatio, negativePrompt, numVariations, fallbackModel);
+      modelUsed = fallbackModel;
     }
   }
 
@@ -932,7 +943,7 @@ export const generateImageSmart = async (
     originalPrompt: userPrompt,
     analysis,
     modelUsed,
-    textOverlayApplied
+    negativePrompt
   };
 };
 
