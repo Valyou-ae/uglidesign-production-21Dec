@@ -19,6 +19,11 @@ import {
   LIGHTING_SETUPS,
   COLOR_GRADES
 } from "./cinematicDNA";
+import {
+  isImagenAvailable,
+  generateWithImagen,
+  type ImagenModel
+} from "./imagen3Service";
 
 const API_KEY = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || '';
 const BASE_URL = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
@@ -771,6 +776,7 @@ export interface SmartGenerationResult {
   enhancedPrompt: string;
   originalPrompt: string;
   analysis?: PromptAnalysis;
+  modelUsed?: string;
 }
 
 export const generateImageSmart = async (
@@ -811,12 +817,57 @@ export const generateImageSmart = async (
 
   console.log(`[Smart Generation] Final prompt (${mode} mode):`, enhancedPrompt.substring(0, 200) + '...');
 
-  const images = await generateImage(
-    enhancedPrompt,
-    aspectRatio,
-    Math.min(Math.max(variations, 1), 4),
-    { textPriorityMode: textPriorityAnalysis.isTextPriority }
-  );
+  const numVariations = Math.min(Math.max(variations, 1), 4);
+  let images: GeneratedImageData[] = [];
+  let modelUsed = 'gemini';
+
+  if (isImagenAvailable()) {
+    console.log(`[Smart Generation] Imagen available - trying Imagen 4 first (best text rendering)`);
+    
+    const modelsToTry: ImagenModel[] = [
+      'imagen-4.0-generate-001',
+      'imagen-4.0-fast-generate-001',
+      'imagen-3.0-generate-002'
+    ];
+
+    for (const model of modelsToTry) {
+      try {
+        console.log(`[Smart Generation] Attempting ${model}...`);
+        const imagenResults = await generateWithImagen(enhancedPrompt, {
+          model,
+          aspectRatio,
+          numberOfImages: numVariations
+        });
+
+        images = imagenResults.map(result => ({
+          url: `data:${result.mimeType};base64,${result.base64}`,
+          prompt: enhancedPrompt,
+          base64Data: result.base64,
+          mimeType: result.mimeType
+        }));
+
+        modelUsed = model;
+        console.log(`[Smart Generation] Successfully generated ${images.length} image(s) with ${model}`);
+        break;
+      } catch (error: any) {
+        console.warn(`[Smart Generation] ${model} failed:`, error.message);
+        if (model === modelsToTry[modelsToTry.length - 1]) {
+          console.log(`[Smart Generation] All Imagen models failed, falling back to Gemini`);
+        }
+      }
+    }
+  }
+
+  if (images.length === 0) {
+    console.log(`[Smart Generation] Using Gemini fallback`);
+    images = await generateImage(
+      enhancedPrompt,
+      aspectRatio,
+      numVariations,
+      { textPriorityMode: textPriorityAnalysis.isTextPriority }
+    );
+    modelUsed = 'gemini-2.5-flash-image';
+  }
 
   return {
     images,
@@ -824,7 +875,8 @@ export const generateImageSmart = async (
     textPriorityAnalysis,
     enhancedPrompt,
     originalPrompt: userPrompt,
-    analysis
+    analysis,
+    modelUsed
   };
 };
 

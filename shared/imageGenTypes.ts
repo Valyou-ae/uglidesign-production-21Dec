@@ -138,6 +138,7 @@ export interface GenerateImageResponse {
   enhancedPrompt?: string;
   analysis?: PromptAnalysis;
   generationMode?: 'cinematic' | 'typographic';
+  modelUsed?: string;
   textPriorityInfo?: TextPriorityInfo;
 }
 

@@ -67,6 +67,7 @@ export async function registerRoutes(
           style_intent: smartResult.mode
         },
         generationMode: smartResult.mode,
+        modelUsed: smartResult.modelUsed,
         textPriorityInfo: smartResult.textPriorityAnalysis.isTextPriority ? {
           confidence: smartResult.textPriorityAnalysis.confidence,
           detectedLanguages: smartResult.textPriorityAnalysis.detectedLanguages,
