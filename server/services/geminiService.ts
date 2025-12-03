@@ -175,7 +175,7 @@ const NEGATIVE_LIBRARIES: Record<string, string> = {
   architecture: "distorted perspective, warped lines, crooked lines, unrealistic proportions, impossible geometry",
   animal: "extra legs, missing legs, wrong anatomy, mutated, malformed features, cartoon-like when realistic wanted",
   action: "frozen unnaturally, stiff, awkward pose, motion blur excessive, duplicate limbs, broken limbs, poorly framed",
-  text: "gibberish text, unreadable text, distorted text, incorrect spelling, garbled text",
+  text: "gibberish text, unreadable text, distorted text, incorrect spelling, garbled text, misspelled words, wrong letters, missing letters, extra letters, swapped letters, invented words, nonsense text, scrambled text",
   photorealistic: "cartoon, anime, illustration, drawing, painting, sketch, 3D render, CG, artificial, fake, stylized",
   cinematic: "amateur, home video, phone camera, flat lighting, bad color grading, digital video look",
 };
@@ -378,6 +378,26 @@ export const analyzeTextPriority = (prompt: string): TextPriorityAnalysis => {
   };
 };
 
+const spellOutWord = (word: string): string => {
+  const chars = Array.from(word);
+  return chars.join('-');
+};
+
+const spellOutPhrase = (phrase: string): string => {
+  const words = phrase.split(/\s+/).filter(w => w.length > 0);
+  return words.map(word => {
+    if (word.length >= 3) {
+      return `"${word}" (${spellOutWord(word)})`;
+    }
+    return `"${word}"`;
+  }).join(' ');
+};
+
+const getWordVerification = (word: string): string => {
+  const chars = Array.from(word);
+  return `${spellOutWord(word)} (${chars.length} characters)`;
+};
+
 export const buildTypographicPrompt = (
   userPrompt: string,
   textPriorityAnalysis: TextPriorityAnalysis
@@ -386,29 +406,43 @@ export const buildTypographicPrompt = (
 
   let typographicPrompt = '';
 
-  typographicPrompt += `CRITICAL TEXT RENDERING REQUIREMENTS:\n`;
-  typographicPrompt += `The following text MUST appear in the image EXACTLY as written - this is the PRIMARY objective:\n\n`;
+  typographicPrompt += `### MANDATORY TEXT RENDERING - HIGHEST PRIORITY ###\n\n`;
+  typographicPrompt += `CRITICAL: The text below MUST be spelled EXACTLY as shown. Each letter matters.\n`;
+  typographicPrompt += `DO NOT substitute, skip, or modify ANY letters. Verify each word character-by-character.\n\n`;
 
   if (extractedTexts.length > 0) {
     extractedTexts.forEach((text, i) => {
-      typographicPrompt += `TEXT ${i + 1}: "${text}"\n`;
-      typographicPrompt += `- Spell EXACTLY: ${text.split('').join(' ')}\n`;
+      typographicPrompt += `=== TEXT BLOCK ${i + 1} ===\n`;
+      typographicPrompt += `EXACT TEXT: "${text}"\n`;
+      typographicPrompt += `LETTER-BY-LETTER: ${spellOutPhrase(text)}\n`;
+      
+      const words = text.split(/\s+/).filter(w => w.length >= 3);
+      if (words.length > 0) {
+        typographicPrompt += `VERIFY EACH WORD:\n`;
+        words.forEach(word => {
+          typographicPrompt += `  - "${word}" = ${getWordVerification(word)}\n`;
+        });
+      }
+      typographicPrompt += `\n`;
     });
   }
 
   if (hasMultilingualText) {
-    typographicPrompt += `\nMULTILINGUAL TEXT REQUIREMENTS:\n`;
+    typographicPrompt += `MULTILINGUAL TEXT REQUIREMENTS:\n`;
     typographicPrompt += `- Detected scripts: ${detectedLanguages.join(', ')}\n`;
     typographicPrompt += `- Render each language in its NATIVE SCRIPT exactly as provided\n`;
     typographicPrompt += `- Do NOT transliterate or substitute characters\n`;
-    typographicPrompt += `- Preserve all diacritics, special characters, and script-specific features\n`;
+    typographicPrompt += `- Preserve all diacritics, special characters, and script-specific features\n\n`;
   }
 
-  typographicPrompt += `\nSCENE DESCRIPTION (secondary to text accuracy):\n`;
+  typographicPrompt += `### SCENE DESCRIPTION ###\n`;
   typographicPrompt += userPrompt;
 
-  typographicPrompt += `\n\nFINAL INSTRUCTION: Text accuracy is MORE IMPORTANT than visual style. `;
-  typographicPrompt += `Prioritize perfect spelling and legibility over artistic effects.`;
+  typographicPrompt += `\n\n### FINAL VERIFICATION ###\n`;
+  typographicPrompt += `Before generating, mentally spell out each word letter-by-letter.\n`;
+  typographicPrompt += `Text accuracy is the PRIMARY objective - more important than any visual style.\n`;
+  typographicPrompt += `Common mistakes to AVOID: missing letters, swapped letters, invented words.\n`;
+  typographicPrompt += `If uncertain about a word, use the letter-by-letter spelling provided above.`;
 
   return typographicPrompt;
 };
