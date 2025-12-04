@@ -320,6 +320,384 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/brainstorm", async (req, res) => {
+    try {
+      const { voiceInput, currentPrompt } = req.body;
+
+      if (!voiceInput) {
+        return res.status(400).json({ success: false, error: "Voice input is required" });
+      }
+
+      const { performInitialAnalysis: analyzePrompt, enhanceStyle } = await import("./services/geminiService");
+      
+      const combinedInput = currentPrompt 
+        ? `${currentPrompt}. ${voiceInput}`
+        : voiceInput;
+      
+      const { analysis } = await analyzePrompt(combinedInput, false);
+      
+      const enhancedIdea = await enhanceStyle(
+        combinedInput,
+        analysis,
+        [],
+        'auto',
+        'draft',
+        { thinkingBudget: 256, maxWords: 50 }
+      );
+
+      res.json({ 
+        success: true, 
+        idea: enhancedIdea,
+        originalInput: voiceInput
+      });
+    } catch (error: any) {
+      console.error("Brainstorm error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message || "Failed to process brainstorm" 
+      });
+    }
+  });
+
+  const KNOWLEDGE_BASE_ARTICLES: Record<string, string> = {
+    'master_overview': `# Cinematic DNA: Overview
+
+## The Complete AI Image Generation System
+
+This system implements a sophisticated multi-agent pipeline designed to transform simple prompts into Hollywood-quality visual outputs.
+
+### Core Components
+
+**1. Deep Analysis System**
+- Semantic parsing of user intent
+- Mood and emotion detection
+- Subject and environment classification
+- Style intent recognition
+
+**2. 5-Agent Pipeline**
+- **Text Sentinel**: Handles text detection and rendering
+- **Style Architect**: Crafts cinematic master prompts
+- **Visual Synthesizer**: Generates images using optimal models
+- **Master Refiner**: Applies post-processing enhancements
+- **Quality Analyst**: Scores and curates results
+
+**3. Cinematic DNA Components**
+- Volumetric Atmospheric Effects (8-12% quality boost)
+- Professional Lighting Systems (10-15% boost)
+- Depth Layering (8-10% boost)
+- Color Grading (10-12% boost)
+- Material Rendering (8-10% boost)
+- Cinematic Composition (8-12% boost)
+- Cinema Camera Systems (5-8% boost)
+
+### Quality Improvement
+
+The complete system provides 50-60% quality improvement over basic prompts through intelligent synthesis of all components.`,
+
+    'deep_analysis_system': `# Stage 1: Deep Analysis
+
+## Purpose
+
+The Deep Analysis system performs semantic parsing to understand the true intent behind user prompts.
+
+### Analysis Components
+
+**Subject Detection**
+- Primary subject identification
+- Secondary elements
+- Subject relationships
+
+**Mood Classification**
+- Primary emotional tone
+- Secondary mood layers
+- Emotional intensity
+
+**Environment Analysis**
+- Setting type (indoor/outdoor/abstract)
+- Environmental details
+- Atmospheric conditions
+
+**Style Intent**
+- Artistic style preferences
+- Technical requirements
+- Quality expectations`,
+
+    'gemini_optimization': `# Stage 7: Gemini Optimization
+
+## AI Model Configuration
+
+### Model Selection
+
+**Text-to-Image Models**
+- \`imagen-4.0-generate-001\`: Primary for final generation
+- \`gemini-3-pro-image-preview\`: Text-heavy prompts, fallback
+- \`gemini-2.5-flash-image\`: Draft mode, fast previews
+
+**Text Analysis Models**
+- \`gemini-2.5-flash\`: Prompt analysis and enhancement
+- \`gemini-3-pro-preview\`: Deep style synthesis
+
+### Thinking Budgets
+
+Quality levels configure thinking time:
+- Draft: 512 tokens
+- Standard: 1024 tokens
+- Premium: 4096 tokens
+- Ultra: 8192 tokens`,
+
+    'agent_4_master_refiner': `# Agent 4: Master Refiner
+
+## Post-Processing Excellence
+
+The Master Refiner applies professional-grade image enhancement after generation.
+
+### Refiner Presets
+
+**Cinematic Polish**
+- Hollywood-grade color grading
+- Teal-orange color grade
+- Shadow lifting, highlight recovery
+
+**Photorealistic Polish**
+- High-end camera simulation
+- Micro contrast enhancement
+- Lens characteristics
+
+**Artistic Boost**
+- Bold color enhancement
+- Dramatic contrast
+- Vibrant saturation
+
+**Clean & Sharp**
+- Professional clarity
+- No stylization
+- Pure sharpening`,
+
+    'volumetric_atmospheric_effects': `# Volumetric Atmospheric Effects
+
+## Quality Boost: 8-12%
+
+### Key Elements
+
+**Fog and Haze**
+- Distance-based visibility
+- Layered atmospheric depth
+- Volumetric light scattering
+
+**Light Rays**
+- God rays through openings
+- Dust particle illumination
+- Beam definition
+
+**Smoke and Particles**
+- Environmental particles
+- Motion blur in atmosphere
+- Density gradients`,
+
+    'professional_lighting_systems': `# Professional Lighting Systems
+
+## Quality Boost: 10-15%
+
+### Lighting Setups
+
+**Three-Point Lighting**
+- Key light: Main illumination
+- Fill light: Shadow softening
+- Back light: Subject separation
+
+**Natural Lighting**
+- Golden hour warmth
+- Blue hour coolness
+- Overcast diffusion
+
+**Dramatic Lighting**
+- Single source dramatic
+- Rim lighting
+- Chiaroscuro contrast`,
+
+    'depth_layering_system': `# Depth Layering System
+
+## Quality Boost: 8-10%
+
+### Depth Components
+
+**Foreground Elements**
+- Framing devices
+- Leading lines
+- Bokeh elements
+
+**Middle Ground**
+- Subject placement
+- Supporting elements
+- Interaction zones
+
+**Background**
+- Environmental context
+- Atmospheric depth
+- Horizon elements`,
+
+    'professional_color_grading': `# Professional Color Grading
+
+## Quality Boost: 10-12%
+
+### Color Grade Styles
+
+**Teal & Orange**
+- Hollywood blockbuster look
+- Warm skin tones
+- Cool shadows
+
+**Bleach Bypass**
+- Desaturated contrast
+- Film noir aesthetic
+- Gritty realism
+
+**Warm Vintage**
+- Golden highlights
+- Nostalgic feel
+- Soft contrast`,
+
+    'material_and_surface_rendering': `# Material and Surface Rendering
+
+## Quality Boost: 8-10%
+
+### Material Properties
+
+**Subsurface Scattering**
+- Skin translucency
+- Organic materials
+- Light penetration
+
+**Specular Highlights**
+- Surface reflection
+- Wetness effects
+- Metallic sheen
+
+**Texture Detail**
+- Micro-texture
+- Surface imperfections
+- Material authenticity`,
+
+    'cinematic_composition_rules': `# Cinematic Composition Rules
+
+## Quality Boost: 8-12%
+
+### Composition Principles
+
+**Rule of Thirds**
+- Subject placement
+- Visual balance
+- Natural eye flow
+
+**Golden Ratio**
+- Spiral composition
+- Harmonic proportions
+- Aesthetic balance
+
+**Leading Lines**
+- Direction guidance
+- Depth enhancement
+- Visual narrative`,
+
+    'cinema_camera_systems': `# Cinema Camera Systems
+
+## Quality Boost: 5-8%
+
+### Camera Specifications
+
+**Full Frame Cameras**
+- Sony A7R IV
+- Canon EOS R5
+- Shallow depth of field
+
+**Lens Selection**
+- 85mm f/1.4 (portraits)
+- 35mm f/1.4 (environmental)
+- 135mm f/2 (compression)
+
+**Lens Characteristics**
+- Bokeh quality
+- Chromatic aberration
+- Lens distortion`,
+
+    'artistic_styles_library_part1': `# Artistic Styles Library Part 1
+
+## Classical to Contemporary
+
+### Historical Styles
+
+**Renaissance**
+- Classical proportions
+- Chiaroscuro lighting
+- Religious themes
+
+**Baroque**
+- Dramatic lighting
+- Rich ornmentation
+- Dynamic composition
+
+**Impressionism**
+- Light and color focus
+- Visible brushstrokes
+- Outdoor scenes
+
+### Modern Art
+
+**Art Nouveau**
+- Organic curves
+- Natural forms
+- Decorative elements
+
+**Art Deco**
+- Geometric patterns
+- Bold colors
+- Luxurious materials`,
+
+    'artistic_styles_library_part2': `# Artistic Styles Library Part 2
+
+## Digital & Design
+
+### Digital Era
+
+**Cyberpunk**
+- Neon lights
+- Urban decay
+- High-tech low-life
+
+**Vaporwave**
+- 80s/90s aesthetics
+- Pastel colors
+- Retro technology
+
+**Synthwave**
+- Sunset gradients
+- Chrome reflections
+- Grid patterns
+
+### Contemporary
+
+**Dark Academia**
+- Classical architecture
+- Muted tones
+- Scholarly atmosphere
+
+**Cottagecore**
+- Rural aesthetics
+- Natural materials
+- Cozy atmosphere`
+  };
+
+  app.get("/api/knowledge-base/:slug", (req, res) => {
+    const { slug } = req.params;
+    const content = KNOWLEDGE_BASE_ARTICLES[slug];
+    
+    if (content) {
+      res.json({ success: true, content });
+    } else {
+      res.status(404).json({ success: false, error: "Article not found" });
+    }
+  });
+
   app.post("/api/generate-imagen3", async (req, res) => {
     try {
       if (!isImagenAvailable()) {
