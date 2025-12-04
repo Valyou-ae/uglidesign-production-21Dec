@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 
-const PRIMARY_API_KEY = process.env.GOOGLE_AI_API_KEY || '';
+// Primary key is IMAGEN_API_KEY (user's dedicated key for Imagen 4)
+// Fallback keys are the old GOOGLE_AI_API_KEY secrets
+const PRIMARY_API_KEY = process.env.IMAGEN_API_KEY || process.env.GOOGLE_AI_API_KEY || '';
 const FALLBACK_API_KEY = process.env.GOOGLE_AI_API_KEY_FALLBACK || '';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

@@ -31,6 +31,9 @@ import {
 const API_KEY = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || '';
 const BASE_URL = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
 
+// Dedicated API key for Imagen 4 and Gemini 3 Pro (user's own Google AI key)
+const IMAGEN_API_KEY = process.env.IMAGEN_API_KEY || '';
+
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 function validateApiKey(): void {
@@ -39,12 +42,33 @@ function validateApiKey(): void {
   }
 }
 
+function validateImagenApiKey(): void {
+  if (!IMAGEN_API_KEY) {
+    throw new Error("Imagen API key not configured. Please add IMAGEN_API_KEY to your secrets.");
+  }
+}
+
+// Replit integration client (for gemini-2.5-flash, gemini-2.5-flash-image)
 function getAIClient() {
   validateApiKey();
   return new GoogleGenAI({
     apiKey: API_KEY,
     httpOptions: BASE_URL ? { baseUrl: BASE_URL, apiVersion: "" } : undefined
   });
+}
+
+// Dedicated client for Imagen 4 and Gemini 3 Pro (user's own API key)
+function getImagenClient() {
+  validateImagenApiKey();
+  return new GoogleGenAI({
+    apiKey: IMAGEN_API_KEY
+    // No httpOptions - uses default Google AI endpoint
+  });
+}
+
+// Check if dedicated Imagen client is available
+export function isImagenClientAvailable(): boolean {
+  return !!IMAGEN_API_KEY;
 }
 
 async function withRetry<T>(fn: () => Promise<T>, retries = 5, initialDelay = 3000): Promise<T> {
@@ -2505,7 +2529,8 @@ All text must be rendered with PERFECT spelling accuracy. Each word must be exac
   modelUsed = 'gemini-3-pro-image-preview';
   
   try {
-    const ai = getAIClient();
+    // Use dedicated Imagen client for gemini-3-pro-image-preview
+    const ai = isImagenClientAvailable() ? getImagenClient() : getAIClient();
     const fallbackCandidates: GeneratedImageData[] = [];
     
     for (let i = 0; i < Math.min(candidateCount, 4); i++) {
@@ -2565,4 +2590,161 @@ All text must be rendered with PERFECT spelling accuracy. Each word must be exac
     complexityWarnings: complexityCheck.warnings,
     zoneLayout
   };
+}
+
+// ============================================================================
+// MODEL CONNECTION TEST
+// Tests all configured models to verify API connectivity
+// ============================================================================
+
+export interface ModelTestResult {
+  model: string;
+  status: 'connected' | 'error' | 'not_configured';
+  message: string;
+  responseTime?: number;
+  apiSource: 'replit_integration' | 'imagen_api_key';
+}
+
+export async function testAllModelConnections(): Promise<ModelTestResult[]> {
+  const results: ModelTestResult[] = [];
+  
+  // Test 1: gemini-2.5-flash (Replit integration - text analysis)
+  console.log('[Model Test] Testing gemini-2.5-flash...');
+  try {
+    const startTime = Date.now();
+    const ai = getAIClient();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: 'Say "test" in one word'
+    });
+    const responseTime = Date.now() - startTime;
+    const text = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    results.push({
+      model: 'gemini-2.5-flash',
+      status: 'connected',
+      message: `Response: "${text.substring(0, 50)}..."`,
+      responseTime,
+      apiSource: 'replit_integration'
+    });
+  } catch (error: any) {
+    results.push({
+      model: 'gemini-2.5-flash',
+      status: 'error',
+      message: error.message || 'Unknown error',
+      apiSource: 'replit_integration'
+    });
+  }
+  
+  // Test 2: gemini-2.5-flash-image (Replit integration - draft generation)
+  console.log('[Model Test] Testing gemini-2.5-flash-image...');
+  try {
+    const startTime = Date.now();
+    const ai = getAIClient();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: 'A simple red circle on white background',
+      config: {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      }
+    });
+    const responseTime = Date.now() - startTime;
+    const parts = response.candidates?.[0]?.content?.parts || [];
+    const hasImage = parts.some((p: any) => p.inlineData?.mimeType?.startsWith('image/'));
+    results.push({
+      model: 'gemini-2.5-flash-image',
+      status: hasImage ? 'connected' : 'error',
+      message: hasImage ? 'Image generated successfully' : 'No image in response',
+      responseTime,
+      apiSource: 'replit_integration'
+    });
+  } catch (error: any) {
+    results.push({
+      model: 'gemini-2.5-flash-image',
+      status: 'error',
+      message: error.message || 'Unknown error',
+      apiSource: 'replit_integration'
+    });
+  }
+  
+  // Test 3: imagen-4.0-generate-001 (User's IMAGEN_API_KEY)
+  console.log('[Model Test] Testing imagen-4.0-generate-001...');
+  if (!isImagenClientAvailable()) {
+    results.push({
+      model: 'imagen-4.0-generate-001',
+      status: 'not_configured',
+      message: 'IMAGEN_API_KEY not set',
+      apiSource: 'imagen_api_key'
+    });
+  } else {
+    try {
+      const startTime = Date.now();
+      const ai = getImagenClient();
+      const response = await ai.models.generateImages({
+        model: 'imagen-4.0-generate-001',
+        prompt: 'A simple blue square on white background',
+        config: {
+          numberOfImages: 1,
+        }
+      });
+      const responseTime = Date.now() - startTime;
+      const hasImage = response.generatedImages && response.generatedImages.length > 0;
+      results.push({
+        model: 'imagen-4.0-generate-001',
+        status: hasImage ? 'connected' : 'error',
+        message: hasImage ? 'Image generated successfully' : 'No image in response',
+        responseTime,
+        apiSource: 'imagen_api_key'
+      });
+    } catch (error: any) {
+      results.push({
+        model: 'imagen-4.0-generate-001',
+        status: 'error',
+        message: error.message || 'Unknown error',
+        apiSource: 'imagen_api_key'
+      });
+    }
+  }
+  
+  // Test 4: gemini-3-pro-image-preview (User's IMAGEN_API_KEY - text fallback)
+  console.log('[Model Test] Testing gemini-3-pro-image-preview...');
+  if (!isImagenClientAvailable()) {
+    results.push({
+      model: 'gemini-3-pro-image-preview',
+      status: 'not_configured',
+      message: 'IMAGEN_API_KEY not set',
+      apiSource: 'imagen_api_key'
+    });
+  } else {
+    try {
+      const startTime = Date.now();
+      const ai = getImagenClient();
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-pro-image-preview',
+        contents: 'A simple green triangle on white background',
+        config: {
+          responseModalities: [Modality.TEXT, Modality.IMAGE],
+        }
+      });
+      const responseTime = Date.now() - startTime;
+      const parts = response.candidates?.[0]?.content?.parts || [];
+      const hasImage = parts.some((p: any) => p.inlineData?.mimeType?.startsWith('image/'));
+      results.push({
+        model: 'gemini-3-pro-image-preview',
+        status: hasImage ? 'connected' : 'error',
+        message: hasImage ? 'Image generated successfully' : 'No image in response',
+        responseTime,
+        apiSource: 'imagen_api_key'
+      });
+    } catch (error: any) {
+      results.push({
+        model: 'gemini-3-pro-image-preview',
+        status: 'error',
+        message: error.message || 'Unknown error',
+        apiSource: 'imagen_api_key'
+      });
+    }
+  }
+  
+  console.log('[Model Test] All tests complete:', results);
+  return results;
 }

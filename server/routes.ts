@@ -17,7 +17,9 @@ import {
   generateIterativeEditPrompt,
   evaluatePromptTier,
   generateWithTextIntegrity,
-  checkTextComplexitySoftLimits
+  checkTextComplexitySoftLimits,
+  testAllModelConnections,
+  isImagenClientAvailable
 } from "./services/geminiService";
 import { 
   runMultiAgentPipeline, 
@@ -272,6 +274,34 @@ export async function registerRoutes(
   app.get("/api/agent-system-info", (req, res) => {
     const info = getAgentSystemInfo();
     res.json({ success: true, ...info });
+  });
+
+  // Test all model connections
+  app.get("/api/test-models", async (req, res) => {
+    try {
+      console.log("[API] Testing all model connections...");
+      const results = await testAllModelConnections();
+      
+      const summary = {
+        total: results.length,
+        connected: results.filter(r => r.status === 'connected').length,
+        errors: results.filter(r => r.status === 'error').length,
+        notConfigured: results.filter(r => r.status === 'not_configured').length
+      };
+      
+      res.json({ 
+        success: true, 
+        summary,
+        results,
+        imagenApiKeyConfigured: isImagenClientAvailable()
+      });
+    } catch (error: any) {
+      console.error("[API] Model test error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message || "Failed to test models" 
+      });
+    }
   });
 
   app.post("/api/deep-analysis", async (req, res) => {
