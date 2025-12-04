@@ -84,7 +84,7 @@ const TIER_CONFIG: Record<ModelTier, { thinkingBudget: number; maxWords: number 
 };
 
 // Tier-specific generation settings for model selection, retries, and fallbacks
-// Note: Using gemini-2.0-flash-exp for image generation as gemini-2.5-flash-image is the available model
+// Note: Using gemini-2.5-flash-image for native image generation (Replit AI Integrations)
 const TIER_GENERATION_CONFIG: Record<ModelTier, {
   imagenRetries: number;
   imagenRetryDelay: number;
@@ -96,22 +96,22 @@ const TIER_GENERATION_CONFIG: Record<ModelTier, {
     imagenRetries: 3,
     imagenRetryDelay: 1000,
     imagenMaxDelay: 16000,
-    fallbackModel: 'gemini-2.0-flash-exp',
-    textFallbackModel: 'gemini-2.0-flash-exp'
+    fallbackModel: 'gemini-2.5-flash-image',
+    textFallbackModel: 'gemini-2.5-flash-image'
   },
   premium: {
     imagenRetries: 5,
     imagenRetryDelay: 1000,
     imagenMaxDelay: 32000,
-    fallbackModel: 'gemini-2.0-flash-exp',
-    textFallbackModel: 'gemini-2.0-flash-exp'
+    fallbackModel: 'gemini-2.5-flash-image',
+    textFallbackModel: 'gemini-2.5-flash-image'
   },
   ultra: {
     imagenRetries: 7,
     imagenRetryDelay: 1500,
     imagenMaxDelay: 45000,
-    fallbackModel: 'gemini-2.0-flash-exp',
-    textFallbackModel: 'gemini-2.0-flash-exp'
+    fallbackModel: 'gemini-2.5-flash-image',
+    textFallbackModel: 'gemini-2.5-flash-image'
   }
 };
 
@@ -1227,7 +1227,7 @@ export const generateImage = async (
 
   try {
     if (quality === 'draft') {
-      const draftModel = 'gemini-2.0-flash-exp';
+      const draftModel = 'gemini-2.5-flash-image';
       console.log(`[generateImage] Draft mode - using ${draftModel}`);
       return generateWithGeminiImageModel(ai, prompt, aspectRatio, negativePrompt, numberOfVariations, draftModel);
     }
@@ -1399,8 +1399,8 @@ export const generateImageSmart = async (
   // AI Studio Model Routing with tier-aware retry/fallback
   if (quality === 'draft') {
     if (hasText) {
-      const draftTextModel = 'gemini-3-pro-image-preview';
-      console.log(`[Smart Generation] Draft mode WITH TEXT - using ${draftTextModel} for text accuracy`);
+      const draftTextModel = 'gemini-2.5-flash-image';
+      console.log(`[Smart Generation] Draft mode WITH TEXT - using ${draftTextModel}`);
       images = await generateWithGeminiImageModel(ai, enhancedPrompt, aspectRatio, negativePrompt, numVariations, draftTextModel);
       modelUsed = draftTextModel;
     } else {
