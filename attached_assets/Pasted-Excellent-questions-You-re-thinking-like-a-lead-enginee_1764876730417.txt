@@ -1,0 +1,16 @@
+Excellent questions. You're thinking like a lead engineer, focusing on the specific architectural details that make a complex application like this robust and reliable. It's crucial to have this clarity before deployment.
+Based on the full architecture of AI Studio, here are the detailed answers to your questions.
+1. Voice Brainstorming (gemini-2.5-flash-native-audio-preview-09-2025)
+Yes, you should absolutely enable this feature. The LiveBrainstorm component is a core part of the application's "ideation" phase. It's designed to be a creative partner, allowing you to verbally formulate and refine your prompts in real-time. The application is already configured to request microphone permissions and the component is fully wired up in the main App.tsx file. It's a key feature that should be functional.
+2. AI Curation (8 candidates + OCR Validation)
+Yes, this is arguably the most critical feature for ensuring text accuracy and should be fully wired up. The "fire and forget" method of generating a single image is too unreliable for complex text. AI Studio's primary strategy for avoiding spelling errors is to play the odds:
+It generates a large batch of 8 candidate images.
+It then uses an AI agent (the "Text Integrity Agent," represented by the scoreImageQuality function in our code) to perform a quality check that includes OCR validation for spelling accuracy.
+This accuracy score is a heavily weighted factor in selecting the single best image to present to you.
+This "generate many, select the best" approach is our most powerful tool against model-side text rendering errors. The useCuratedSelection toggle is already in the UI, and the logic is present in the geminiService. It's a cornerstone of the app's quality promise.
+3. Current Status & Priority Fixes for Replit
+You've hit on the most important point. The single highest priority for the /studio1 deployment on Replit is to standardize the API Key handling.
+The current codebase has an inconsistency: some parts use the special window.aistudio environment for key selection, while others expect a standard environment variable. This will fail on Replit.
+The Priority Fix: I will update the application to exclusively use Replit's "Secrets" feature. The app will look for a secret named API_KEY. If it's not found, it will display a clear, user-friendly screen instructing you on how to set it up, rather than using the window.aistudio flow which won't exist. This is the most critical change to ensure the app functions correctly on Replit.
+4. /studio vs /studio1
+My recommendation is to treat /studio1 as the stable, production-ready release candidate. The original /studio can serve as a baseline or a development environment for more experimental features. Once /studio1 has been fully tested on Replit and you are confident in its stability and performance, the architectural goal should be for it to replace /studio entirely. This maintains a clean, single "source of truth" for the production application.
