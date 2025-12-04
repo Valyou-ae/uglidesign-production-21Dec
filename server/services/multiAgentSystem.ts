@@ -15,11 +15,16 @@ import {
   CINEMA_LENSES
 } from "./cinematicDNA";
 
-const API_KEY = process.env.API_KEY || '';
+const API_KEY = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || '';
+const BASE_URL = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
 
 const getAIClient = () => {
+  if (!API_KEY) {
+    throw new Error("AI service not configured. Please ensure the Gemini integration is properly set up.");
+  }
   return new GoogleGenAI({
-    apiKey: API_KEY
+    apiKey: API_KEY,
+    httpOptions: BASE_URL ? { baseUrl: BASE_URL, apiVersion: "" } : undefined
   });
 };
 

@@ -231,14 +231,23 @@ export async function registerRoutes(
 
   app.post("/api/deep-analysis", async (req, res) => {
     try {
-      const { prompt } = req.body;
+      const { prompt, processText } = req.body;
 
       if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
         return res.status(400).json({ success: false, error: "Prompt is required" });
       }
 
       const analysis = await performDeepAnalysis(prompt.trim());
-      res.json({ success: true, analysis });
+      
+      let detectedText: any[] = [];
+      if (processText !== false) {
+        const textPriority = analyzeTextPriority(prompt.trim());
+        if (textPriority.isTextPriority || textPriority.hasQuotedText) {
+          detectedText = textPriority.extractedTexts.map(text => ({ text, placement: 'integrated' }));
+        }
+      }
+      
+      res.json({ success: true, analysis, detectedText });
     } catch (error: any) {
       console.error("Deep analysis error:", error);
       res.status(500).json({ 
