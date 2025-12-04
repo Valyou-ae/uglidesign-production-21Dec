@@ -1164,26 +1164,34 @@ async function generateWithGeminiImageModel(
   
   for (let i = 0; i < count; i++) {
     try {
-      const parts: any[] = [];
-      let finalPromptForModel = prompt;
+      let finalPrompt = prompt;
+      let contents: any;
 
       if (referenceImage) {
-        parts.push({ inlineData: { data: referenceImage.base64Data, mimeType: referenceImage.mimeType } });
-        finalPromptForModel = `**PRIME DIRECTIVE: COMPOSITIONAL LOCK.** A reference image is provided. You MUST adhere to its core visual structure. The camera angle, subject, pose, and layout are LOCKED. Your task is to apply the changes from the prompt below to THIS EXACT composition, not to re-imagine the scene.\n\n**PROMPT:**\n${prompt}`;
+        finalPrompt = `**PRIME DIRECTIVE: COMPOSITIONAL LOCK.** A reference image is provided. You MUST adhere to its core visual structure. The camera angle, subject, pose, and layout are LOCKED. Your task is to apply the changes from the prompt below to THIS EXACT composition, not to re-imagine the scene.\n\n**PROMPT:**\n${prompt}`;
+        const fullPromptWithNegatives = negativePrompt 
+          ? `${finalPrompt} --- AVOID --- ${negativePrompt}`
+          : finalPrompt;
+        contents = [
+          { inlineData: { data: referenceImage.base64Data, mimeType: referenceImage.mimeType } },
+          fullPromptWithNegatives
+        ];
+      } else {
+        const fullPromptWithNegatives = negativePrompt 
+          ? `${finalPrompt} --- AVOID --- ${negativePrompt}`
+          : finalPrompt;
+        contents = fullPromptWithNegatives;
       }
 
-      const fullPromptWithNegatives = negativePrompt 
-        ? `${finalPromptForModel} --- AVOID --- ${negativePrompt}`
-        : finalPromptForModel;
-      parts.push({ text: fullPromptWithNegatives });
-
+      console.log(`[Gemini Image] Generating with model: ${modelName}, iteration ${i + 1}/${count}`);
+      
       const response: any = await withRetry(() => ai.models.generateContent({
         model: modelName,
-        contents: [{ role: 'user', parts }],
-        config: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { aspectRatio } }
+        contents: contents
       }));
 
-      for (const part of response.candidates?.[0]?.content?.parts || []) {
+      const parts = response.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
         if (part.inlineData) {
           const base64 = part.inlineData.data;
           const mimeType = part.inlineData.mimeType || 'image/png';
@@ -1193,6 +1201,7 @@ async function generateWithGeminiImageModel(
             base64Data: base64,
             mimeType
           });
+          console.log(`[Gemini Image] Successfully generated image ${results.length}`);
         }
       }
     } catch (e) {
