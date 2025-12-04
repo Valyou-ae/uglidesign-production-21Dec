@@ -1179,14 +1179,14 @@ async function generateWithGeminiImageModel(
 
       const response: any = await withRetry(() => ai.models.generateContent({
         model: modelName,
-        contents: { parts },
-        config: { imageConfig: { aspectRatio } }
+        contents: [{ role: 'user', parts }],
+        config: { responseModalities: ['image', 'text'], imageConfig: { aspectRatio } }
       }));
 
       for (const part of response.candidates?.[0]?.content?.parts || []) {
         if (part.inlineData) {
           const base64 = part.inlineData.data;
-          const mimeType = 'image/png';
+          const mimeType = part.inlineData.mimeType || 'image/png';
           results.push({
             url: `data:${mimeType};base64,${base64}`,
             prompt: prompt,
