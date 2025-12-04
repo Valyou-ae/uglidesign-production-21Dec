@@ -748,72 +748,92 @@ export const buildTypographicPrompt = (
 ): string => {
   const { extractedTexts, detectedLanguages, hasMultilingualText } = textPriorityAnalysis;
 
+  // AI Studio approach: Simple, direct commands work better than letter-by-letter spelling
+  // Letter-by-letter can actually CONFUSE advanced models like Imagen 4
+  // Use clear "MUST include...spelled EXACTLY as shown" directive instead
+  
   let typographicPrompt = '';
-
-  typographicPrompt += `### ⚠️ MANDATORY TEXT RENDERING - HIGHEST PRIORITY ⚠️ ###\n\n`;
-  typographicPrompt += `🔴 CRITICAL: The text below MUST be spelled EXACTLY as shown. Each letter matters.\n`;
-  typographicPrompt += `🔴 DO NOT substitute, skip, rearrange, or modify ANY letters.\n`;
-  typographicPrompt += `🔴 DO NOT invent new words or spellings - use ONLY the exact letters provided.\n`;
-  typographicPrompt += `🔴 Verify each word character-by-character before rendering.\n\n`;
-
+  
+  // Detect if this is graphic design (book cover, poster, etc.) vs photo of text
+  const isGraphicDesign = /book\s*cover|poster|flyer|banner|logo|graphic|illustration|design|typography/i.test(userPrompt);
+  
+  if (isGraphicDesign) {
+    // GRAPHIC DESIGN MODE: Focus on typography and design hierarchy, NOT camera specs
+    typographicPrompt += `**A professional graphic design/illustration.**\n\n`;
+    typographicPrompt += `**VISUAL STYLE:** Sophisticated, professional design with attention to typographic detail. `;
+    typographicPrompt += `The composition is balanced with a cohesive, atmospheric aesthetic. `;
+    typographicPrompt += `Use dramatic, conceptual lighting within the design - soft spotlight effects creating depth. `;
+    typographicPrompt += `Apply a moody, professional color palette with rich tones.\n\n`;
+  }
+  
+  // TEXT BLOCK SECTION - Clear hierarchy without letter-by-letter spelling
   if (extractedTexts.length > 0) {
+    typographicPrompt += `**TEXT BLOCK (CRITICAL INSTRUCTION):** The image MUST include the following text blocks, spelled EXACTLY as shown, arranged in a professional typographic hierarchy:\n\n`;
+    
     extractedTexts.forEach((text, i) => {
-      typographicPrompt += `══════════════════════════════════════\n`;
-      typographicPrompt += `=== TEXT BLOCK ${i + 1} ===\n`;
-      typographicPrompt += `══════════════════════════════════════\n`;
-      typographicPrompt += `📝 EXACT TEXT: "${text}"\n`;
-      typographicPrompt += `📝 LETTER-BY-LETTER: ${spellOutPhrase(text)}\n\n`;
+      // Determine text role based on position and content
+      const isTitle = i === 0 || /title|heading/i.test(text);
+      const isSubtitle = /subtitle|inquiry|into/i.test(text.toLowerCase());
+      const isAuthor = /dr\.|by\s|author/i.test(text.toLowerCase());
+      const isQuote = text.includes('"') || text.includes("'") || text.includes('—');
+      const isPublisher = /press|publisher|est\./i.test(text.toLowerCase());
       
-      const words = text.split(/\s+/).filter(w => w.replace(/[^\w]/g, '').length >= 3);
-      if (words.length > 0) {
-        typographicPrompt += `🔍 VERIFY EACH WORD (with pronunciation guides):\n`;
-        words.forEach(word => {
-          const cleanWord = word.replace(/[^\w]/g, '');
-          if (cleanWord.length >= 3) {
-            typographicPrompt += `  ► "${word}" = ${getEnhancedWordVerification(word)}\n`;
-          }
-        });
+      let fontHint = 'clean, legible font';
+      let sizeHint = 'appropriately sized';
+      
+      if (isTitle) {
+        fontHint = 'strong, elegant Serif font';
+        sizeHint = 'most prominent, large';
+      } else if (isSubtitle) {
+        fontHint = 'clean Sans-Serif font';
+        sizeHint = 'smaller than title';
+      } else if (isAuthor) {
+        fontHint = 'elegant Serif font';
+        sizeHint = 'medium, clearly legible';
+      } else if (isQuote) {
+        fontHint = 'italicized Serif font';
+        sizeHint = 'smaller, stylized';
+      } else if (isPublisher) {
+        fontHint = 'small, clean Sans-Serif font';
+        sizeHint = 'smallest, at bottom';
       }
-      typographicPrompt += `\n`;
+      
+      typographicPrompt += `* **Text ${i + 1}:** The text "${text}" MUST appear exactly as written, rendered in a ${fontHint}, ${sizeHint}.\n`;
     });
     
-    const allHallucinations: string[] = [];
-    extractedTexts.forEach(text => {
-      const words = text.toLowerCase().split(/\s+/);
-      words.forEach(word => {
-        const cleanWord = word.replace(/[^\w]/g, '');
-        if (COMMON_AI_HALLUCINATIONS[cleanWord]) {
-          allHallucinations.push(...COMMON_AI_HALLUCINATIONS[cleanWord]);
-        }
-      });
-    });
-    
-    if (allHallucinations.length > 0) {
-      typographicPrompt += `\n🚫 BANNED MISSPELLINGS - DO NOT GENERATE THESE:\n`;
-      typographicPrompt += allHallucinations.slice(0, 10).map(h => `  ✗ "${h}"`).join('\n');
-      typographicPrompt += `\n\n`;
-    }
+    typographicPrompt += `\nAll text MUST be perfectly legible with professional kerning and spacing.\n\n`;
   }
-
+  
+  // Multilingual handling
   if (hasMultilingualText) {
-    typographicPrompt += `🌍 MULTILINGUAL TEXT REQUIREMENTS:\n`;
-    typographicPrompt += `- Detected scripts: ${detectedLanguages.join(', ')}\n`;
-    typographicPrompt += `- Render each language in its NATIVE SCRIPT exactly as provided\n`;
-    typographicPrompt += `- Do NOT transliterate or substitute characters\n`;
-    typographicPrompt += `- Preserve all diacritics, special characters, and script-specific features\n\n`;
+    typographicPrompt += `**MULTILINGUAL:** Render text in native scripts (${detectedLanguages.join(', ')}). Preserve all diacritics and special characters exactly.\n\n`;
   }
-
-  typographicPrompt += `### SCENE DESCRIPTION ###\n`;
-  typographicPrompt += userPrompt;
-
-  typographicPrompt += `\n\n### 🔒 FINAL VERIFICATION CHECKLIST ###\n`;
-  typographicPrompt += `Before generating, complete this checklist:\n`;
-  typographicPrompt += `□ Spell out each word letter-by-letter mentally\n`;
-  typographicPrompt += `□ Count the letters in each word - do they match?\n`;
-  typographicPrompt += `□ Check for any words from the BANNED MISSPELLINGS list\n`;
-  typographicPrompt += `□ Verify no letters are swapped, missing, or added\n`;
-  typographicPrompt += `□ Text accuracy is MORE IMPORTANT than visual style\n`;
-  typographicPrompt += `\n⚠️ If ANY word looks unfamiliar, refer to the letter-by-letter spelling above.`;
+  
+  // Original scene description - but filter out conflicting camera specs for graphic design
+  let sceneDescription = userPrompt;
+  if (isGraphicDesign) {
+    // Remove camera/lens specs that don't apply to graphic design
+    sceneDescription = sceneDescription
+      .replace(/shot\s+on\s+\w+\s+\w+/gi, '')
+      .replace(/\w+\s+lens/gi, '')
+      .replace(/f[\/-]?\d+\.?\d*/gi, '')
+      .replace(/\d+mm/gi, '')
+      .replace(/bokeh/gi, '')
+      .replace(/depth\s+of\s+field/gi, 'visual depth')
+      .trim();
+  }
+  
+  typographicPrompt += `**SCENE:** ${sceneDescription}\n\n`;
+  
+  // Design-appropriate enhancements (translate cinematic to design language)
+  if (isGraphicDesign) {
+    typographicPrompt += `**DESIGN QUALITY:** Professional composition with visual hierarchy. `;
+    typographicPrompt += `Atmospheric depth through subtle gradients and shadows. `;
+    typographicPrompt += `Rich, cohesive color treatment. Clean, polished finish.`;
+  } else {
+    // For photos of text (signs, storefronts, etc.) - keep some camera language
+    typographicPrompt += `**IMAGE QUALITY:** Sharp focus on all text elements. Professional photography with clear legibility.`;
+  }
 
   return typographicPrompt;
 };

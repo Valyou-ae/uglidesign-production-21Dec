@@ -11,7 +11,15 @@ An advanced AI-powered image generation application featuring a sophisticated 5-
   - Root cause: `hasText` relied on LLM-derived analysis which often missed text
   - Solution: Now uses deterministic `tierDetectedText` from `evaluatePromptTier` as primary source
   - `hasText = tierDetectedText || textInfo.length > 0 || isTextPriority`
-  - This ensures `buildTypographicPrompt()` with letter-by-letter spelling is used
+  - This ensures `buildTypographicPrompt()` is used for text-heavy prompts
+
+- **AI Studio-Aligned Typographic Prompt System**
+  - Removed letter-by-letter spelling (confuses Imagen 4 - per AI Studio guidance)
+  - Uses simple "MUST include...spelled EXACTLY as shown" directive instead
+  - Added typographic hierarchy with font hints (Serif/Sans-Serif)
+  - Detects graphic design mode (book covers, posters) vs photos of text
+  - Removes camera specs for graphic design (no "shot on ARRI Alexa" for book covers)
+  - Translates cinematic concepts to design language for graphic design prompts
 
 - **Improved Model Routing for Text**
   - Text-heavy prompts now route to Imagen 4 even in draft mode
