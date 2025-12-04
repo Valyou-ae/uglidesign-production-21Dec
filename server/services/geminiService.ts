@@ -644,9 +644,86 @@ export const analyzeTextPriority = (prompt: string): TextPriorityAnalysis => {
   };
 };
 
+const TRICKY_WORDS_PHONETIC: Record<string, string> = {
+  'elusive': 'ee-LOO-siv (like "illusion" without the "il")',
+  'epistemological': 'eh-pis-teh-muh-LOJ-ih-kuhl',
+  'philosophical': 'fil-uh-SOF-ih-kuhl',
+  'dilemma': 'dih-LEM-uh (two Ms)',
+  'uncertainty': 'un-SUR-tin-tee',
+  'knowledge': 'NOL-ij (the K is silent)',
+  'inquiry': 'in-KWAI-ree',
+  'university': 'yoo-nih-VUR-sih-tee',
+  'philosopher': 'fih-LOS-uh-fur',
+  'worthington': 'WUR-thing-ton',
+  'reginald': 'REJ-ih-nald',
+  'oxford': 'OKS-ford',
+  'established': 'eh-STAB-lisht',
+  'remains': 'rih-MAINS',
+  'forever': 'for-EV-ur',
+  'beautiful': 'BYOO-tih-ful',
+  'mysterious': 'mis-TEER-ee-us',
+  'extraordinary': 'ek-stror-din-AIR-ee',
+  'phenomenon': 'feh-NOM-eh-non',
+  'consciousness': 'KON-shus-nis',
+  'aesthetics': 'es-THET-iks',
+  'renaissance': 'REN-uh-sahns',
+  'mediterranean': 'med-ih-tuh-RAY-nee-un',
+  'entrepreneurial': 'on-truh-pruh-NUR-ee-ul',
+  'silhouette': 'sil-oo-ET',
+  'acquaintance': 'uh-KWAYN-tans',
+  'conscience': 'KON-shuns',
+  'surveillance': 'sur-VAY-luns',
+  'maintenance': 'MAYN-tuh-nuns',
+  'questionnaire': 'kwes-chun-AIR',
+  'restaurant': 'RES-tuh-rahnt',
+  'guarantee': 'gair-un-TEE',
+  'necessary': 'NES-uh-ser-ee',
+  'occasion': 'uh-KAY-zhun',
+  'definitely': 'DEF-uh-nit-lee',
+  'separate': 'SEP-uh-rayt',
+  'privilege': 'PRIV-uh-lij',
+  'existence': 'eg-ZIS-tuns',
+  'experience': 'ek-SPEER-ee-uns',
+};
+
+const COMMON_AI_HALLUCINATIONS: Record<string, string[]> = {
+  'elusive': ['elspeile', 'elsuive', 'elusve', 'elsuie', 'elussive', 'elusiv', 'elusivee'],
+  'knowledge': ['knowlege', 'knowladge', 'knowlede', 'knowlegde', 'konwledge'],
+  'philosophical': ['philosophcal', 'philsophical', 'philosophial', 'philosphical'],
+  'uncertainty': ['uncertainity', 'uncertianty', 'uncertainy', 'uncertanty'],
+  'epistemological': ['epistimological', 'epistemologcal', 'epistmological'],
+  'dilemma': ['dilema', 'dillema', 'dilemna', 'dillemma'],
+  'inquiry': ['enquiry', 'inqury', 'inquery', 'inquirey'],
+  'remains': ['remians', 'remanins', 'remiains', 'remins'],
+  'forever': ['forver', 'forevr', 'forewer', 'forevver'],
+  'university': ['univeristy', 'universtiy', 'universty', 'unversity'],
+  'established': ['establised', 'etablished', 'estabilished', 'establishd'],
+};
+
 const spellOutWord = (word: string): string => {
   const chars = Array.from(word);
   return chars.join('-');
+};
+
+const spellOutWordUppercase = (word: string): string => {
+  const chars = Array.from(word);
+  return chars.map(c => c.toUpperCase()).join(' · ');
+};
+
+const getEnhancedWordVerification = (word: string): string => {
+  const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
+  const chars = Array.from(word);
+  let verification = `${spellOutWord(word)} = ${spellOutWordUppercase(word)} (${chars.length} letters)`;
+  
+  if (TRICKY_WORDS_PHONETIC[cleanWord]) {
+    verification += `\n      PRONUNCIATION: ${TRICKY_WORDS_PHONETIC[cleanWord]}`;
+  }
+  
+  if (COMMON_AI_HALLUCINATIONS[cleanWord]) {
+    verification += `\n      ⚠️ DO NOT WRITE: ${COMMON_AI_HALLUCINATIONS[cleanWord].slice(0, 3).join(', ')}`;
+  }
+  
+  return verification;
 };
 
 const spellOutPhrase = (phrase: string): string => {
@@ -672,29 +749,53 @@ export const buildTypographicPrompt = (
 
   let typographicPrompt = '';
 
-  typographicPrompt += `### MANDATORY TEXT RENDERING - HIGHEST PRIORITY ###\n\n`;
-  typographicPrompt += `CRITICAL: The text below MUST be spelled EXACTLY as shown. Each letter matters.\n`;
-  typographicPrompt += `DO NOT substitute, skip, or modify ANY letters. Verify each word character-by-character.\n\n`;
+  typographicPrompt += `### ⚠️ MANDATORY TEXT RENDERING - HIGHEST PRIORITY ⚠️ ###\n\n`;
+  typographicPrompt += `🔴 CRITICAL: The text below MUST be spelled EXACTLY as shown. Each letter matters.\n`;
+  typographicPrompt += `🔴 DO NOT substitute, skip, rearrange, or modify ANY letters.\n`;
+  typographicPrompt += `🔴 DO NOT invent new words or spellings - use ONLY the exact letters provided.\n`;
+  typographicPrompt += `🔴 Verify each word character-by-character before rendering.\n\n`;
 
   if (extractedTexts.length > 0) {
     extractedTexts.forEach((text, i) => {
+      typographicPrompt += `══════════════════════════════════════\n`;
       typographicPrompt += `=== TEXT BLOCK ${i + 1} ===\n`;
-      typographicPrompt += `EXACT TEXT: "${text}"\n`;
-      typographicPrompt += `LETTER-BY-LETTER: ${spellOutPhrase(text)}\n`;
+      typographicPrompt += `══════════════════════════════════════\n`;
+      typographicPrompt += `📝 EXACT TEXT: "${text}"\n`;
+      typographicPrompt += `📝 LETTER-BY-LETTER: ${spellOutPhrase(text)}\n\n`;
       
-      const words = text.split(/\s+/).filter(w => w.length >= 3);
+      const words = text.split(/\s+/).filter(w => w.replace(/[^\w]/g, '').length >= 3);
       if (words.length > 0) {
-        typographicPrompt += `VERIFY EACH WORD:\n`;
+        typographicPrompt += `🔍 VERIFY EACH WORD (with pronunciation guides):\n`;
         words.forEach(word => {
-          typographicPrompt += `  - "${word}" = ${getWordVerification(word)}\n`;
+          const cleanWord = word.replace(/[^\w]/g, '');
+          if (cleanWord.length >= 3) {
+            typographicPrompt += `  ► "${word}" = ${getEnhancedWordVerification(word)}\n`;
+          }
         });
       }
       typographicPrompt += `\n`;
     });
+    
+    const allHallucinations: string[] = [];
+    extractedTexts.forEach(text => {
+      const words = text.toLowerCase().split(/\s+/);
+      words.forEach(word => {
+        const cleanWord = word.replace(/[^\w]/g, '');
+        if (COMMON_AI_HALLUCINATIONS[cleanWord]) {
+          allHallucinations.push(...COMMON_AI_HALLUCINATIONS[cleanWord]);
+        }
+      });
+    });
+    
+    if (allHallucinations.length > 0) {
+      typographicPrompt += `\n🚫 BANNED MISSPELLINGS - DO NOT GENERATE THESE:\n`;
+      typographicPrompt += allHallucinations.slice(0, 10).map(h => `  ✗ "${h}"`).join('\n');
+      typographicPrompt += `\n\n`;
+    }
   }
 
   if (hasMultilingualText) {
-    typographicPrompt += `MULTILINGUAL TEXT REQUIREMENTS:\n`;
+    typographicPrompt += `🌍 MULTILINGUAL TEXT REQUIREMENTS:\n`;
     typographicPrompt += `- Detected scripts: ${detectedLanguages.join(', ')}\n`;
     typographicPrompt += `- Render each language in its NATIVE SCRIPT exactly as provided\n`;
     typographicPrompt += `- Do NOT transliterate or substitute characters\n`;
@@ -704,11 +805,14 @@ export const buildTypographicPrompt = (
   typographicPrompt += `### SCENE DESCRIPTION ###\n`;
   typographicPrompt += userPrompt;
 
-  typographicPrompt += `\n\n### FINAL VERIFICATION ###\n`;
-  typographicPrompt += `Before generating, mentally spell out each word letter-by-letter.\n`;
-  typographicPrompt += `Text accuracy is the PRIMARY objective - more important than any visual style.\n`;
-  typographicPrompt += `Common mistakes to AVOID: missing letters, swapped letters, invented words.\n`;
-  typographicPrompt += `If uncertain about a word, use the letter-by-letter spelling provided above.`;
+  typographicPrompt += `\n\n### 🔒 FINAL VERIFICATION CHECKLIST ###\n`;
+  typographicPrompt += `Before generating, complete this checklist:\n`;
+  typographicPrompt += `□ Spell out each word letter-by-letter mentally\n`;
+  typographicPrompt += `□ Count the letters in each word - do they match?\n`;
+  typographicPrompt += `□ Check for any words from the BANNED MISSPELLINGS list\n`;
+  typographicPrompt += `□ Verify no letters are swapped, missing, or added\n`;
+  typographicPrompt += `□ Text accuracy is MORE IMPORTANT than visual style\n`;
+  typographicPrompt += `\n⚠️ If ANY word looks unfamiliar, refer to the letter-by-letter spelling above.`;
 
   return typographicPrompt;
 };
