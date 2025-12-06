@@ -45,7 +45,7 @@ const genAI = new GoogleGenAI({
 
 const MODELS = {
   FAST_ANALYSIS: "gemini-2.5-flash",
-  IMAGE_GENERATION: "gemini-2.0-flash-exp",
+  IMAGE_GENERATION: "gemini-3-pro-image-preview",
 } as const;
 
 const GENERATION_CONFIG = {
@@ -121,8 +121,8 @@ Respond with JSON:
 }`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: MODELS.FAST_ANALYSIS });
-    const response = await model.generateContent({
+    const response = await genAI.models.generateContent({
+      model: MODELS.FAST_ANALYSIS,
       contents: [
         {
           role: "user",
@@ -132,16 +132,16 @@ Respond with JSON:
           ]
         }
       ],
-      generationConfig: {
+      config: {
+        systemInstruction,
         responseMimeType: "application/json",
         temperature: 0,
         topP: 1,
         topK: 1
-      },
-      systemInstruction
+      }
     });
 
-    const rawJson = response.text();
+    const rawJson = response.text;
     if (rawJson) {
       return JSON.parse(rawJson) as DesignAnalysis;
     }
@@ -246,10 +246,10 @@ STYLE:
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      const model = genAI.getGenerativeModel({ model: MODELS.IMAGE_GENERATION });
-      const response = await model.generateContent({
+      const response = await genAI.models.generateContent({
+        model: MODELS.IMAGE_GENERATION,
         contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
-        generationConfig: { responseModalities: [Modality.TEXT, Modality.IMAGE] }
+        config: { responseModalities: [Modality.TEXT, Modality.IMAGE] }
       });
 
       const candidates = response.candidates;
@@ -678,10 +678,10 @@ export async function generateSingleMockup(
       text: `Apply this design to the product as specified:\n\n${renderSpec.fullPrompt}`
     });
 
-    const model = genAI.getGenerativeModel({ model: MODELS.IMAGE_GENERATION });
-    const response = await model.generateContent({
+    const response = await genAI.models.generateContent({
+      model: MODELS.IMAGE_GENERATION,
       contents: [{ role: "user", parts }],
-      generationConfig: { responseModalities: [Modality.TEXT, Modality.IMAGE] }
+      config: { responseModalities: [Modality.TEXT, Modality.IMAGE] }
     });
 
     const candidates = response.candidates;
