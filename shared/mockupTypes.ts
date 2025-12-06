@@ -69,7 +69,15 @@ export type ProductType =
   | 'dtg-apparel' 
   | 'aop-apparel' 
   | 'hard-good-mug'
-  | 'home-decor';
+  | 'hard-good-drinkware'
+  | 'hard-good-phone-case'
+  | 'accessory-bag'
+  | 'accessory-footwear'
+  | 'accessory-tech'
+  | 'home-decor-wall-art'
+  | 'home-decor-textile'
+  | 'home-decor-stationery'
+  | 'home-decor-tableware';
 
 export type GenderTarget = 'mens' | 'womens' | 'unisex';
 
