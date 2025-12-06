@@ -35,7 +35,8 @@ import {
   getFullHumanRealismPrompt,
   getRandomPersona,
   getEthnicFeatures,
-  getRandomName
+  getRandomName,
+  getGarmentBlueprintPrompt
 } from "./knowledge";
 
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
@@ -174,7 +175,14 @@ export async function generatePersonaLock(modelDetails: ModelDetails): Promise<P
     modelDetails.modelSize
   );
 
-  const somaticDescription = `${persona.fullDescription} ${somaticProfile.description} Height: ${somaticProfile.height}, weight: ${somaticProfile.weight}, ${somaticProfile.build} build.`;
+  const somaticPrompt = getSomaticProfilePrompt(
+    modelDetails.age,
+    modelDetails.sex,
+    modelDetails.ethnicity,
+    modelDetails.modelSize
+  );
+
+  const somaticDescription = `${persona.fullDescription} ${somaticProfile.description} Height: ${somaticProfile.height}, weight: ${somaticProfile.weight}, ${somaticProfile.build} build. ${somaticPrompt}`;
 
   return {
     persona,
@@ -288,6 +296,8 @@ export function buildRenderSpecification(
   const lightingSetup = lightingPreset ? getLightingSetup(lightingPreset) : getLightingSetup('three-point-classic');
   const materialPreset = getMaterialPreset(materialCondition);
   const printMethod = getPrintMethod(journey);
+  const fabricPhysics = getFabricPhysics(product.subcategory || product.category);
+  const garmentBlueprint = product.isWearable ? getGarmentBlueprintPrompt(product) : "";
 
   const personaLockBlock = product.isWearable && personaLock ? `
 ===== PERSONA LOCK (CONSISTENCY ANCHOR) =====
@@ -346,7 +356,13 @@ DTG PRINT METHOD:
 - Design printed directly onto fabric surface
 - Maintains original colors and proportions
 - Slight texture integration with fabric
-- Design follows natural fabric contours and folds` : `
+- Design follows natural fabric contours and folds
+${fabricPhysics ? `
+FABRIC BEHAVIOR:
+- Weight: ${fabricPhysics.weight}
+- Drape: ${fabricPhysics.drape}
+- Surface: ${fabricPhysics.surface}
+- Light interaction: ${fabricPhysics.lightBehavior}` : ''}` : `
 AOP PRINT METHOD:
 - Seamless edge-to-edge sublimation print
 - Pattern tiles continuously across entire garment
@@ -399,7 +415,19 @@ PHYSICS LOCK:
 - Fabric weight and drape appropriate for sublimation polyester
 - Pattern conforms to body contours naturally
 - Folds and creases affect pattern realistically (compression in valleys, stretch on peaks)
+${fabricPhysics ? `
+FABRIC PHYSICS DETAILS:
+- Weight: ${fabricPhysics.weight}
+- Drape: ${fabricPhysics.drape}
+- Surface texture: ${fabricPhysics.surface}
+- Light behavior: ${fabricPhysics.lightBehavior}
+- Fold characteristics: ${fabricPhysics.foldCharacteristics}` : ''}
 ===== END AOP LOCKS =====` : "";
+
+  const garmentConstructionBlock = product.isWearable && garmentBlueprint ? `
+===== GARMENT CONSTRUCTION DETAILS =====
+${garmentBlueprint}
+===== END GARMENT CONSTRUCTION =====` : "";
 
   const contourDescription = product.isWearable && personaLock
     ? `
@@ -436,6 +464,8 @@ ${cameraLockBlock}
 ${lightingLockBlock}
 
 ${aopPhysicsLockBlock}
+
+${garmentConstructionBlock}
 
 ${contourDescription}
 
