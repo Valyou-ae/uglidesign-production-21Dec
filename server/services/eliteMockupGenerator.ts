@@ -39,9 +39,7 @@ import {
   getGarmentBlueprintPrompt
 } from "./knowledge";
 
-const genAI = new GoogleGenAI({ 
-  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "" 
-});
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 const MODELS = {
   FAST_ANALYSIS: "gemini-2.5-flash",
