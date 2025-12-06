@@ -314,5 +314,245 @@ export async function registerRoutes(
     }
   });
 
+  // ============== IMAGE GENERATION ROUTES ==============
+
+  const {
+    analyzePrompt,
+    enhancePrompt,
+    generateImage: generateGeminiImage,
+    generateMultipleImages,
+    scoreImage,
+  } = await import("./services/gemini");
+
+  app.post("/api/generate/analyze", requireAuth, async (req, res) => {
+    try {
+      const { prompt } = req.body;
+      if (!prompt || typeof prompt !== "string") {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+
+      const analysis = await analyzePrompt(prompt);
+      res.json({ analysis });
+    } catch (error) {
+      console.error("Analysis error:", error);
+      res.status(500).json({ message: "Analysis failed" });
+    }
+  });
+
+  app.post("/api/generate/draft", requireAuth, async (req, res) => {
+    try {
+      const { prompt, stylePreset = "auto", aspectRatio = "1:1" } = req.body;
+      if (!prompt || typeof prompt !== "string") {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders();
+
+      const sendEvent = (event: string, data: any) => {
+        res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      };
+
+      sendEvent("status", { agent: "Text Sentinel", status: "working", message: "Analyzing prompt..." });
+
+      const analysis = await analyzePrompt(prompt);
+      sendEvent("analysis", { analysis });
+      sendEvent("status", { agent: "Text Sentinel", status: "complete", message: "Analysis complete" });
+
+      sendEvent("status", { agent: "Style Architect", status: "working", message: "Enhancing prompt..." });
+
+      const { enhancedPrompt, negativePrompts } = await enhancePrompt(
+        prompt,
+        analysis,
+        "draft",
+        stylePreset,
+        "draft"
+      );
+      sendEvent("enhancement", { enhancedPrompt, negativePrompts });
+      sendEvent("status", { agent: "Style Architect", status: "complete", message: "Prompt enhanced" });
+
+      sendEvent("status", { agent: "Visual Synthesizer", status: "working", message: "Generating images..." });
+
+      const imageCount = 4;
+      let completedCount = 0;
+
+      await generateMultipleImages(
+        enhancedPrompt,
+        negativePrompts,
+        imageCount,
+        (index, result) => {
+          completedCount++;
+          if (result) {
+            sendEvent("image", {
+              index,
+              imageData: result.imageData,
+              mimeType: result.mimeType,
+              progress: `${completedCount}/${imageCount}`,
+            });
+          } else {
+            sendEvent("image_error", { index, error: "Generation failed" });
+          }
+          sendEvent("progress", { completed: completedCount, total: imageCount });
+        }
+      );
+
+      sendEvent("status", { agent: "Visual Synthesizer", status: "complete", message: "Generation complete" });
+      sendEvent("complete", { message: "Draft generation complete", totalImages: completedCount });
+
+      res.end();
+    } catch (error) {
+      console.error("Draft generation error:", error);
+      res.write(`event: error\ndata: ${JSON.stringify({ message: "Generation failed" })}\n\n`);
+      res.end();
+    }
+  });
+
+  app.post("/api/generate/final", requireAuth, async (req, res) => {
+    try {
+      const {
+        prompt,
+        stylePreset = "auto",
+        qualityLevel = "standard",
+        aspectRatio = "1:1",
+        enableCuration = true,
+      } = req.body;
+
+      if (!prompt || typeof prompt !== "string") {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders();
+
+      const sendEvent = (event: string, data: any) => {
+        res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      };
+
+      sendEvent("status", { agent: "Text Sentinel", status: "working", message: "Deep analysis..." });
+
+      const analysis = await analyzePrompt(prompt);
+      sendEvent("analysis", { analysis });
+      sendEvent("status", { agent: "Text Sentinel", status: "complete", message: "Analysis complete" });
+
+      sendEvent("status", { agent: "Style Architect", status: "working", message: "Creating master prompt..." });
+
+      const { enhancedPrompt, negativePrompts } = await enhancePrompt(
+        prompt,
+        analysis,
+        "final",
+        stylePreset,
+        qualityLevel
+      );
+      sendEvent("enhancement", { enhancedPrompt, negativePrompts });
+      sendEvent("status", { agent: "Style Architect", status: "complete", message: "Master prompt ready" });
+
+      sendEvent("status", { agent: "Visual Synthesizer", status: "working", message: "Generating candidates..." });
+
+      const candidateCount = enableCuration ? 8 : 2;
+      const candidates: { index: number; imageData: string; mimeType: string; score?: number }[] = [];
+
+      await generateMultipleImages(
+        enhancedPrompt,
+        negativePrompts,
+        candidateCount,
+        (index, result) => {
+          if (result) {
+            candidates.push({
+              index,
+              imageData: result.imageData,
+              mimeType: result.mimeType,
+            });
+            sendEvent("candidate", {
+              index,
+              progress: `${candidates.length}/${candidateCount}`,
+            });
+          }
+        }
+      );
+
+      sendEvent("status", { agent: "Visual Synthesizer", status: "complete", message: "Candidates generated" });
+
+      if (enableCuration && candidates.length > 1) {
+        sendEvent("status", { agent: "Quality Analyst", status: "working", message: "Scoring images..." });
+
+        for (const candidate of candidates) {
+          const score = await scoreImage(candidate.imageData, prompt);
+          candidate.score = score.overall;
+          sendEvent("score", { index: candidate.index, score });
+        }
+
+        candidates.sort((a, b) => (b.score || 0) - (a.score || 0));
+        sendEvent("status", { agent: "Quality Analyst", status: "complete", message: "Best images selected" });
+      }
+
+      sendEvent("status", { agent: "Master Refiner", status: "working", message: "Applying final polish..." });
+
+      const topCandidates = candidates.slice(0, 2);
+
+      for (const candidate of topCandidates) {
+        sendEvent("final_image", {
+          index: candidate.index,
+          imageData: candidate.imageData,
+          mimeType: candidate.mimeType,
+          score: candidate.score,
+        });
+      }
+
+      sendEvent("status", { agent: "Master Refiner", status: "complete", message: "Refinement complete" });
+      sendEvent("complete", {
+        message: "Final generation complete",
+        totalCandidates: candidates.length,
+        selectedCount: topCandidates.length,
+      });
+
+      res.end();
+    } catch (error) {
+      console.error("Final generation error:", error);
+      res.write(`event: error\ndata: ${JSON.stringify({ message: "Generation failed" })}\n\n`);
+      res.end();
+    }
+  });
+
+  app.post("/api/generate/single", requireAuth, async (req, res) => {
+    try {
+      const { prompt, stylePreset = "auto" } = req.body;
+      if (!prompt || typeof prompt !== "string") {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+
+      const analysis = await analyzePrompt(prompt);
+      const { enhancedPrompt, negativePrompts } = await enhancePrompt(
+        prompt,
+        analysis,
+        "draft",
+        stylePreset,
+        "standard"
+      );
+
+      const result = await generateGeminiImage(enhancedPrompt, negativePrompts);
+
+      if (result) {
+        res.json({
+          success: true,
+          image: {
+            data: result.imageData,
+            mimeType: result.mimeType,
+          },
+          analysis,
+          enhancedPrompt,
+        });
+      } else {
+        res.status(500).json({ message: "Image generation failed" });
+      }
+    } catch (error) {
+      console.error("Single generation error:", error);
+      res.status(500).json({ message: "Generation failed" });
+    }
+  });
+
   return httpServer;
 }
