@@ -39,11 +39,13 @@ import {
   getGarmentBlueprintPrompt
 } from "./knowledge";
 
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const genAI = new GoogleGenAI({ 
+  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "" 
+});
 
 const MODELS = {
   FAST_ANALYSIS: "gemini-2.5-flash",
-  IMAGE_GENERATION: "gemini-3-pro-image-preview",
+  IMAGE_GENERATION: "gemini-2.0-flash-exp",
 } as const;
 
 const GENERATION_CONFIG = {
@@ -360,9 +362,9 @@ DTG PRINT METHOD:
 ${fabricPhysics ? `
 FABRIC BEHAVIOR:
 - Weight: ${fabricPhysics.weight}
-- Drape: ${fabricPhysics.drape}
-- Surface: ${fabricPhysics.surface}
-- Light interaction: ${fabricPhysics.lightBehavior}` : ''}` : `
+- Drape factor: ${fabricPhysics.drapeFactor}%
+- Surface texture: ${fabricPhysics.textureDensity}
+- Fold characteristics: ${fabricPhysics.foldCharacteristics}` : ''}` : `
 AOP PRINT METHOD:
 - Seamless edge-to-edge sublimation print
 - Pattern tiles continuously across entire garment
@@ -418,9 +420,9 @@ PHYSICS LOCK:
 ${fabricPhysics ? `
 FABRIC PHYSICS DETAILS:
 - Weight: ${fabricPhysics.weight}
-- Drape: ${fabricPhysics.drape}
-- Surface texture: ${fabricPhysics.surface}
-- Light behavior: ${fabricPhysics.lightBehavior}
+- Drape factor: ${fabricPhysics.drapeFactor}%
+- Surface texture: ${fabricPhysics.textureDensity}
+- Print absorption: ${fabricPhysics.printAbsorption}
 - Fold characteristics: ${fabricPhysics.foldCharacteristics}` : ''}
 ===== END AOP LOCKS =====` : "";
 
