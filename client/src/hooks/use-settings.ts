@@ -17,7 +17,7 @@ export function useSettings() {
   const updateProfileMutation = useMutation({
     mutationFn: userApi.updateProfile,
     onSuccess: (data) => {
-      queryClient.setQueryData(["auth", "user"], { user: data.user });
+      queryClient.setQueryData(["auth", "me"], { user: data.user });
     },
   });
 
