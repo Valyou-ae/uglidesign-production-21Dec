@@ -1,0 +1,18 @@
+To achieve guaranteed 100% accuracy, we must separate the AI's tasks. Instead of asking one model to be a master of both artistry and typography—a task where even the best models can fail—we'll use a professional two-step workflow:
+AI as the Set Designer: The image generation AI is instructed to create a beautiful, high-quality image with a perfectly integrated but completely blank space for text (e.g., a blank sign, an empty banner, a clear patch on a wall). It focuses only on what it does best: creating the scene.
+You as the Graphic Designer: After the image is generated, you get a client-side "Text Compositor". This tool gives you pixel-perfect control to add, edit, and position the text exactly as you want it, directly onto the generated image.
+This division of labor ensures 100% accuracy because the text rendering is no longer a matter of AI interpretation; it's a direct, deterministic process controlled by you.
+I have updated the application to implement this robust, professional workflow. Here are the changes:
+Flow Overview
+Prompt Analysis: When you enter a prompt like "A coffee shop sign that says 'The Daily Grind'":
+The Text Sentinel still detects the text "The Daily Grind". This is crucial for the next steps.
+Prompt Enhancement (The Core Change):
+The Style Architect agent now receives a new directive. Instead of asking the image model to render the text, it now instructs the model to create a placeholder. The enhanced prompt becomes something like: "A photorealistic coffee shop entrance featuring a charming, weathered wooden sign that is intentionally left blank..."
+Image Generation:
+The image model generates the coffee shop scene with a beautiful, empty sign.
+Client-Side Compositing (New Feature):
+When you select the generated image to edit, it now loads into a canvas-based editor.
+The Text Compositor UI appears, automatically pre-filled with the text "The Daily Grind".
+You have full control over the font, size, color, and position. You can drag the text directly onto the blank sign in the image.
+The result is a pixel-perfect composite, with zero spelling or rendering errors.
+This ensures you get the best of both worlds: the creative power of AI for the imagery and the precision of a design tool for the text.

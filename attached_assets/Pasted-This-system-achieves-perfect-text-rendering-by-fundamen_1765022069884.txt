@@ -1,0 +1,22 @@
+This system achieves perfect text rendering by fundamentally changing the AI's role. Instead of asking the AI to be both a master artist and a perfect typographer (which is where spelling errors happen), we separate the tasks into a professional, two-stage workflow.
+Stage 1: AI as the "Set Designer"
+The first stage uses the AI for what it does best: creating a beautiful, high-quality, and contextually perfect background image.
+Prompt Analysis (Text Sentinel): When a user enters a prompt like "A photorealistic movie poster for a film called 'Quantum Leap' in a retro 80s style", the first agent (Text Sentinel) immediately identifies and extracts the exact text: "Quantum Leap".
+Intelligent Prompt Modification (Style Architect): This is the crucial change. The second agent (Style Architect) rewrites the prompt for the image generation model. Instead of asking it to write "Quantum Leap," it instructs the model to create an image with a perfectly integrated but intentionally blank space for the text.
+Old Prompt (Error-prone): "A photorealistic movie poster... with the text 'Quantum Leap'..."
+New Prompt (For 100% Accuracy): "A photorealistic movie poster in a retro 80s style, featuring a dynamic composition with a prominent, artistically designed blank space at the top, perfectly suited for a title."
+Image Generation (Visual Synthesizer): The image model now focuses entirely on creating a stunning visual. It doesn't have to guess at fonts, spelling, or text placement. It generates a perfect "set" or "background plate" with a blank area, just as a real-world designer would.
+Stage 2: User as the "Graphic Designer" (Client-Side Compositing)
+This stage removes the AI from the text rendering process entirely, giving you deterministic, pixel-perfect control.
+Load into Editor: The generated image (with the blank space) is presented to the user. When they choose to "edit" or "finalize" it, the image loads into a simple, client-side canvas editor.
+Activate Text Compositor: A new UI element, the "Text Compositor," appears. It's automatically pre-filled with the text extracted in Stage 1: "Quantum Leap".
+Pixel-Perfect Control: You now have complete and direct control over the text, just like in a graphic design program:
+Content: The text is exactly as entered. There are no AI spelling errors because there is no AI involved at this stage.
+Styling: You can choose the exact font, size, color, and effects (like glow or drop shadow) from a set of controls.
+Placement: You can drag and drop the text precisely onto the blank space the AI created, ensuring perfect composition.
+Final Image Creation: When you're satisfied, the application merges the AI-generated background layer with your client-rendered text layer into a single, flawless final image.
+Why This Guarantees 100% Accuracy with Zero Spelling Errors:
+Separation of Concerns: The process separates the task of art generation (which AI excels at) from text rendering (which computers have done perfectly for decades).
+No AI Interpretation for Text: Spelling errors happen when the AI interprets the prompt and tries to "draw" the letters. This workflow completely removes that interpretation step. The text is rendered by the user's browser font engine, which is 100% accurate.
+Deterministic Control: The final output isn't a guess by the AI; it's a direct result of user input in a controlled editing environment. The user has the final say on every pixel of the text.
+This workflow mirrors how professionals in film and advertising work: an artist creates the background plate, and a graphic designer composites the text and logos on top for perfect control and accuracy. By implementing this, you move from "asking" the AI for good text to "commanding" a perfect result every time.
