@@ -1,8 +1,13 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 
-// Use user's GEMINI_API_KEY if available, otherwise use AI Integrations
+// Use user's GEMINI_API_KEY directly (bypasses Replit proxy for full model access)
+// Only fall back to AI Integrations if user hasn't provided their own key
+const hasUserKey = !!process.env.GEMINI_API_KEY;
 const apiKey = process.env.GEMINI_API_KEY || process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "";
-const baseUrl = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
+
+// IMPORTANT: Only use Replit's baseUrl when using their AI Integrations key
+// When user provides their own key, connect directly to Google for full model access
+const baseUrl = hasUserKey ? undefined : process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
 
 const ai = new GoogleGenAI({
   apiKey,
@@ -13,6 +18,8 @@ const ai = new GoogleGenAI({
     },
   }),
 });
+
+console.log(`[Gemini] Using ${hasUserKey ? "user's API key (direct Google access)" : "Replit AI Integrations"}`);
 
 // ============== MODEL CONFIGURATION ==============
 // Multi-model pipeline for 100% text accuracy
