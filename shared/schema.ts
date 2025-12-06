@@ -56,6 +56,14 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
+export const updateProfileSchema = createInsertSchema(users).pick({
+  displayName: true,
+  firstName: true,
+  lastName: true,
+  bio: true,
+  socialLinks: true,
+}).partial();
+
 export const insertImageSchema = createInsertSchema(generatedImages).omit({
   id: true,
   createdAt: true,
@@ -68,6 +76,7 @@ export const insertWithdrawalSchema = createInsertSchema(withdrawalRequests).omi
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 export type User = typeof users.$inferSelect;
 export type GeneratedImage = typeof generatedImages.$inferSelect;
 export type InsertImage = z.infer<typeof insertImageSchema>;

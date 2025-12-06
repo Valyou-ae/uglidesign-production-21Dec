@@ -5,7 +5,7 @@ import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import bcrypt from "bcrypt";
-import { insertUserSchema, insertImageSchema, insertWithdrawalSchema } from "@shared/schema";
+import { insertUserSchema, insertImageSchema, insertWithdrawalSchema, updateProfileSchema } from "@shared/schema";
 import { ZodError } from "zod";
 
 const PgSession = ConnectPgSimple(session);
@@ -175,22 +175,31 @@ export async function registerRoutes(
 
   app.patch("/api/user/profile", requireAuth, async (req, res) => {
     try {
-      const { displayName, firstName, lastName, bio, socialLinks } = req.body;
+      const profileData = updateProfileSchema.parse(req.body);
 
-      const user = await storage.updateUserProfile(req.session.userId!, {
-        displayName,
-        firstName,
-        lastName,
-        bio,
-        socialLinks,
-      });
+      const user = await storage.updateUserProfile(req.session.userId!, profileData);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      res.json({ user });
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username,
+          email: user.email,
+          displayName: user.displayName,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          bio: user.bio,
+          socialLinks: user.socialLinks || [],
+          affiliateCode: user.affiliateCode
+        } 
+      });
     } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid input", errors: error.errors });
+      }
       res.status(500).json({ message: "Server error" });
     }
   });

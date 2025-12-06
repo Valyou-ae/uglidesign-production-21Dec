@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Search, 
   User, 
@@ -41,8 +41,11 @@ import {
   Package,
   ExternalLink,
   ChevronLeft,
-  Star
+  Star,
+  Loader2
 } from "lucide-react";
+import { useSettings } from "@/hooks/use-settings";
+import { useAuth } from "@/hooks/use-auth";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -236,24 +239,58 @@ export default function Settings() {
 
 function ProfileSettings() {
   const { toast } = useToast();
-  const [socialLinks, setSocialLinks] = useState([
+  const { profile, updateProfile, isUpdating } = useSettings();
+  const { user } = useAuth();
+  
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [socialLinkUrls, setSocialLinkUrls] = useState<string[]>(["", "", "", ""]);
+  
+  useEffect(() => {
+    setFirstName(profile.firstName || "");
+    setLastName(profile.lastName || "");
+    setDisplayName(profile.displayName || "");
+    setBio(profile.bio || "");
+    if (profile.socialLinks && profile.socialLinks.length > 0) {
+      const urls = profile.socialLinks.map((link: { label: string; url: string }) => link.url);
+      setSocialLinkUrls([...urls, ...Array(4 - urls.length).fill("")].slice(0, 4));
+    } else {
+      setSocialLinkUrls(["", "", "", ""]);
+    }
+  }, [profile]);
+
+  const socialLinksConfig = [
     { icon: Globe, label: "Website", placeholder: "https://yourwebsite.com" },
     { icon: Check, label: "Twitter", placeholder: "https://twitter.com/username" },
     { icon: Check, label: "LinkedIn", placeholder: "https://linkedin.com/in/username" },
     { icon: Check, label: "Instagram", placeholder: "https://instagram.com/username" }
-  ]);
+  ];
 
-  const handleAddLink = () => {
-    setSocialLinks([
-      ...socialLinks, 
-      { icon: Globe, label: "Website", placeholder: "https://" }
-    ]);
+  const handleSocialLinkChange = (index: number, value: string) => {
+    const newUrls = [...socialLinkUrls];
+    newUrls[index] = value;
+    setSocialLinkUrls(newUrls);
   };
 
-  const handleRemoveLink = (index: number) => {
-    const newLinks = [...socialLinks];
-    newLinks.splice(index, 1);
-    setSocialLinks(newLinks);
+  const handleSave = async () => {
+    try {
+      const socialLinks = socialLinksConfig
+        .map((config, i) => ({ label: config.label, url: socialLinkUrls[i] || "" }))
+        .filter(link => link.url.trim() !== "");
+      
+      await updateProfile({
+        firstName,
+        lastName,
+        displayName,
+        bio,
+        socialLinks,
+      });
+      toast({ title: "Profile updated", description: "Your changes have been saved successfully." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to update profile", variant: "destructive" });
+    }
   };
 
   return (
@@ -295,14 +332,20 @@ function ProfileSettings() {
             <div className="space-y-2">
               <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">First Name</label>
               <input 
-                defaultValue="John"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="First name"
+                data-testid="input-first-name"
                 className="w-full bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-[10px] px-4 py-3 text-sm text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all"
               />
             </div>
             <div className="space-y-2">
               <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Last Name</label>
               <input 
-                defaultValue="Doe"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Last name"
+                data-testid="input-last-name"
                 className="w-full bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-[10px] px-4 py-3 text-sm text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all"
               />
             </div>
@@ -311,7 +354,10 @@ function ProfileSettings() {
           <div className="space-y-2">
             <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Display Name</label>
             <input 
-              defaultValue="johndoe"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Display name"
+              data-testid="input-display-name"
               className="w-full bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-[10px] px-4 py-3 text-sm text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all"
             />
             <p className="text-xs text-[#71717A] dark:text-[#52525B]">This is how your name appears publicly</p>
@@ -321,7 +367,9 @@ function ProfileSettings() {
             <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Email</label>
             <div className="relative">
               <input 
-                defaultValue="john@example.com"
+                value={user?.email || ""}
+                readOnly
+                data-testid="input-email"
                 className="w-full bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-[10px] px-4 py-3 text-sm text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#16A34A]/10 border border-[#16A34A]/20">
@@ -334,10 +382,13 @@ function ProfileSettings() {
           <div className="space-y-2">
             <label className="text-[13px] font-medium text-[#71717A] dark:text-[#A1A1AA]">Bio</label>
             <textarea 
+              value={bio}
+              onChange={(e) => setBio(e.target.value.slice(0, 200))}
               placeholder="Tell us about yourself..."
+              data-testid="input-bio"
               className="w-full bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-[10px] px-4 py-3 text-sm text-[#18181B] dark:text-[#FAFAFA] min-h-[100px] focus:outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all resize-y"
             />
-            <div className="text-right text-xs text-[#71717A] dark:text-[#52525B]">0 / 200</div>
+            <div className="text-right text-xs text-[#71717A] dark:text-[#52525B]">{bio.length} / 200</div>
           </div>
         </div>
       </div>
@@ -350,44 +401,33 @@ function ProfileSettings() {
         </div>
         
         <div className="flex flex-col gap-4">
-          {socialLinks.map((social, i) => (
+          {socialLinksConfig.map((social, i) => (
             <div key={i} className="relative group">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#71717A] dark:text-[#52525B]">
                 <social.icon className="h-4 w-4" />
               </div>
               <input 
+                value={socialLinkUrls[i] || ""}
+                onChange={(e) => handleSocialLinkChange(i, e.target.value)}
                 placeholder={social.placeholder}
-                className="w-full bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-[10px] py-3 pl-11 pr-10 text-sm text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all"
+                data-testid={`input-social-${social.label.toLowerCase()}`}
+                className="w-full bg-[#F4F4F5] dark:bg-[#1A1A1F] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-[10px] py-3 pl-11 pr-4 text-sm text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all"
               />
-              <button 
-                onClick={() => handleRemoveLink(i)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-[#71717A] hover:text-[#DC2626] hover:bg-red-50 dark:hover:bg-red-900/10 opacity-0 group-hover:opacity-100 transition-all"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
             </div>
           ))}
-          
-          <button 
-            onClick={handleAddLink}
-            className="flex items-center gap-2 text-[13px] text-[#71717A] dark:text-[#A1A1AA] hover:text-[#18181B] dark:hover:text-[#FAFAFA] transition-colors mt-1 w-fit"
-          >
-            <Plus className="h-4 w-4" />
-            Add link
-          </button>
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex justify-end gap-3 mt-8">
-        <button className="px-5 py-3 text-sm font-medium text-[#71717A] dark:text-[#A1A1AA] hover:text-[#18181B] dark:hover:text-[#FAFAFA] transition-colors">
-          Cancel
-        </button>
         <button 
-          onClick={() => toast({ title: "Profile updated", description: "Your changes have been saved successfully." })}
-          className="px-6 py-3 bg-[#7C3AED] hover:brightness-110 text-white rounded-[10px] text-sm font-semibold transition-all shadow-lg shadow-[#7C3AED]/20"
+          onClick={handleSave}
+          disabled={isUpdating}
+          data-testid="button-save-profile"
+          className="px-6 py-3 bg-[#7C3AED] hover:brightness-110 text-white rounded-[10px] text-sm font-semibold transition-all shadow-lg shadow-[#7C3AED]/20 disabled:opacity-50 flex items-center gap-2"
         >
-          Save changes
+          {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
+          {isUpdating ? "Saving..." : "Save changes"}
         </button>
       </div>
     </motion.div>
