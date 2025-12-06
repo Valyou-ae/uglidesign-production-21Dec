@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useAffiliate } from "@/hooks/use-affiliate";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Dialog,
   DialogContent,
@@ -34,8 +36,17 @@ export default function AffiliateProgram() {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const affiliateLink = "https://aistudio.com/ref/johndoe";
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [routingNumber, setRoutingNumber] = useState("");
+  
+  const { user } = useAuth();
+  const { totalEarnings, activeReferrals, withdraw, isWithdrawing } = useAffiliate();
+  
+  const affiliateCode = user?.affiliateCode || "testuser-demo";
+  const affiliateLink = `https://aistudio.com/ref/${affiliateCode}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(affiliateLink);
@@ -47,19 +58,55 @@ export default function AffiliateProgram() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleWithdraw = (e: React.FormEvent) => {
+  const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Invalid amount",
+        description: "Please enter a valid withdrawal amount.",
+      });
+      return;
+    }
+    
+    if (amount > totalEarnings) {
+      toast({
+        variant: "destructive",
+        title: "Insufficient balance",
+        description: "You cannot withdraw more than your available earnings.",
+      });
+      return;
+    }
+    
+    try {
+      await withdraw({
+        amount,
+        bankName,
+        accountNumber,
+        accountName,
+        routingNumber,
+      });
+      
       setIsWithdrawOpen(false);
+      setWithdrawAmount("");
+      setBankName("");
+      setAccountNumber("");
+      setAccountName("");
+      setRoutingNumber("");
+      
       toast({
         title: "Withdrawal Requested",
         description: "Your withdrawal request has been submitted successfully. Funds will be deposited within 3-5 business days.",
       });
-    }, 1500);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Withdrawal Failed",
+        description: error.message || "Failed to submit withdrawal request.",
+      });
+    }
   };
 
   return (
@@ -92,27 +139,69 @@ export default function AffiliateProgram() {
                 </DialogHeader>
                 <form onSubmit={handleWithdraw} className="space-y-4 py-4">
                   <div className="space-y-2">
+                    <Label htmlFor="withdraw-amount">Withdrawal Amount ($)</Label>
+                    <Input 
+                      id="withdraw-amount" 
+                      placeholder="100.00" 
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      required 
+                      data-testid="input-withdraw-amount"
+                    />
+                    <p className="text-xs text-muted-foreground">Available: ${totalEarnings.toFixed(2)}</p>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="account-name">Account Holder Name</Label>
-                    <Input id="account-name" placeholder="John Doe" required />
+                    <Input 
+                      id="account-name" 
+                      placeholder="John Doe" 
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      required 
+                      data-testid="input-account-name"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="bank-name">Bank Name</Label>
-                    <Input id="bank-name" placeholder="Chase Bank" required />
+                    <Input 
+                      id="bank-name" 
+                      placeholder="Chase Bank" 
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      required 
+                      data-testid="input-bank-name"
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="routing">Routing Number</Label>
-                      <Input id="routing" placeholder="123456789" required />
+                      <Input 
+                        id="routing" 
+                        placeholder="123456789" 
+                        value={routingNumber}
+                        onChange={(e) => setRoutingNumber(e.target.value)}
+                        data-testid="input-routing"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="account">Account Number</Label>
-                      <Input id="account" placeholder="000123456789" required />
+                      <Input 
+                        id="account" 
+                        placeholder="000123456789" 
+                        value={accountNumber}
+                        onChange={(e) => setAccountNumber(e.target.value)}
+                        required 
+                        data-testid="input-account"
+                      />
                     </div>
                   </div>
                   <DialogFooter className="pt-4">
                     <Button type="button" variant="outline" onClick={() => setIsWithdrawOpen(false)}>Cancel</Button>
-                    <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isSubmitting}>
-                        {isSubmitting ? "Submitting..." : "Submit Request"}
+                    <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isWithdrawing} data-testid="button-withdraw-submit">
+                        {isWithdrawing ? "Submitting..." : "Submit Request"}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -190,10 +279,10 @@ export default function AffiliateProgram() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$1,248.50</div>
+                <div className="text-2xl font-bold" data-testid="text-total-earnings">${totalEarnings.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                   <TrendingUp className="h-3 w-3 text-green-500" />
-                  <span className="text-green-500 font-medium">+12%</span> from last month
+                  <span className="text-green-500 font-medium">20%</span> commission rate
                 </p>
               </CardContent>
             </Card>
@@ -203,10 +292,10 @@ export default function AffiliateProgram() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">24</div>
+                <div className="text-2xl font-bold" data-testid="text-active-referrals">{activeReferrals}</div>
                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                   <TrendingUp className="h-3 w-3 text-green-500" />
-                  <span className="text-green-500 font-medium">+4</span> new this month
+                  <span className="text-green-500 font-medium">Lifetime</span> referrals
                 </p>
               </CardContent>
             </Card>

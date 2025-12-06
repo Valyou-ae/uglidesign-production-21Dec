@@ -271,6 +271,21 @@ export async function registerRoutes(
         userId: req.session.userId,
       });
 
+      // Validate required banking fields
+      if (!withdrawalData.bankName || !withdrawalData.accountNumber || !withdrawalData.accountName) {
+        return res.status(400).json({ message: "Bank name, account number, and account name are required" });
+      }
+
+      // Validate withdrawal amount doesn't exceed available balance
+      const totalEarnings = await storage.getTotalEarnings(req.session.userId!);
+      if (withdrawalData.amount > totalEarnings) {
+        return res.status(400).json({ message: "Withdrawal amount exceeds available balance" });
+      }
+
+      if (withdrawalData.amount <= 0) {
+        return res.status(400).json({ message: "Withdrawal amount must be greater than zero" });
+      }
+
       const withdrawal = await storage.createWithdrawalRequest(withdrawalData);
       res.json({ withdrawal });
     } catch (error) {
