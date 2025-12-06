@@ -23,8 +23,6 @@ import BatchProcess from "@/pages/batch-process";
 import ImportUrl from "@/pages/import-url";
 import RandomPrompt from "@/pages/random-prompt";
 import AffiliateProgram from "@/pages/affiliate-program";
-import StudioPage from "@/pages/studio";
-import Studio1Page from "@/pages/studio1";
 
 function Router() {
   return (
@@ -51,10 +49,6 @@ function Router() {
       <Route path="/batch-process" component={BatchProcess} />
       <Route path="/import-url" component={ImportUrl} />
       <Route path="/random-prompt" component={RandomPrompt} />
-      
-      {/* AI Studio Test Page */}
-      <Route path="/studio" component={StudioPage} />
-      <Route path="/studio1" component={Studio1Page} />
       
       {/* Mock routes for sidebar navigation to just show home for now, or 404 */}
       <Route component={NotFound} />

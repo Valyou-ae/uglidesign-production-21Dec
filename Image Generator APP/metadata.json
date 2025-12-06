@@ -1,7 +1,0 @@
-{
-  "name": "QUAD-Agent Image Studio V1.5features046",
-  "description": "A multi-agent AI image studio using Gemini 3 Pro, Gemini Flash Lite, and Imagen 4. Features text refinement, style enhancement, and pixel-level editing.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
-}

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   Wand2, 
   Sparkles, 
@@ -13,7 +13,6 @@ import {
   Layers, 
   Settings,
   ChevronDown,
-  ChevronUp,
   Paperclip,
   SlidersHorizontal,
   Check,
@@ -55,16 +54,7 @@ import {
   LayoutGrid,
   ImageIcon as ImageIconLucide,
   Mic,
-  MicOff,
-  Users,
-  Film,
-  Brush,
-  Crown,
-  Lightbulb,
-  Paintbrush,
-  AlertTriangle,
-  Type,
-  HelpCircle
+  MicOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -113,8 +103,6 @@ import scifiSpaceship from "@assets/generated_images/sci-fi_spaceship_landing_on
 // Types
 type GenerationStatus = "idle" | "generating" | "complete";
 
-type GenerationMode = "cinematic" | "typographic" | "imagen3" | "imagen4" | "imagen4fast" | null;
-
 type GeneratedImage = {
   id: string;
   src: string;
@@ -124,82 +112,6 @@ type GeneratedImage = {
   timestamp: string;
   isNew?: boolean;
   isFavorite?: boolean;
-  generationMode?: GenerationMode;
-};
-
-type TextAnalysis = {
-  isTextHeavy: boolean;
-  wordCount: number;
-  hasQuotedText: boolean;
-  hasMultilingual: boolean;
-  warningLevel: "none" | "mild" | "strong";
-  warnings: string[];
-};
-
-const analyzePromptForText = (prompt: string): TextAnalysis => {
-  const words = prompt.trim().split(/\s+/).filter(w => w.length > 0);
-  const wordCount = words.length;
-  
-  const quotedTextMatches = prompt.match(/"[^"]+"|'[^']+'/g) || [];
-  const hasQuotedText = quotedTextMatches.length > 0;
-  
-  const multilingualPatterns = [
-    /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/, // Japanese/Chinese
-    /[\u0600-\u06FF]/, // Arabic
-    /[\u0400-\u04FF]/, // Cyrillic
-    /[\uAC00-\uD7AF]/, // Korean
-    /[\u0590-\u05FF]/, // Hebrew
-    /[\u0E00-\u0E7F]/, // Thai
-    /[\u0900-\u097F]/, // Hindi
-    /[\u0370-\u03FF]/, // Greek
-  ];
-  const hasMultilingual = multilingualPatterns.some(p => p.test(prompt));
-  
-  const textKeywords = [
-    'text', 'saying', 'says', 'with the words', 'displaying', 
-    'sign', 'poster', 'label', 'title', 'headline', 'caption',
-    'written', 'typography', 'font', 'lettering', 'inscription'
-  ];
-  const hasTextKeywords = textKeywords.some(kw => prompt.toLowerCase().includes(kw));
-  
-  const totalQuotedLength = quotedTextMatches.reduce((sum, m) => sum + m.length, 0);
-  
-  const warnings: string[] = [];
-  let warningLevel: "none" | "mild" | "strong" = "none";
-  
-  if (totalQuotedLength > 100) {
-    warnings.push("Long text blocks may have spelling errors");
-    warningLevel = "strong";
-  } else if (totalQuotedLength > 50) {
-    warnings.push("Medium-length text - check spelling after generation");
-    warningLevel = "mild";
-  }
-  
-  if (hasMultilingual) {
-    warnings.push("Multilingual text detected - accuracy may vary");
-    warningLevel = warningLevel === "none" ? "mild" : warningLevel;
-  }
-  
-  if (wordCount > 40 && hasTextKeywords) {
-    warnings.push("Complex text prompt - consider simplifying");
-    warningLevel = "strong";
-  }
-  
-  const isTextHeavy = hasQuotedText || hasTextKeywords || hasMultilingual;
-  
-  if (isTextHeavy && warningLevel === "none") {
-    warnings.push("Text detected - accuracy may vary for complex words");
-    warningLevel = "mild";
-  }
-  
-  return {
-    isTextHeavy,
-    wordCount,
-    hasQuotedText,
-    hasMultilingual,
-    warningLevel,
-    warnings
-  };
 };
 
 type Agent = {
@@ -209,14 +121,6 @@ type Agent = {
   message: string;
   icon: any;
   activeColor: string;
-};
-
-type ArtisticStyle = {
-  id: string;
-  name: string;
-  category: string;
-  colorPalette: string[];
-  techniques: string[];
 };
 
 const AGENTS: Agent[] = [
@@ -267,7 +171,7 @@ const REFINER_PRESETS = [
 ];
 
 export default function ImageGenerator() {
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState("A futuristic city with neon lights and flying cars in cyberpunk style");
   const [status, setStatus] = useState<GenerationStatus>("idle");
   const [generations, setGenerations] = useState<GeneratedImage[]>([]);
   const [filteredGenerations, setFilteredGenerations] = useState<GeneratedImage[]>([]);
@@ -282,35 +186,15 @@ export default function ImageGenerator() {
     style: "auto",
     quality: "standard",
     aspectRatio: "1:1",
-    variations: "1",
+    variations: "4",
     refiner: false,
     refinerPreset: "cinematic",
     aiCuration: true,
-    autoOptimize: true,
-    useMultiAgent: true,
-    useDraftToFinal: false,
-    artisticStyle: "auto",
-    model: "imagen4" as "gemini" | "imagen4" | "imagen4fast" | "imagen3",
-    imagenModel: "imagen-4.0-generate-001" as string,
-    tierOverride: "auto" as "auto" | "standard" | "premium" | "ultra"
+    autoOptimize: true
   });
-  const [artisticStyles, setArtisticStyles] = useState<ArtisticStyle[]>([]);
-  const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
-  const [showTextTips, setShowTextTips] = useState(false);
-  const [lastGenerationMode, setLastGenerationMode] = useState<GenerationMode>(null);
-  const [showRegenerateHint, setShowRegenerateHint] = useState(false);
-  const [imagenStatus, setImagenStatus] = useState<{
-    available: boolean;
-    hasPrimaryKey: boolean;
-    hasFallbackKey: boolean;
-    models: { id: string; name: string; description: string; available: boolean; price?: string }[];
-    recommendedModel: string;
-  } | null>(null);
-
+  
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
-  const textAnalysis = useMemo(() => analyzePromptForText(prompt), [prompt]);
 
   const downloadImage = (url: string, filename: string) => {
     const link = document.createElement('a');
@@ -351,12 +235,12 @@ export default function ImageGenerator() {
         "minimalist composition"
       ];
       const randomPhrase = simulatedPhrases[Math.floor(Math.random() * simulatedPhrases.length)];
-
+      
       setPrompt(prev => {
         const newPrompt = prev.trim() ? `${prev.trim()} ${randomPhrase}` : randomPhrase;
         return newPrompt;
       });
-
+      
       setIsListening(false);
       toast({
         title: "Voice Recognized",
@@ -372,51 +256,6 @@ export default function ImageGenerator() {
     if (promptParam) {
       setPrompt(promptParam);
     }
-  }, []);
-
-  // Fetch artistic styles from the API
-  useEffect(() => {
-    const fetchArtisticStyles = async () => {
-      try {
-        const response = await fetch('/api/artistic-styles');
-        const data = await response.json();
-        if (data.success && data.styles) {
-          setArtisticStyles(data.styles);
-        }
-      } catch (error) {
-        console.error('Failed to fetch artistic styles:', error);
-      }
-    };
-    fetchArtisticStyles();
-  }, []);
-
-  // Check Imagen availability and models
-  useEffect(() => {
-    const checkImagenStatus = async () => {
-      try {
-        const response = await fetch('/api/imagen3-status');
-        const data = await response.json();
-        if (data.success) {
-          setImagenStatus({
-            available: data.available,
-            hasPrimaryKey: data.hasPrimaryKey,
-            hasFallbackKey: data.hasFallbackKey,
-            models: data.models || [],
-            recommendedModel: data.recommendedModel || 'imagen-4.0-generate-001'
-          });
-          if (data.available) {
-            setSettings(prev => ({ 
-              ...prev, 
-              model: "imagen4",
-              imagenModel: data.recommendedModel || 'imagen-4.0-generate-001'
-            }));
-          }
-        }
-      } catch (error) {
-        console.error('Failed to check Imagen status:', error);
-      }
-    };
-    checkImagenStatus();
   }, []);
 
   // Auto-resize textarea
@@ -438,174 +277,71 @@ export default function ImageGenerator() {
     }
   }, [generations, activeFilter]);
 
-  const updateAgentStatus = (agentIndex: number, status: "idle" | "working" | "complete" | "error") => {
-    setAgents(prev => prev.map((a, i) => {
-      if (i < agentIndex) return { ...a, status: "complete" };
-      if (i === agentIndex) return { ...a, status };
-      return { ...a, status: "idle" };
-    }));
-  };
-
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     if (!prompt.trim()) return;
-
+    
     setStatus("generating");
     setProgress(0);
     setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
 
-    try {
-      updateAgentStatus(0, "working");
-      setProgress(10);
-
-      updateAgentStatus(1, "working");
-      setProgress(30);
-
-      updateAgentStatus(2, "working");
-      setProgress(50);
-
-      let endpoint: string;
-      let requestBody: any;
-
-      const isImagenModel = settings.model === "imagen4" || settings.model === "imagen4fast" || settings.model === "imagen3";
-      
-      if (isImagenModel && imagenStatus?.available) {
-        endpoint = "/api/generate-imagen3";
-        const modelMap: Record<string, string> = {
-          "imagen4": "imagen-4.0-generate-001",
-          "imagen4fast": "imagen-4.0-fast-generate-001",
-          "imagen3": "imagen-3.0-generate-002"
-        };
-        requestBody = {
-          prompt: prompt,
-          aspectRatio: settings.aspectRatio,
-          variations: parseInt(settings.variations) as 1 | 2 | 4,
-          model: modelMap[settings.model] || settings.imagenModel
-        };
-      } else {
-        endpoint = settings.useMultiAgent ? "/api/generate-image-advanced" : "/api/generate-image";
-        requestBody = {
-          prompt: prompt,
-          style: settings.style,
-          quality: settings.quality,
-          aspectRatio: settings.aspectRatio,
-          variations: parseInt(settings.variations) as 1 | 2 | 4,
-          enableRefiner: settings.refiner,
-          refinerPreset: settings.refinerPreset,
-          artisticStyle: settings.artisticStyle,
-          useDraftToFinal: settings.useDraftToFinal,
-          tierOverride: settings.tierOverride !== 'auto' ? settings.tierOverride : undefined
-        };
-      }
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody)
-      });
-
-      setProgress(80);
-      updateAgentStatus(3, "working");
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        throw new Error("Server returned an invalid response. Please try again.");
-      }
-
-      if (!response.ok || !data.success) {
-        throw new Error(data?.error || `Server error: ${response.status}`);
-      }
-
-      if (!data.images || !Array.isArray(data.images) || data.images.length === 0) {
-        throw new Error("No images were generated. Please try a different prompt.");
-      }
-
-      updateAgentStatus(4, "working");
-      setProgress(95);
-
-      const generationMode: GenerationMode = data.generationMode || null;
-      setLastGenerationMode(generationMode);
-
-      const newImages: GeneratedImage[] = data.images.map((img: any, index: number) => {
-        let imageSrc: string;
-        if (img.url) {
-          imageSrc = img.url;
-        } else if (img.base64) {
-          const mimeType = img.mimeType || 'image/png';
-          imageSrc = `data:${mimeType};base64,${img.base64}`;
-        } else {
-          imageSrc = '';
+    // Simulation pipeline
+    let currentAgentIndex = 0;
+    const totalDuration = 5000; // 5 seconds total
+    const intervalTime = totalDuration / 100;
+    
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          completeGeneration();
+          return 100;
         }
-
-        return {
-          id: `${Date.now()}-${index}`,
-          src: imageSrc,
-          prompt: prompt,
-          style: settings.style,
-          aspectRatio: settings.aspectRatio,
-          timestamp: "Just now",
-          isNew: true,
-          isFavorite: false,
-          generationMode: generationMode
-        };
+        return prev + 1;
       });
 
-      setGenerations(prev => [...newImages, ...prev]);
-      setProgress(100);
-      setStatus("complete");
-      setAgents(prev => prev.map(a => ({ ...a, status: "complete" })));
-
-      if (textAnalysis.isTextHeavy) {
-        setShowRegenerateHint(true);
-        setTimeout(() => setShowRegenerateHint(false), 10000);
+      // Update agents based on progress
+      const stage = Math.floor((progress / 100) * 5);
+      if (stage !== currentAgentIndex && stage < 5) {
+        setAgents(prev => prev.map((a, i) => {
+          if (i < stage) return { ...a, status: "complete" };
+          if (i === stage) return { ...a, status: "working" };
+          return { ...a, status: "idle" };
+        }));
+        currentAgentIndex = stage;
       }
+    }, intervalTime);
+  };
 
-      const modeLabel = generationMode === 'typographic' ? 'Text-Priority Mode' : 
-                        generationMode === 'cinematic' ? 'Cinematic Mode' : '';
-      
-      // Show tier auto-scaling notification if tier was adjusted
-      if (data.tierEvaluation?.wasAutoAdjusted) {
-        const tierIcon = data.tierEvaluation.adjustmentDirection === 'upgraded' ? '⬆️' : '⬇️';
-        const tierColor = data.tierEvaluation.adjustmentDirection === 'upgraded' 
-          ? 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-900/50 dark:text-blue-400'
-          : 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-900/50 dark:text-amber-400';
-        
-        toast({
-          title: `${tierIcon} ${data.tierEvaluation.userMessage}`,
-          description: `Complexity: ${data.tierEvaluation.complexityScore}/100`,
-          className: tierColor,
-        });
-      }
-      
-      toast({
-        title: "Image Generated!",
-        description: `${newImages.length} image${newImages.length > 1 ? 's' : ''} created${modeLabel ? ` in ${modeLabel}` : ''}.`,
-        className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
-      });
+  const completeGeneration = () => {
+    setStatus("complete");
+    setAgents(prev => prev.map(a => ({ ...a, status: "complete" })));
+    
+    // Add new generation
+    const newImage: GeneratedImage = {
+      id: Date.now().toString(),
+      src: cyberpunkCity, // Just using one as example result
+      prompt: prompt,
+      style: settings.style,
+      aspectRatio: settings.aspectRatio,
+      timestamp: "Just now",
+      isNew: true,
+      isFavorite: false
+    };
+    
+    setGenerations(prev => [newImage, ...prev]);
+    
+    toast({
+      title: "Image Generated!",
+      description: "Your creation is ready.",
+      className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
+    });
 
-      setTimeout(() => {
-        setStatus("idle");
-        setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
-        setProgress(0);
-      }, 3000);
-
-    } catch (error: any) {
-      console.error("Generation error:", error);
+    // Reset agents after delay
+    setTimeout(() => {
       setStatus("idle");
-      setAgents(prev => prev.map(a => ({ ...a, status: "error" })));
+      setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
       setProgress(0);
-
-      toast({
-        title: "Generation Failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-
-      setTimeout(() => {
-        setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
-      }, 2000);
-    }
+    }, 3000);
   };
 
   const handleDeleteConfirm = (id: string) => {
@@ -672,22 +408,22 @@ export default function ImageGenerator() {
   return (
     <div className="h-screen bg-background flex font-sans text-foreground overflow-hidden">
       <Sidebar className="hidden md:flex border-r border-border/50" />
-
+      
       <main className="flex-1 flex flex-col relative h-full overflow-hidden bg-background text-foreground">
-
+        
         {/* TOP SECTION: PROMPT BAR (Minimalistic) */}
         <div className="fixed bottom-[70px] left-0 right-0 md:relative md:bottom-auto md:top-0 z-[60] bg-background/80 backdrop-blur-xl border-t md:border-t-0 md:border-b border-border px-4 md:px-6 py-3 md:py-4 transition-all order-last md:order-first pb-safe">
           <div className="max-w-[1800px] mx-auto w-full space-y-4">
-
+            
             {/* Prompt Input & Controls */}
             <div className="flex items-end gap-3">
-
+              
               {/* Main Input Wrapper */}
               <div className={cn(
                 "flex-1 bg-muted/40 border border-border rounded-xl transition-all duration-200 flex items-end p-2 gap-2 group focus-within:bg-background shadow-sm min-h-[56px]",
                 prompt.trim().length > 0 && "bg-background border-muted-foreground/40"
               )}>
-
+                
                 {/* Reference Image Trigger with Popover */}
                 <div className="self-end mb-0.5 shrink-0">
                   <Popover>
@@ -727,32 +463,18 @@ export default function ImageGenerator() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="A futuristic city with neon lights and flying cars in cyberpunk style..."
-                    className="w-full bg-transparent border-0 focus:ring-0 px-0 pt-[3px] text-sm sm:text-base text-foreground placeholder:text-muted-foreground/50 placeholder:italic resize-none min-h-[24px] max-h-[120px] leading-relaxed outline-none ring-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                    placeholder="Describe what you want to create..."
+                    className={cn(
+                      "w-full bg-transparent border-0 focus:ring-0 px-0 pt-[3px] text-sm sm:text-base placeholder:text-muted-foreground/50 placeholder:italic resize-none min-h-[24px] max-h-[120px] leading-relaxed outline-none ring-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+                      prompt === "A futuristic city with neon lights and flying cars in cyberpunk style" ? "text-muted-foreground italic" : "text-foreground"
+                    )}
                     rows={1}
                   />
                 </div>
-                
-                {/* Text Tips Info Icon */}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button 
-                        onClick={() => setShowTextTips(!showTextTips)}
-                        className="self-end mb-1.5 shrink-0 p-1 rounded-md hover:bg-muted/50 transition-colors"
-                      >
-                        <HelpCircle className="h-4 w-4 text-muted-foreground/60 hover:text-muted-foreground" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[250px]">
-                      <p className="text-xs">Keep text under 30 words for best accuracy. Complex spellings may vary. Click for more tips.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
 
                 {/* Right Side Actions inside Input - Bottom Aligned */}
                 <div className="flex items-center gap-1 mb-0.5 shrink-0 self-end">
-
+                  
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -816,116 +538,6 @@ export default function ImageGenerator() {
               </div>
 
             </div>
-            
-            {/* Text Warning Badge & Mode Indicator Row */}
-            <AnimatePresence>
-              {(textAnalysis.warningLevel !== "none" || lastGenerationMode || showRegenerateHint) && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex flex-wrap items-center gap-2"
-                >
-                  {/* Text Warning Badge */}
-                  {textAnalysis.warningLevel !== "none" && (
-                    <div className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-                      textAnalysis.warningLevel === "strong" 
-                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                        : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20"
-                    )}>
-                      <AlertTriangle className="h-3 w-3" />
-                      <span>{textAnalysis.warnings[0]}</span>
-                    </div>
-                  )}
-                  
-                  {/* Mode Indicator - persists until next generation */}
-                  {lastGenerationMode && (
-                    <div className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-                      lastGenerationMode === "imagen4"
-                        ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
-                        : lastGenerationMode === "imagen4fast"
-                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
-                          : lastGenerationMode === "imagen3"
-                            ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"
-                            : lastGenerationMode === "typographic"
-                              ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"
-                              : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                    )}>
-                      {lastGenerationMode === "imagen4" ? (
-                        <><Crown className="h-3 w-3" /> Imagen 4</>
-                      ) : lastGenerationMode === "imagen4fast" ? (
-                        <><Zap className="h-3 w-3" /> Imagen 4 Fast</>
-                      ) : lastGenerationMode === "imagen3" ? (
-                        <><Sparkles className="h-3 w-3" /> Imagen 3</>
-                      ) : lastGenerationMode === "typographic" ? (
-                        <><Type className="h-3 w-3" /> Text-Priority</>
-                      ) : (
-                        <><Clapperboard className="h-3 w-3" /> Cinematic</>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Regeneration Hint - persists for 10 seconds */}
-                  {showRegenerateHint && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border">
-                      <RefreshCw className="h-3 w-3" />
-                      <span>Not happy with text? Try regenerating</span>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            {/* Collapsible Text Tips Section */}
-            <AnimatePresence>
-              {showTextTips && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                        <Type className="h-4 w-4" />
-                        <span className="font-semibold text-sm">Text Rendering Tips</span>
-                      </div>
-                      <button 
-                        onClick={() => setShowTextTips(false)}
-                        className="p-1 rounded-md hover:bg-blue-500/10 transition-colors"
-                      >
-                        <X className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground">
-                      <div className="flex items-start gap-2">
-                        <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
-                        <span>Keep text <strong className="text-foreground">under 30 words</strong> for best accuracy</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
-                        <span>Avoid complex or <strong className="text-foreground">unusual spellings</strong></span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
-                        <span><strong className="text-foreground">Single fonts</strong> work better than mixed styles</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
-                        <span><strong className="text-foreground">Numbers and symbols</strong> render well</span>
-                      </div>
-                      <div className="flex items-start gap-2 sm:col-span-2">
-                        <Info className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
-                        <span>Multilingual text (Japanese, Arabic, etc.) may have variable accuracy - regenerate if needed</span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* Settings Panel (Inline Expandable) */}
             <AnimatePresence>
@@ -936,197 +548,153 @@ export default function ImageGenerator() {
                   exit={{ height: 0, opacity: 0, y: -10 }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-muted/30 border border-border rounded-xl p-4 space-y-4 shadow-inner mb-4">
-
-                    {/* Settings Row - Quality, Ratio, Style, Count, Refiner */}
-                    <div className="flex flex-wrap gap-4">
-                      {/* Quality */}
-                      <div className="space-y-1.5 min-w-[180px] flex-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Quality</label>
-                        <div className="flex gap-1">
-                          {QUALITY_PRESETS.map(q => (
-                            <TooltipProvider key={q.id}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button
-                                    onClick={() => setSettings({...settings, quality: q.id})}
-                                    className={cn(
-                                      "flex-1 h-9 rounded-lg flex items-center justify-center gap-1 transition-all border px-2",
-                                      settings.quality === q.id 
-                                        ? "bg-background border-primary/50 text-primary shadow-sm" 
-                                        : "bg-background/50 border-transparent text-muted-foreground hover:bg-background hover:text-foreground"
-                                    )}
-                                  >
-                                    <q.icon className={cn("h-3 w-3 shrink-0", settings.quality === q.id ? "text-primary" : "opacity-70")} />
-                                    <span className="text-[9px] font-medium">{q.name}</span>
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom"><p>{q.tooltip}</p></TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Tier Lock (Auto-scaling override) */}
-                      <div className="space-y-1.5 min-w-[140px]">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5 cursor-help flex items-center gap-1">
-                                Tier Lock
-                                <Info className="h-2.5 w-2.5 opacity-50" />
-                              </label>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-[200px]">
-                              <p>Auto: System picks the best tier based on your prompt. Lock to override.</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <div className="flex gap-1">
-                          {[
-                            { id: "auto", name: "Auto", tooltip: "Let AI pick the best tier" },
-                            { id: "standard", name: "Std", tooltip: "Force Standard tier" },
-                            { id: "premium", name: "Pro", tooltip: "Force Premium tier" },
-                            { id: "ultra", name: "Ultra", tooltip: "Force Ultra tier" }
-                          ].map(tier => (
-                            <TooltipProvider key={tier.id}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button
-                                    onClick={() => setSettings({...settings, tierOverride: tier.id as typeof settings.tierOverride})}
-                                    className={cn(
-                                      "flex-1 h-9 rounded-lg flex items-center justify-center transition-all border px-1.5",
-                                      settings.tierOverride === tier.id 
-                                        ? tier.id === 'auto' 
-                                          ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-sm"
-                                          : "bg-background border-primary/50 text-primary shadow-sm" 
-                                        : "bg-background/50 border-transparent text-muted-foreground hover:bg-background hover:text-foreground"
-                                    )}
-                                  >
-                                    <span className="text-[8px] font-medium">{tier.name}</span>
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom"><p>{tier.tooltip}</p></TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Aspect Ratio */}
-                      <div className="space-y-1.5 min-w-[200px] flex-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Ratio</label>
-                        <div className="flex gap-1">
-                          {ASPECT_RATIOS.map(r => (
-                            <TooltipProvider key={r.id}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button
-                                    onClick={() => setSettings({...settings, aspectRatio: r.id})}
-                                    className={cn(
-                                      "flex-1 h-9 rounded-lg flex items-center justify-center gap-1 transition-all border px-2",
-                                      settings.aspectRatio === r.id 
-                                        ? "bg-background border-primary/50 text-primary shadow-sm" 
-                                        : "bg-background/50 border-transparent text-muted-foreground hover:bg-background hover:text-foreground"
-                                    )}
-                                  >
-                                    <r.icon className={cn("h-3 w-3 shrink-0", settings.aspectRatio === r.id ? "text-primary" : "opacity-70")} />
-                                    <span className="text-[8px] font-medium">{r.ratioText}</span>
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom"><p>{r.label}</p></TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Style */}
-                      <div className="space-y-1.5 min-w-[120px]">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Style</label>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-full justify-between h-9 text-xs bg-background/50 border-transparent hover:bg-background px-2">
-                              <div className="flex items-center gap-1 overflow-hidden">
-                                <Sparkles className="h-3 w-3 text-primary shrink-0" />
-                                <span className="font-medium truncate text-[9px]">
-                                  {STYLE_PRESETS.find(s => s.id === settings.style)?.name}
-                                </span>
-                              </div>
-                              <ChevronDown className="h-3 w-3 opacity-50 flex-shrink-0" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-[180px] max-h-[300px] overflow-y-auto">
-                            {STYLE_PRESETS.map(style => (
-                              <DropdownMenuItem 
-                                key={style.id}
-                                onClick={() => setSettings({...settings, style: style.id})}
-                                className="text-xs cursor-pointer py-1.5"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <style.icon className="h-3.5 w-3.5" />
-                                  {style.name}
-                                </div>
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      {/* Count (Variations) */}
-                      <div className="space-y-1.5 min-w-[80px]">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Count</label>
-                        <div className="flex bg-background/50 rounded-lg p-0.5 h-9 items-center border border-transparent hover:border-border/50 transition-colors">
-                          {["1", "2", "4"].map(v => (
-                            <button
-                              key={v}
-                              onClick={() => setSettings({...settings, variations: v})}
-                              className={cn(
-                                "flex-1 h-full rounded-md flex items-center justify-center text-[10px] font-medium transition-all px-2",
-                                settings.variations === v 
-                                  ? "bg-background shadow-sm text-primary font-bold" 
-                                  : "text-muted-foreground hover:text-foreground"
-                              )}
-                            >
-                              {v}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Master Refiner */}
-                      <div className="space-y-1.5 min-w-[100px]">
-                        <div className="flex items-center justify-between h-[15px]">
-                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Refiner</label>
-                          <Switch 
-                            checked={settings.refiner}
-                            onCheckedChange={(c) => setSettings({...settings, refiner: c})}
-                            className="scale-75 origin-right data-[state=checked]:bg-primary"
-                          />
-                        </div>
-                        <div className={cn(
-                          "flex gap-1 transition-all duration-300 h-9",
-                          settings.refiner ? "opacity-100" : "opacity-40 pointer-events-none grayscale"
-                        )}>
-                          {REFINER_PRESETS.slice(0, 2).map(preset => (
-                            <button
-                              key={preset.id}
-                              onClick={() => setSettings({...settings, refinerPreset: preset.id})}
-                              disabled={!settings.refiner}
-                              className={cn(
-                                "flex-1 h-full rounded-md flex items-center justify-center gap-1 px-2 text-[9px] font-medium transition-all border",
-                                settings.refinerPreset === preset.id 
-                                  ? "bg-primary/10 border-primary/30 text-primary" 
-                                  : "bg-background/30 border-transparent text-muted-foreground hover:bg-background/50"
-                              )}
-                            >
-                              <preset.icon className="h-3 w-3 shrink-0" />
-                            </button>
-                          ))}
-                        </div>
+                  <div className="bg-muted/30 border border-border rounded-xl p-3 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 shadow-inner mb-4">
+                    
+                    {/* Quality */}
+                    <div className="space-y-1.5 col-span-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Quality</label>
+                      <div className="flex gap-1.5">
+                        {QUALITY_PRESETS.map(q => (
+                          <TooltipProvider key={q.id}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => setSettings({...settings, quality: q.id})}
+                                  className={cn(
+                                    "flex-1 h-9 rounded-lg flex items-center justify-center gap-1.5 transition-all border",
+                                    settings.quality === q.id 
+                                      ? "bg-background border-primary/50 text-primary shadow-sm" 
+                                      : "bg-background/50 border-transparent text-muted-foreground hover:bg-background hover:text-foreground"
+                                  )}
+                                >
+                                  <q.icon className={cn("h-3.5 w-3.5", settings.quality === q.id ? "text-primary" : "opacity-70")} />
+                                  <span className="text-[10px] font-medium">{q.name}</span>
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom"><p>{q.tooltip}</p></TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ))}
                       </div>
                     </div>
+
+                    {/* Aspect Ratio */}
+                    <div className="space-y-1.5 col-span-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Ratio</label>
+                      <div className="flex gap-1.5">
+                        {ASPECT_RATIOS.map(r => (
+                          <TooltipProvider key={r.id}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => setSettings({...settings, aspectRatio: r.id})}
+                                  className={cn(
+                                    "flex-1 h-9 rounded-lg flex items-center justify-center gap-1 transition-all border",
+                                    settings.aspectRatio === r.id 
+                                      ? "bg-background border-primary/50 text-primary shadow-sm" 
+                                      : "bg-background/50 border-transparent text-muted-foreground hover:bg-background hover:text-foreground"
+                                  )}
+                                >
+                                  <r.icon className={cn("h-3.5 w-3.5", settings.aspectRatio === r.id ? "text-primary" : "opacity-70")} />
+                                  <span className="text-[9px] text-muted-foreground/70 font-medium hidden sm:inline">{r.ratioText}</span>
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom"><p>{r.label}</p></TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Style */}
+                    <div className="space-y-1.5 col-span-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Style</label>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-full justify-between h-9 text-xs bg-background/50 border-transparent hover:bg-background px-2">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              {STYLE_PRESETS.find(s => s.id === settings.style)?.icon && (
+                                 <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                              )}
+                              <span className="font-medium truncate text-[10px]">
+                                {STYLE_PRESETS.find(s => s.id === settings.style)?.name}
+                              </span>
+                            </div>
+                            <ChevronDown className="h-3 w-3 opacity-50 flex-shrink-0 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-[180px] max-h-[300px] overflow-y-auto">
+                          {STYLE_PRESETS.map(style => (
+                            <DropdownMenuItem 
+                              key={style.id}
+                              onClick={() => setSettings({...settings, style: style.id})}
+                              className="text-xs cursor-pointer py-1.5"
+                            >
+                              <div className="flex items-center gap-2">
+                                <style.icon className="h-3.5 w-3.5" />
+                                {style.name}
+                              </div>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* Previews (Variations) */}
+                    <div className="space-y-1.5 col-span-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Count</label>
+                      <div className="flex bg-background/50 rounded-lg p-0.5 h-9 items-center border border-transparent hover:border-border/50 transition-colors">
+                        {["1", "2", "4"].map(v => (
+                          <button
+                            key={v}
+                            onClick={() => setSettings({...settings, variations: v})}
+                            className={cn(
+                              "flex-1 h-full rounded-md flex items-center justify-center text-[10px] font-medium transition-all",
+                              settings.variations === v 
+                                ? "bg-background shadow-sm text-primary font-bold" 
+                                : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {v}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Master Refiner */}
+                    <div className="space-y-1.5 col-span-2 md:col-span-4 lg:col-span-1">
+                      <div className="flex items-center justify-between h-[15px]">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Refiner</label>
+                        <Switch 
+                          checked={settings.refiner}
+                          onCheckedChange={(c) => setSettings({...settings, refiner: c})}
+                          className="scale-75 origin-right data-[state=checked]:bg-primary"
+                        />
+                      </div>
+                      
+                      <div className={cn(
+                        "grid grid-cols-4 lg:grid-cols-2 gap-1.5 transition-all duration-300 h-9",
+                        settings.refiner ? "opacity-100" : "opacity-40 pointer-events-none grayscale"
+                      )}>
+                        {REFINER_PRESETS.slice(0, 2).map(preset => (
+                          <button
+                            key={preset.id}
+                            onClick={() => setSettings({...settings, refinerPreset: preset.id})}
+                            disabled={!settings.refiner}
+                            className={cn(
+                              "h-full rounded-md flex items-center justify-center gap-1 px-1 text-[9px] font-medium transition-all border",
+                              settings.refinerPreset === preset.id 
+                                ? "bg-primary/10 border-primary/30 text-primary" 
+                                : "bg-background/30 border-transparent text-muted-foreground hover:bg-background/50"
+                            )}
+                          >
+                            <preset.icon className="h-3 w-3 shrink-0" />
+                            <span className="truncate hidden xl:inline">{preset.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                   </div>
                 </motion.div>
               )}
@@ -1140,7 +708,7 @@ export default function ImageGenerator() {
 
         {/* SCROLLABLE GALLERY */}
         <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-40 md:pb-10 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-
+          
           {/* Gallery Filter Bar */}
           {generations.length > 0 && (
              <div className="max-w-[1800px] mx-auto mb-6 flex items-center gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-6 px-6 md:mx-0 md:px-0">
@@ -1171,7 +739,7 @@ export default function ImageGenerator() {
                </div>
 
                <div className="w-px h-4 bg-border mx-1 shrink-0" />
-
+               
                {Array.from(new Set(generations.map(g => g.style))).map(style => (
                  <button
                    key={style}
@@ -1196,7 +764,7 @@ export default function ImageGenerator() {
               <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
                 Enter a prompt above to unleash the power of our 5-agent AI system.
               </p>
-
+              
               <div className="flex flex-wrap justify-center gap-3">
                 {["Futuristic city with neon lights", "Oil painting of a cat king", "Cyberpunk street food stall"].map(p => (
                   <button 
@@ -1218,7 +786,7 @@ export default function ImageGenerator() {
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTAgMzhoNDB2MmgtNDB6Ii8+PHBhdGggZD0iTTAgMGg0MHYyaC00MHoiLz48cGF0aCBkPSJNMCAwdjQwaDJWMHoiLz48cGF0aCBkPSJNMzggMHY0MGgyVjB6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
                     <Sparkles className="h-12 w-12 text-white animate-spin-slow duration-[3s]" />
                     <p className="text-white/90 font-medium mt-4 text-sm animate-pulse">Generating masterpiece...</p>
-
+                    
                     {/* Progress Bar & Percentage */}
                     <div className="w-3/4 mt-3 space-y-1.5">
                       <div className="flex justify-between items-center px-1">
@@ -1248,7 +816,7 @@ export default function ImageGenerator() {
                   </div>
                 </div>
               )}
-
+              
               {filteredGenerations.map((gen) => (
                 <div 
                   key={gen.id}
@@ -1256,11 +824,11 @@ export default function ImageGenerator() {
                   className="break-inside-avoid mb-6 relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border hover:border-primary/50 hover:shadow-xl transition-all hover:scale-[1.02]"
                 >
                   <img src={gen.src} alt={gen.prompt} className="w-full h-auto object-cover" />
-
+                  
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-5">
                     <p className="text-white text-sm line-clamp-2 mb-4 font-medium leading-relaxed">{gen.prompt}</p>
-
+                    
                     <div className="flex items-center gap-2">
                       <Button 
                         size="sm" 
@@ -1354,7 +922,7 @@ export default function ImageGenerator() {
                         <Download className="h-5 w-5" />
                         <span className="text-[10px]">Save</span>
                       </Button>
-
+                      
                       <Button 
                         variant="ghost" 
                         className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"

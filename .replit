@@ -4,13 +4,11 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["libuuid", "cairo", "pango", "libjpeg", "giflib", "librsvg", "pixman"]
 
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "static"
 build = ["npm", "run", "build"]
 publicDir = "dist/public"
-run = ["npm", "run", "start"]
 
 [[ports]]
 localPort = 5000
@@ -33,16 +31,8 @@ localPort = 33635
 externalPort = 3002
 
 [[ports]]
-localPort = 35279
-externalPort = 8008
-
-[[ports]]
 localPort = 35555
 externalPort = 6000
-
-[[ports]]
-localPort = 36215
-externalPort = 8000
 
 [[ports]]
 localPort = 36243
@@ -55,10 +45,6 @@ externalPort = 5000
 [[ports]]
 localPort = 41153
 externalPort = 4200
-
-[[ports]]
-localPort = 41675
-externalPort = 6800
 
 [env]
 PORT = "5000"
@@ -81,9 +67,8 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "npm run dev:client"
 waitForPort = 5000
 
 [agent]
-mockupState = "FULLSTACK"
-integrations = ["javascript_gemini_ai_integrations:1.0.0"]
+mockupState = "MOCKUP"
