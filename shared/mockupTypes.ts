@@ -18,6 +18,7 @@ export type Ethnicity =
   | 'Asian' 
   | 'Indian' 
   | 'Southeast Asian' 
+  | 'Middle Eastern'
   | 'Indigenous' 
   | 'Diverse';
 

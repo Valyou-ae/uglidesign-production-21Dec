@@ -37,6 +37,11 @@ export const ETHNIC_FEATURE_MAP: Record<Ethnicity, EthnicFeatures> = {
     eyeColors: ['dark brown', 'deep brown', 'black'],
     hairStyles: ['long and straight', 'a simple ponytail', 'shoulder-length layers', 'a soft, natural look']
   },
+  'Middle Eastern': {
+    hairColors: ['jet black', 'dark brown', 'deep brown', 'black with subtle highlights'],
+    eyeColors: ['deep brown', 'dark brown', 'hazel', 'amber', 'green'],
+    hairStyles: ['long and thick', 'voluminous curls', 'shoulder-length waves', 'sleek and straight', 'in a stylish updo']
+  },
   'Indigenous': {
     hairColors: ['jet black', 'dark brown', 'deep black'],
     eyeColors: ['deep brown', 'dark brown', 'black'],

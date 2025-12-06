@@ -8,6 +8,7 @@ export const NAMES_BY_ETHNICITY_AND_SEX: Record<Sex, Record<Ethnicity, string[]>
     'Asian': ['Mei', 'Hana', 'Yuki', 'Li Wei', 'Ji-won', 'Sakura', 'Aiko'],
     'Indian': ['Priya', 'Anjali', 'Kavya', 'Isha', 'Neha', 'Diya', 'Aisha'],
     'Southeast Asian': ['Linh', 'Mai', 'Anh', 'Siti', 'Dara', 'Putri', 'Mei Lin'],
+    'Middle Eastern': ['Fatima', 'Layla', 'Yasmin', 'Noor', 'Salma', 'Zahra', 'Maryam'],
     'Indigenous': ['Kaya', 'Aiyana', 'Nizhoni', 'Chenoa', 'Takoda', 'Aponi', 'Winona'],
     'Diverse': ['Nia', 'Alex', 'Jordan', 'Casey', 'Riley', 'Avery', 'Sage']
   },
@@ -18,6 +19,7 @@ export const NAMES_BY_ETHNICITY_AND_SEX: Record<Sex, Record<Ethnicity, string[]>
     'Asian': ['Kenji', 'Hiro', 'Jin', 'Tao', 'Wei', 'Ryu', 'Kai'],
     'Indian': ['Arjun', 'Rohan', 'Raj', 'Vikram', 'Aditya', 'Karan', 'Dev'],
     'Southeast Asian': ['Nguyen', 'Somchai', 'Dimas', 'Budi', 'Kiet', 'Ahmad', 'Tan'],
+    'Middle Eastern': ['Omar', 'Hassan', 'Yusuf', 'Khalid', 'Tariq', 'Amir', 'Karim'],
     'Indigenous': ['Chayton', 'Kai', 'Ahanu', 'Tahoma', 'Dakota', 'Enapay', 'Makya'],
     'Diverse': ['River', 'Phoenix', 'Sage', 'Atlas', 'Canyon', 'Sterling', 'Cruz']
   }

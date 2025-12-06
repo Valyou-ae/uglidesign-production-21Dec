@@ -8,6 +8,7 @@ const HEIGHT_BASE: Record<Sex, Record<Ethnicity, number>> = {
     'Asian': 67,
     'Indian': 66,
     'Southeast Asian': 65,
+    'Middle Eastern': 68,
     'Indigenous': 68,
     'Diverse': 68
   },
@@ -18,6 +19,7 @@ const HEIGHT_BASE: Record<Sex, Record<Ethnicity, number>> = {
     'Asian': 62,
     'Indian': 61,
     'Southeast Asian': 60,
+    'Middle Eastern': 63,
     'Indigenous': 63,
     'Diverse': 63
   }
@@ -70,6 +72,7 @@ const ETHNICITY_DESCRIPTIONS: Record<Ethnicity, string> = {
   'Asian': 'light to medium skin, dark eyes',
   'Indian': 'light brown to brown skin, dark eyes',
   'Southeast Asian': 'tan skin, dark eyes',
+  'Middle Eastern': 'olive to light brown skin, dark eyes or hazel, prominent features',
   'Indigenous': 'medium brown skin, dark eyes, prominent cheekbones',
   'Diverse': 'blended skin tones, varied eye colors'
 };
@@ -143,4 +146,4 @@ export function getSomaticProfilePrompt(age: AgeGroup, sex: Sex, ethnicity: Ethn
 export const SOMATIC_PROFILE_SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 export const SOMATIC_PROFILE_AGE_GROUPS: AgeGroup[] = ['Baby', 'Toddler', 'Kids', 'Teen', 'Young Adult', 'Adult', 'Senior'];
 export const SOMATIC_PROFILE_SEXES: Sex[] = ['Male', 'Female'];
-export const SOMATIC_PROFILE_ETHNICITIES: Ethnicity[] = ['White', 'Black', 'Hispanic', 'Asian', 'Indian', 'Southeast Asian', 'Indigenous', 'Diverse'];
+export const SOMATIC_PROFILE_ETHNICITIES: Ethnicity[] = ['White', 'Black', 'Hispanic', 'Asian', 'Indian', 'Southeast Asian', 'Middle Eastern', 'Indigenous', 'Diverse'];
