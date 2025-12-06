@@ -328,6 +328,9 @@ export interface MockupEventData {
   error?: string;
   success?: boolean;
   totalGenerated?: number;
+  headshotImage?: string;
+  suggestion?: string;
+  details?: string;
 }
 
 export type MockupEventType = 
@@ -336,6 +339,11 @@ export type MockupEventType =
   | "prompt" 
   | "image" 
   | "image_error" 
+  | "persona_lock"
+  | "persona_lock_failed"
+  | "batch_complete"
+  | "batch_error"
+  | "stream_end"
   | "complete" 
   | "error";
 
@@ -458,6 +466,12 @@ export const mockupApi = {
       angles?: string[];
       scene?: string;
       style?: string;
+      modelDetails?: {
+        age: string;
+        sex: string;
+        ethnicity: string;
+        modelSize: string;
+      };
     } = {},
     onEvent: MockupEventCallback
   ): Promise<void> => {

@@ -603,6 +603,7 @@ export async function registerRoutes(
         angles = ["front"],
         scene = "studio",
         style = "minimal",
+        modelDetails,
       } = req.body;
 
       if (!designImage || typeof designImage !== "string") {
@@ -612,13 +613,137 @@ export async function registerRoutes(
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
+      res.setHeader("X-Accel-Buffering", "no");
       res.flushHeaders();
 
       const sendEvent = (event: string, data: any) => {
         res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+        if (typeof (res as any).flush === 'function') {
+          (res as any).flush();
+        }
       };
 
       const base64Data = designImage.replace(/^data:image\/\w+;base64,/, "");
+
+      if (modelDetails) {
+        const eliteGenerator = await import("./services/eliteMockupGenerator");
+        const knowledge = await import("./services/knowledge");
+
+        sendEvent("status", { stage: "analyzing", message: "Analyzing your design...", progress: 5 });
+
+        const product = knowledge.getDTGProducts().find(p => 
+          p.name.toLowerCase().includes(productType.toLowerCase()) ||
+          p.subcategory?.toLowerCase().includes(productType.toLowerCase())
+        ) || knowledge.getDTGProducts()[0];
+
+        const colorHex = productColor === "white" ? "#FFFFFF" : 
+                         productColor === "black" ? "#000000" : "#FFFFFF";
+
+        let personaLockFailed = false;
+        let batchCompleted = false;
+
+        try {
+          const batch = await eliteGenerator.generateMockupBatch({
+            journey: "DTG",
+            designImage: base64Data,
+            product: product,
+            colors: [{ name: productColor, hex: colorHex }],
+            angles: angles as any[],
+            modelDetails: modelDetails,
+            brandStyle: style.toUpperCase().replace(/\s+/g, '_') as any || 'ECOMMERCE_CLEAN',
+            lightingPreset: 'three-point-classic',
+            materialCondition: 'BRAND_NEW',
+            environmentPrompt: scene
+          }, (completed, total, job) => {
+            const progress = 10 + Math.round((completed / total) * 85);
+            
+            if (job.status === 'completed' && job.result) {
+              sendEvent("image", {
+                jobId: job.id,
+                angle: job.angle,
+                color: job.color.name,
+                imageData: job.result.imageData,
+                mimeType: job.result.mimeType
+              });
+            } else if (job.status === 'failed') {
+              sendEvent("image_error", {
+                jobId: job.id,
+                angle: job.angle,
+                color: job.color.name,
+                error: job.error || "Generation failed"
+              });
+            }
+
+            sendEvent("status", {
+              stage: "generating",
+              message: `Generated ${completed}/${total} mockups...`,
+              progress
+            });
+          }, (error) => {
+            if (error.type === 'persona_lock_failed') {
+              personaLockFailed = true;
+              sendEvent("persona_lock_failed", {
+                message: error.message,
+                details: error.details,
+                suggestion: "Try again or use a different model configuration"
+              });
+            } else {
+              sendEvent("batch_error", {
+                type: error.type,
+                message: error.message,
+                details: error.details
+              });
+            }
+          });
+
+          if (!personaLockFailed) {
+            batchCompleted = true;
+
+            if (batch.personaLockImage) {
+              sendEvent("persona_lock", {
+                headshotImage: batch.personaLockImage
+              });
+            }
+
+            sendEvent("status", { stage: "complete", message: "All mockups generated!", progress: 100 });
+            sendEvent("complete", { success: true, totalGenerated: batch.jobs.filter(j => j.status === 'completed').length });
+          } else {
+            sendEvent("status", { 
+              stage: "failed", 
+              message: "Model generation failed - please try again", 
+              progress: 0 
+            });
+          }
+        } catch (batchErr) {
+          const errorMessage = batchErr instanceof Error ? batchErr.message : String(batchErr);
+          const isPersonaLockError = errorMessage.includes('Persona Lock failed');
+          
+          if (isPersonaLockError) {
+            sendEvent("persona_lock_failed", {
+              message: 'Could not generate a consistent model reference.',
+              details: errorMessage,
+              suggestion: "Please try again or adjust model selection"
+            });
+          } else {
+            sendEvent("error", { message: errorMessage });
+          }
+
+          sendEvent("status", { 
+            stage: "failed", 
+            message: isPersonaLockError 
+              ? "Model generation failed - please try again" 
+              : "Generation failed", 
+            progress: 0 
+          });
+        }
+
+        sendEvent("stream_end", { 
+          success: batchCompleted && !personaLockFailed,
+          timestamp: Date.now() 
+        });
+        res.end();
+        return;
+      }
 
       sendEvent("status", { stage: "analyzing", message: "Analyzing your design...", progress: 5 });
 

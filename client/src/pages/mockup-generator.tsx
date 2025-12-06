@@ -104,13 +104,26 @@ type WizardStep =
   | "upload" 
   | "seamless" 
   | "product" 
+  | "model"
   | "style" 
   | "scene" 
   | "angles" 
   | "generate";
 
-const DTG_STEPS: WizardStep[] = ["upload", "product", "style", "scene", "angles", "generate"];
-const AOP_STEPS: WizardStep[] = ["upload", "seamless", "product", "style", "scene", "angles", "generate"];
+type AgeGroup = "ADULT" | "YOUNG_ADULT" | "TEEN";
+type Sex = "MALE" | "FEMALE";
+type Ethnicity = "CAUCASIAN" | "AFRICAN" | "ASIAN" | "HISPANIC" | "SOUTH_ASIAN" | "MIDDLE_EASTERN" | "MIXED";
+type ModelSize = "XS" | "S" | "M" | "L" | "XL" | "XXL";
+
+interface ModelDetails {
+  age: AgeGroup;
+  sex: Sex;
+  ethnicity: Ethnicity;
+  modelSize: ModelSize;
+}
+
+const DTG_STEPS: WizardStep[] = ["upload", "product", "model", "style", "scene", "angles", "generate"];
+const AOP_STEPS: WizardStep[] = ["upload", "seamless", "product", "model", "style", "scene", "angles", "generate"];
 
 const MOCKUP_ANGLES = [
   { id: 'front', name: 'Front View', description: 'Direct frontal shot - the hero image.', icon: PersonStanding, recommended: true },
@@ -130,6 +143,14 @@ export default function MockupGenerator() {
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["L"]);
   const [selectedAngles, setSelectedAngles] = useState<string[]>(["front"]);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
+  const [modelDetails, setModelDetails] = useState<ModelDetails>({
+    age: "ADULT",
+    sex: "MALE",
+    ethnicity: "CAUCASIAN",
+    modelSize: "M"
+  });
+  const [useModel, setUseModel] = useState<boolean>(true);
+  const [personaHeadshot, setPersonaHeadshot] = useState<string | null>(null);
   // Seamless Pattern State
   const [seamlessPhase, setSeamlessPhase] = useState<'analyzing' | 'generating' | 'selecting'>('analyzing');
   const [seamlessVariations, setSeamlessVariations] = useState<any[]>([]);
@@ -267,6 +288,7 @@ export default function MockupGenerator() {
           angles: selectedAngles,
           scene: scene,
           style: styleName,
+          modelDetails: useModel ? modelDetails : undefined,
         },
         (event: MockupEvent) => {
           switch (event.type) {
@@ -281,6 +303,21 @@ export default function MockupGenerator() {
             case "analysis":
               setGenerationStage("Design analyzed, generating mockups...");
               setGenerationProgress(10);
+              break;
+            case "persona_lock":
+              if (event.data.headshotImage) {
+                const headshotUrl = `data:image/png;base64,${event.data.headshotImage}`;
+                setPersonaHeadshot(headshotUrl);
+                setGenerationStage("Model reference generated, creating mockups...");
+              }
+              break;
+            case "persona_lock_failed":
+              console.error("Persona lock failed:", event.data.message);
+              toast({
+                title: "Model Generation Issue",
+                description: event.data.suggestion || "Could not generate consistent model. Trying alternative approach.",
+                variant: "destructive",
+              });
               break;
             case "image":
               if (event.data.imageData && event.data.mimeType) {
@@ -443,6 +480,7 @@ export default function MockupGenerator() {
                       upload: Cloud,
                       seamless: Repeat,
                       product: ShoppingBag,
+                      model: User,
                       style: Sparkles,
                       scene: MapPin,
                       angles: Camera,
@@ -989,6 +1027,168 @@ export default function MockupGenerator() {
                                     </span>
                                 </div>
                               </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {currentStep === "model" && (
+                        <div className="flex flex-col h-full max-w-[800px] mx-auto w-full animate-fade-in">
+                          <div className="mb-6 text-center">
+                            <h2 className="text-2xl font-bold mb-2">Choose Your Model</h2>
+                            <p className="text-muted-foreground">Select the model who will wear your product in the mockups</p>
+                          </div>
+
+                          <div className="flex items-center justify-center gap-4 mb-6">
+                            <button
+                              onClick={() => setUseModel(true)}
+                              className={cn(
+                                "flex items-center gap-3 px-6 py-4 rounded-xl border-2 transition-all",
+                                useModel 
+                                  ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20" 
+                                  : "border-border hover:border-indigo-300"
+                              )}
+                            >
+                              <User className={cn("h-6 w-6", useModel ? "text-indigo-600" : "text-muted-foreground")} />
+                              <div className="text-left">
+                                <p className={cn("font-semibold", useModel ? "text-indigo-900 dark:text-indigo-100" : "")}>On Model</p>
+                                <p className="text-xs text-muted-foreground">Show on a real person</p>
+                              </div>
+                              {useModel && <Check className="h-5 w-5 text-indigo-600" />}
+                            </button>
+                            <button
+                              onClick={() => setUseModel(false)}
+                              className={cn(
+                                "flex items-center gap-3 px-6 py-4 rounded-xl border-2 transition-all",
+                                !useModel 
+                                  ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20" 
+                                  : "border-border hover:border-indigo-300"
+                              )}
+                            >
+                              <Shirt className={cn("h-6 w-6", !useModel ? "text-indigo-600" : "text-muted-foreground")} />
+                              <div className="text-left">
+                                <p className={cn("font-semibold", !useModel ? "text-indigo-900 dark:text-indigo-100" : "")}>Flat Lay</p>
+                                <p className="text-xs text-muted-foreground">Product only, no model</p>
+                              </div>
+                              {!useModel && <Check className="h-5 w-5 text-indigo-600" />}
+                            </button>
+                          </div>
+
+                          {useModel && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <label className="text-sm font-semibold text-foreground">Sex</label>
+                                  <div className="flex gap-2">
+                                    {(["MALE", "FEMALE"] as Sex[]).map((sex) => (
+                                      <button
+                                        key={sex}
+                                        onClick={() => setModelDetails({...modelDetails, sex})}
+                                        className={cn(
+                                          "flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all",
+                                          modelDetails.sex === sex
+                                            ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+                                            : "border-border hover:border-indigo-300"
+                                        )}
+                                      >
+                                        {sex === "MALE" ? "Male" : "Female"}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-sm font-semibold text-foreground">Age Group</label>
+                                  <Select 
+                                    value={modelDetails.age} 
+                                    onValueChange={(value: AgeGroup) => setModelDetails({...modelDetails, age: value})}
+                                  >
+                                    <SelectTrigger className="w-full h-12 rounded-lg">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="TEEN">Teen (13-17)</SelectItem>
+                                      <SelectItem value="YOUNG_ADULT">Young Adult (18-25)</SelectItem>
+                                      <SelectItem value="ADULT">Adult (26-45)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <label className="text-sm font-semibold text-foreground">Ethnicity</label>
+                                  <Select 
+                                    value={modelDetails.ethnicity} 
+                                    onValueChange={(value: Ethnicity) => setModelDetails({...modelDetails, ethnicity: value})}
+                                  >
+                                    <SelectTrigger className="w-full h-12 rounded-lg">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="CAUCASIAN">Caucasian</SelectItem>
+                                      <SelectItem value="AFRICAN">African</SelectItem>
+                                      <SelectItem value="ASIAN">Asian</SelectItem>
+                                      <SelectItem value="HISPANIC">Hispanic</SelectItem>
+                                      <SelectItem value="SOUTH_ASIAN">South Asian</SelectItem>
+                                      <SelectItem value="MIDDLE_EASTERN">Middle Eastern</SelectItem>
+                                      <SelectItem value="MIXED">Mixed</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-sm font-semibold text-foreground">Model Size</label>
+                                  <div className="grid grid-cols-6 gap-1.5">
+                                    {(["XS", "S", "M", "L", "XL", "XXL"] as ModelSize[]).map((size) => (
+                                      <button
+                                        key={size}
+                                        onClick={() => setModelDetails({...modelDetails, modelSize: size})}
+                                        className={cn(
+                                          "py-2.5 rounded-lg border-2 text-sm font-medium transition-all",
+                                          modelDetails.modelSize === size
+                                            ? "border-indigo-600 bg-indigo-600 text-white"
+                                            : "border-border hover:border-indigo-300"
+                                        )}
+                                      >
+                                        {size}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {!useModel && (
+                            <div className="flex-1 flex items-center justify-center">
+                              <div className="text-center p-8 bg-muted/50 rounded-2xl max-w-md">
+                                <Shirt className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold mb-2">Flat Lay Mode</h3>
+                                <p className="text-muted-foreground text-sm">
+                                  Your product will be displayed on a flat surface or invisible mannequin without a human model.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="mt-6 pt-6 border-t border-border flex flex-col gap-2 shrink-0">
+                            <div className="flex items-center justify-between">
+                              <Button
+                                variant="ghost"
+                                onClick={handleBack}
+                                className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                                Back
+                              </Button>
+                              <Button
+                                onClick={handleNext}
+                                className="gap-2 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5 transition-all"
+                              >
+                                Next Step
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
                         </div>
