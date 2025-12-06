@@ -53,12 +53,20 @@ export {
 export {
   DTG_PRODUCTS,
   AOP_PRODUCTS,
+  ACCESSORY_PRODUCTS,
+  HOME_LIVING_PRODUCTS,
   getProduct,
   getDTGProducts,
   getAOPProducts,
+  getAccessoryProducts,
+  getHomeLivingProducts,
   getAllProducts,
+  getProductsByCategory,
+  getProductsBySubcategory,
   getGarmentBlueprint,
-  getGarmentBlueprintPrompt
+  getGarmentBlueprintPrompt,
+  getProductBlueprint,
+  getProductBlueprintPrompt
 } from './productBlueprints';
 
 export {

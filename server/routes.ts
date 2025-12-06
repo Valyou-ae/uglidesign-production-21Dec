@@ -892,6 +892,8 @@ export async function registerRoutes(
     getProduct,
     getDTGProducts,
     getAOPProducts,
+    getAccessoryProducts,
+    getHomeLivingProducts,
     getAllProducts,
     BRAND_STYLES
   } = await import("./services/knowledge");
@@ -900,7 +902,9 @@ export async function registerRoutes(
     try {
       const dtgProducts = getDTGProducts();
       const aopProducts = getAOPProducts();
-      res.json({ dtgProducts, aopProducts });
+      const accessoryProducts = getAccessoryProducts();
+      const homeLivingProducts = getHomeLivingProducts();
+      res.json({ dtgProducts, aopProducts, accessoryProducts, homeLivingProducts });
     } catch (error) {
       console.error("Products fetch error:", error);
       res.status(500).json({ message: "Failed to fetch products" });
