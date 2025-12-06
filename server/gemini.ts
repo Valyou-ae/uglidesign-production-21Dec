@@ -461,15 +461,50 @@ function calculateSimilarity(str1: string, str2: string): number {
 }
 
 // Helper: Find best matching text from extracted texts
+// Uses strict contiguous matching - only actual substrings score as 1.0
 function findBestMatch(expected: string, extractedTexts: string[]): { match: string | null; similarity: number } {
   let bestMatch: string | null = null;
   let bestSimilarity = 0;
   
+  const expectedLower = expected.toLowerCase().trim();
+  
+  // First, check direct matches against individual extracted texts
   for (const extracted of extractedTexts) {
     const similarity = calculateSimilarity(expected, extracted);
     if (similarity > bestSimilarity) {
       bestSimilarity = similarity;
       bestMatch = extracted;
+    }
+  }
+  
+  // Check adjacent n-gram combinations (2, 3, 4 adjacent elements)
+  // This handles cases where text is split across multiple lines/elements
+  for (let windowSize = 2; windowSize <= Math.min(4, extractedTexts.length); windowSize++) {
+    for (let i = 0; i <= extractedTexts.length - windowSize; i++) {
+      const combined = extractedTexts.slice(i, i + windowSize).join(' ');
+      const similarity = calculateSimilarity(expected, combined);
+      if (similarity > bestSimilarity) {
+        bestSimilarity = similarity;
+        bestMatch = combined;
+      }
+    }
+  }
+  
+  // Only return 1.0 for exact contiguous matches
+  // If best similarity is above 0.85, it's likely a good match
+  // Below that, use word-presence as a secondary check (capped at 0.8 max)
+  if (bestSimilarity < 0.85) {
+    const allText = extractedTexts.join(' ').toLowerCase();
+    const expectedWords = expectedLower.split(/\s+/);
+    const matchedWords = expectedWords.filter(word => allText.includes(word));
+    const wordMatchRatio = matchedWords.length / expectedWords.length;
+    
+    // Cap word-based matching at 0.8 (below pass threshold) to ensure it triggers retries
+    const cappedWordScore = Math.min(wordMatchRatio * 0.8, 0.8);
+    
+    if (cappedWordScore > bestSimilarity) {
+      bestSimilarity = cappedWordScore;
+      bestMatch = `[partial: ${matchedWords.join(' ')}]`;
     }
   }
   
