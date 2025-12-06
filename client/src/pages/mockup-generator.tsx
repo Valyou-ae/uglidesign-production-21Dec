@@ -1786,15 +1786,15 @@ export default function MockupGenerator() {
                               <div className="bg-muted/30 rounded-2xl p-6 w-full mb-8 border border-border">
                                 <div className="flex justify-between items-center mb-4 pb-4 border-b border-border">
                                   <span className="text-sm font-medium text-muted-foreground">Selected Product</span>
-                                  <span className="font-bold">Men's Classic Tee</span>
+                                  <span className="font-bold">{selectedProductType || "T-Shirt"}</span>
                                 </div>
                                 <div className="flex justify-between items-center mb-4 pb-4 border-b border-border">
                                   <span className="text-sm font-medium text-muted-foreground">Style</span>
-                                  <span className="font-bold">Urban Street</span>
+                                  <span className="font-bold">{selectedStyle || "Minimal"}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm font-medium text-muted-foreground">Total Output</span>
-                                  <Badge className="bg-indigo-600">12 Mockups</Badge>
+                                  <Badge className="bg-indigo-600">{Math.max(1, selectedAngles.length * selectedColors.length)} Mockups</Badge>
                                 </div>
                               </div>
 
@@ -1804,7 +1804,7 @@ export default function MockupGenerator() {
                                 className="h-14 px-10 text-lg rounded-[12px] bg-gradient-to-r from-[#7C3AED] to-[#9333EA] hover:brightness-110 shadow-lg shadow-purple-600/20 transition-all hover:-translate-y-[1px]"
                               >
                                 <Wand2 className="mr-2 h-5 w-5" />
-                                Generate 12 Mockups
+                                Generate {Math.max(1, selectedAngles.length * selectedColors.length)} Mockups
                               </Button>
                             </div>
                           ) : isGenerating ? (
@@ -1830,8 +1830,8 @@ export default function MockupGenerator() {
                             <div className="flex-1 flex flex-col h-full overflow-hidden">
                               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
                                 <div>
-                                  <h2 className="text-2xl md:text-3xl font-bold leading-tight">12 Mockups Ready</h2>
-                                  <p className="text-sm text-muted-foreground">Seed: 82739103</p>
+                                  <h2 className="text-2xl md:text-3xl font-bold leading-tight">{generatedMockups.length} {generatedMockups.length === 1 ? "Mockup" : "Mockups"} Ready</h2>
+                                  <p className="text-sm text-muted-foreground">{selectedProductType || "T-Shirt"} - {selectedStyle || "Minimal"}</p>
                                 </div>
                                 <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
                                   <Button variant="outline" onClick={() => setJourney(null)} className="flex-1 sm:flex-none">Start Over</Button>
