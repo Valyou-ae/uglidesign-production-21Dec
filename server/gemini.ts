@@ -17,19 +17,18 @@ const ai = new GoogleGenAI({
 // ============== MODEL CONFIGURATION ==============
 // Multi-model pipeline for 100% text accuracy
 
-// Phase 1: Text Sentinel - Ultra-fast model for initial text detection
-const TEXT_SENTINEL_MODEL = "gemini-flash-lite-latest";
+// Phase 1: Text Sentinel - Fast model for initial text detection
+const TEXT_SENTINEL_MODEL = "gemini-2.5-flash";
 
-// Phase 2: Style Architect - Most powerful reasoning for prompt enhancement
-const STYLE_ARCHITECT_MODEL = "gemini-3-pro-preview";
+// Phase 2: Style Architect - Advanced reasoning for prompt enhancement
+const STYLE_ARCHITECT_MODEL = "gemini-2.5-pro";
 const STYLE_ARCHITECT_TEMPERATURE = 0.7;
 
-// Phase 3: Image Generator - Top-tier model for high-quality image generation
-// gemini-3-pro-image-preview provides best text rendering quality
-const IMAGE_GENERATOR_MODEL = "gemini-3-pro-image-preview";
-const IMAGE_GENERATOR_FALLBACK = "gemini-3-pro-image-preview";
-// All attempts use the same top-tier model
-const IMAGE_GENERATOR_ESCALATION = "gemini-3-pro-image-preview";
+// Phase 3: Image Generator - Native image generation model
+// gemini-2.5-flash-image is the ONLY supported image generation model
+const IMAGE_GENERATOR_MODEL = "gemini-2.5-flash-image";
+const IMAGE_GENERATOR_FALLBACK = "gemini-2.5-flash-image";
+const IMAGE_GENERATOR_ESCALATION = "gemini-2.5-flash-image";
 
 // Phase 4: OCR Validator - Vision model for text verification
 const OCR_VALIDATOR_MODEL = "gemini-2.5-flash";
