@@ -1,0 +1,35 @@
+The AOP (All-Over-Print) User Flow
+The AOP journey is initiated when the user selects the "AOP (All-Over Print)" option on the initial screen.
+Step 1: Design Upload (StepUpload.tsx)
+The user is prompted to upload their design image (e.g., a single character, a group of motifs).
+A critical checkbox appears: "This design is already a seamless pattern."
+If checked: The user is confirming they have provided a tileable image. The system will store this file and skip the next step entirely, moving directly to Brand Style selection.
+If unchecked (common case): The user has a standard, non-tileable design that needs to be converted into a pattern.
+Step 2: AI Seamless Pattern Generation (aop/components/StepSeamless.tsx)
+This step is only shown if the "already seamless" box was unchecked.
+The user clicks "Generate AI Pattern". This triggers the generateAiCreativePattern service.
+The application sends the uploaded design to the Gemini API with a specialized prompt, asking it to analyze the motifs and style and generate a high-quality, perfectly seamless, tileable pattern.
+The resulting pattern is displayed as a selectable thumbnail.
+The user can then use the "Pattern Scale" slider (10% to 100%) to adjust the desired size of the pattern on the final product. This percentage is later converted into a non-negotiable physical measurement for the AI.
+Step 3: Creative & Product Definition
+Brand Style & Platform (StepBrandStyle.tsx, StepPlatform.tsx): The user selects a high-level aesthetic (e.g., 'E-Commerce Clean') and an intended platform (e.g., 'Etsy').
+Product Selection (StepProduct.tsx): The product list is automatically filtered to show only AOP-compatible products (e.g., 'AOP Women's Leggings', 'Unisex AOP Hoodie'). The user selects one.
+Model Customization (StepModel.tsx): If the selected product is wearable, the user defines the model's Age, Sex, Ethnicity, and Size. This step is automatically skipped for non-wearable AOP items like blankets or pillows.
+Scene (StepEnvironment.tsx): The user provides a custom text prompt for the background and environment of the mockup.
+Step 4: Variant Selection
+Colors (StepColors.tsx): For AOP products, the UI typically shows only one option, "White Base". This selection is a placeholder; the system is hard-coded to ignore it and derive the true base color from the pattern file.
+Angles (StepAngles.tsx): The user selects one or more camera angles to generate (e.g., Front, Side, Closeup).
+Step 5: Generation & The AOP "Lock-In" System
+The user reviews a summary and clicks "Generate".
+Persona Lock: For wearable products, the system first generates the "Persona Lock" headshot to be used as a visual anchor for the model's identity.
+AOP Prompt Construction: For each job in the queue, the buildMasterPrompt function assembles a highly specialized prompt with AOP-specific rules:
+Base Color Rule: It explicitly tells the AI to ignore the "White Base" color and instead derive the garment's color from the background of the seamless pattern file.
+Product-Aware Blueprint: It accesses the productBlueprints Knowledge Base and provides a specific construction guide. For example:
+For leggings, it commands a solid-colored waistband.
+For t-shirts, it commands a solid-colored collar and sleeve cuffs.
+Trim Color Lock: It instructs the AI to sample the most prominent non-background accent color from the pattern and use that exact same color for the trim (waistband/collar) across all images in the batch.
+Pattern Scale Lock: It converts the user's "Pattern Scale" percentage into an absolute physical dimension (e.g., ...repeats exactly every 6 inches...) to ensure the pattern size is uniform across all angles.
+Fabric Physics Lock: It adds a critical directive for the AI to separate the visual texture of the pattern (e.g., a "knit" look) from the physical properties of the garment fabric (e.g., polyester), ensuring a t-shirt with a sweater pattern looks like a t-shirt, not a sweater.
+API Call: The generateAopMockup service sends the final seamless pattern, the Persona Lock headshot, and the AOP-specific prompt to the Gemini API for rendering.
+Step 6: Results
+The final mockups are displayed in the results grid, now showing a perfectly consistent model wearing a garment constructed with the correct trim, color, and a uniformly scaled pattern across all angles.
