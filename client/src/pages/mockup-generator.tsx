@@ -883,10 +883,10 @@ export default function MockupGenerator() {
                             <div className="lg:sticky lg:top-6">
                               
                               <div className="space-y-6 bg-card/50 rounded-xl p-1">
-                                {/* Size Selection */}
+                                {/* Product Size Selection */}
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Size</label>
+                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Product Sizes</label>
                                     <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">
                                       {selectedSizes.length} Selected
                                     </span>
@@ -986,25 +986,6 @@ export default function MockupGenerator() {
                                       );
                                     })}
                                   </div>
-                                </div>
-
-                                <Separator />
-
-                                {/* Ethnicity Selection */}
-                                <div className="space-y-3">
-                                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Ethnicity</label>
-                                  <Select defaultValue="diverse">
-                                    <SelectTrigger className="w-full h-10 rounded-lg border-border bg-background text-sm">
-                                      <SelectValue placeholder="Select ethnicity" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="diverse">Diverse (Random)</SelectItem>
-                                      <SelectItem value="white">White / Caucasian</SelectItem>
-                                      <SelectItem value="black">Black / African Descent</SelectItem>
-                                      <SelectItem value="asian">Asian</SelectItem>
-                                      <SelectItem value="hispanic">Hispanic / Latino</SelectItem>
-                                    </SelectContent>
-                                  </Select>
                                 </div>
                               </div>
 
