@@ -228,5 +228,43 @@ export const TEEN_PERSONAS: UnifiedPersona[] = [
     fullDescription: 'Thoughtful 16-year-old boy with a solid build and quiet strength. His medium-length straight black hair frames strong features and deep thoughtful dark brown eyes.',
     version: '1.0',
     createdDate: '2024-01-15'
+  },
+  {
+    id: 'teen-female-middle-eastern-m-01',
+    name: 'Yasmine',
+    age: '15',
+    sex: 'Female',
+    ethnicity: 'Middle Eastern',
+    size: 'M',
+    height: "5'4\"",
+    weight: '115 lbs',
+    build: 'slim',
+    facialFeatures: 'elegant features, warm expression',
+    hairStyle: 'long wavy',
+    hairColor: 'dark brown',
+    eyeColor: 'dark brown',
+    skinTone: 'warm olive',
+    fullDescription: 'A 15-year-old Middle Eastern teen with a slim build and graceful presence. Her long wavy dark brown hair frames elegant features with warm olive skin and expressive dark brown eyes.',
+    version: '1.0',
+    createdDate: '2024-01-15'
+  },
+  {
+    id: 'teen-male-middle-eastern-m-01',
+    name: 'Amir',
+    age: '16',
+    sex: 'Male',
+    ethnicity: 'Middle Eastern',
+    size: 'M',
+    height: "5'8\"",
+    weight: '145 lbs',
+    build: 'lean athletic',
+    facialFeatures: 'olive skin, defined brows, expressive dark eyes',
+    hairStyle: 'short textured',
+    hairColor: 'dark brown',
+    eyeColor: 'dark brown',
+    skinTone: 'warm olive',
+    fullDescription: 'A 16-year-old Middle Eastern teen with a lean athletic build and confident demeanor. His short textured dark brown hair is neatly styled, with defined brows and expressive dark brown eyes.',
+    version: '1.0',
+    createdDate: '2024-01-15'
   }
 ];

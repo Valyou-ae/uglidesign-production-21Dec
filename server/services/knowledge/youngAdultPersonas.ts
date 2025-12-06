@@ -304,5 +304,43 @@ export const YOUNG_ADULT_PERSONAS: UnifiedPersona[] = [
     fullDescription: 'Strong 24-year-old man with a muscular build and rugged appeal. His short textured brown hair and full beard give him a mature look, with warm hazel eyes.',
     version: '1.0',
     createdDate: '2024-01-15'
+  },
+  {
+    id: 'young-adult-male-middle-eastern-m-01',
+    name: 'Tariq',
+    age: '22',
+    sex: 'Male',
+    ethnicity: 'Middle Eastern',
+    size: 'M',
+    height: "5'10\"",
+    weight: '165 lbs',
+    build: 'athletic lean',
+    facialFeatures: 'strong jawline, defined brows, short groomed beard',
+    hairStyle: 'short and styled',
+    hairColor: 'dark brown',
+    eyeColor: 'deep brown',
+    skinTone: 'warm olive',
+    fullDescription: 'Athletic 22-year-old man with a lean muscular build and confident presence. His short styled dark brown hair and groomed beard frame a strong jawline, with striking deep brown eyes.',
+    version: '1.0',
+    createdDate: '2024-01-15'
+  },
+  {
+    id: 'young-adult-female-middle-eastern-m-01',
+    name: 'Leila',
+    age: '21',
+    sex: 'Female',
+    ethnicity: 'Middle Eastern',
+    size: 'M',
+    height: "5'5\"",
+    weight: '130 lbs',
+    build: 'graceful slender',
+    facialFeatures: 'elegant features, arched brows, warm smile',
+    hairStyle: 'long wavy',
+    hairColor: 'dark brown',
+    eyeColor: 'dark brown',
+    skinTone: 'warm olive',
+    fullDescription: 'Graceful 21-year-old woman with a slender build and elegant presence. Her long wavy dark brown hair frames elegant features with arched brows, warm olive skin, and expressive dark brown eyes.',
+    version: '1.0',
+    createdDate: '2024-01-15'
   }
 ];

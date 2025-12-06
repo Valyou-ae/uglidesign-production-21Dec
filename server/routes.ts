@@ -693,14 +693,30 @@ export async function registerRoutes(
         };
 
         const styleMap: Record<string, string> = {
+          // Lowercase fallbacks
           "minimal": "MINIMALIST_MODERN",
           "editorial": "EDITORIAL_FASHION",
           "vintage": "VINTAGE_RETRO",
           "street": "STREET_URBAN",
           "ecommerce": "ECOMMERCE_CLEAN",
-          "clean": "ECOMMERCE_CLEAN"
+          "clean": "ECOMMERCE_CLEAN",
+          "bold": "BOLD_PLAYFUL",
+          "playful": "BOLD_PLAYFUL",
+          "premium": "PREMIUM_LUXE",
+          "luxe": "PREMIUM_LUXE",
+          "natural": "NATURAL_ORGANIC",
+          "organic": "NATURAL_ORGANIC",
+          // Direct ID mappings (frontend sends these)
+          "ECOMMERCE_CLEAN": "ECOMMERCE_CLEAN",
+          "EDITORIAL_FASHION": "EDITORIAL_FASHION",
+          "VINTAGE_RETRO": "VINTAGE_RETRO",
+          "STREET_URBAN": "STREET_URBAN",
+          "MINIMALIST_MODERN": "MINIMALIST_MODERN",
+          "BOLD_PLAYFUL": "BOLD_PLAYFUL",
+          "PREMIUM_LUXE": "PREMIUM_LUXE",
+          "NATURAL_ORGANIC": "NATURAL_ORGANIC"
         };
-        const mappedStyle = styleMap[style.toLowerCase()] || "ECOMMERCE_CLEAN";
+        const mappedStyle = styleMap[style] || styleMap[style.toLowerCase()] || "ECOMMERCE_CLEAN";
 
         sendEvent("status", { stage: "analyzing", message: "Analyzing your design...", progress: 5 });
 

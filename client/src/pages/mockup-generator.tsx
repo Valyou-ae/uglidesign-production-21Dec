@@ -184,7 +184,7 @@ type WizardStep =
 
 type AgeGroup = "ADULT" | "YOUNG_ADULT" | "TEEN";
 type Sex = "MALE" | "FEMALE";
-type Ethnicity = "CAUCASIAN" | "AFRICAN" | "ASIAN" | "HISPANIC" | "SOUTH_ASIAN" | "MIDDLE_EASTERN" | "MIXED";
+type Ethnicity = "CAUCASIAN" | "AFRICAN" | "ASIAN" | "SOUTHEAST_ASIAN" | "HISPANIC" | "SOUTH_ASIAN" | "MIDDLE_EASTERN" | "INDIGENOUS" | "MIXED";
 type ModelSize = "XS" | "S" | "M" | "L" | "XL" | "XXL";
 
 interface ModelDetails {
@@ -1260,9 +1260,11 @@ export default function MockupGenerator() {
                                       <SelectItem value="CAUCASIAN">Caucasian</SelectItem>
                                       <SelectItem value="AFRICAN">African</SelectItem>
                                       <SelectItem value="ASIAN">Asian</SelectItem>
+                                      <SelectItem value="SOUTHEAST_ASIAN">Southeast Asian</SelectItem>
                                       <SelectItem value="HISPANIC">Hispanic</SelectItem>
                                       <SelectItem value="SOUTH_ASIAN">South Asian</SelectItem>
                                       <SelectItem value="MIDDLE_EASTERN">Middle Eastern</SelectItem>
+                                      <SelectItem value="INDIGENOUS">Indigenous</SelectItem>
                                       <SelectItem value="MIXED">Mixed</SelectItem>
                                     </SelectContent>
                                   </Select>
