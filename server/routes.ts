@@ -227,6 +227,13 @@ export async function registerRoutes(
         pipeline: result.pipeline ? {
           textAnalysis: result.pipeline.textAnalysis,
           textDirections: result.pipeline.artDirection.textDirections,
+          ocrValidation: result.pipeline.ocrValidation ? {
+            accuracyScore: result.pipeline.ocrValidation.accuracyScore,
+            passedValidation: result.pipeline.ocrValidation.passedValidation,
+            extractedTexts: result.pipeline.ocrValidation.extractedTexts,
+            matchDetails: result.pipeline.ocrValidation.matchDetails,
+          } : undefined,
+          attempts: result.pipeline.attempts,
         } : undefined,
       });
     } catch (error: any) {
