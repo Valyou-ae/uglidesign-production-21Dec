@@ -534,19 +534,39 @@ function generateCorrectionFeedback(validation: OCRValidationResult): string {
   return `The following text errors were detected:\n${errors.join('\n')}\n\nPlease ensure these EXACT text strings appear correctly in the regenerated image.`;
 }
 
+// ============== PROGRESS CALLBACK TYPE ==============
+
+export type ProgressCallback = (phase: string, message: string, attempt?: number, maxAttempts?: number) => void;
+
 // ============== MAIN PIPELINE WITH VERIFICATION LOOP ==============
 
 export async function generateImageWithPipeline(
   prompt: string,
-  style?: string
+  style?: string,
+  onProgress?: ProgressCallback
 ): Promise<GeneratedImageResult> {
   console.log("=".repeat(60));
   console.log("[Pipeline] Starting 4-phase image generation with OCR verification");
   console.log("=".repeat(60));
   
+  // Helper to send progress updates
+  const sendProgress = (phase: string, message: string, attempt?: number, maxAttempts?: number) => {
+    if (onProgress) {
+      onProgress(phase, message, attempt, maxAttempts);
+    }
+  };
+  
+  sendProgress("text_sentinel", "Analyzing your prompt for text...");
+  
   // Phase 1: Text Sentinel
   const textAnalysis = await analyzeTextRequirements(prompt);
   const expectedTexts = textAnalysis.extractedTexts.map(t => t.text);
+  
+  if (textAnalysis.hasExplicitText) {
+    sendProgress("text_sentinel", `Found ${expectedTexts.length} text elements to render`);
+  } else {
+    sendProgress("text_sentinel", "No explicit text detected - standard generation");
+  }
   
   let bestResult: { imageBase64: string; mimeType: string; textResponse?: string } | null = null;
   let bestValidation: OCRValidationResult | null = null;
@@ -561,13 +581,20 @@ export async function generateImageWithPipeline(
     
     try {
       // Phase 2: Style Architect (with correction feedback for retries)
+      if (attempts === 1) {
+        sendProgress("style_architect", "Creating detailed art direction...", attempts, MAX_RETRY_ATTEMPTS);
+      } else {
+        sendProgress("style_architect", `Refining art direction (attempt ${attempts}/${MAX_RETRY_ATTEMPTS})...`, attempts, MAX_RETRY_ATTEMPTS);
+      }
       const artDirection = await createArtDirection(prompt, textAnalysis, style, correctionFeedback);
       
       // Phase 3: Image Generation
+      sendProgress("image_generator", "Generating your image...", attempts, MAX_RETRY_ATTEMPTS);
       const imageResult = await generateImageOnly(artDirection.enhancedPrompt);
       
       // Phase 4: OCR Validation (only if there's expected text)
       if (expectedTexts.length > 0) {
+        sendProgress("ocr_validator", "Verifying text accuracy...", attempts, MAX_RETRY_ATTEMPTS);
         const validation = await validateImageText(
           imageResult.imageBase64,
           imageResult.mimeType,
@@ -584,6 +611,7 @@ export async function generateImageWithPipeline(
         // Check if passed validation
         if (validation.passedValidation) {
           console.log(`[Pipeline] ✅ Validation PASSED on attempt ${attempts} with ${validation.accuracyScore}% accuracy`);
+          sendProgress("complete", `Text accuracy: ${validation.accuracyScore}% ✓`, attempts, MAX_RETRY_ATTEMPTS);
           return {
             imageBase64: imageResult.imageBase64,
             mimeType: imageResult.mimeType,
@@ -602,9 +630,14 @@ export async function generateImageWithPipeline(
         correctionFeedback = generateCorrectionFeedback(validation);
         console.log(`[Pipeline] ❌ Validation FAILED (${validation.accuracyScore}% accuracy). Retrying with corrections...`);
         
+        if (attempts < MAX_RETRY_ATTEMPTS) {
+          sendProgress("retry", `Accuracy ${validation.accuracyScore}% - improving... (attempt ${attempts + 1}/${MAX_RETRY_ATTEMPTS})`, attempts + 1, MAX_RETRY_ATTEMPTS);
+        }
+        
       } else {
         // No text to validate, return immediately
         console.log("[Pipeline] No text to validate, returning image");
+        sendProgress("complete", "Image generated successfully!");
         return {
           imageBase64: imageResult.imageBase64,
           mimeType: imageResult.mimeType,
@@ -620,6 +653,7 @@ export async function generateImageWithPipeline(
       
     } catch (error: any) {
       console.error(`[Pipeline] Attempt ${attempts} failed:`, error.message);
+      sendProgress("error", `Attempt ${attempts} failed, retrying...`, attempts, MAX_RETRY_ATTEMPTS);
       if (attempts >= MAX_RETRY_ATTEMPTS) {
         throw error;
       }
@@ -629,6 +663,7 @@ export async function generateImageWithPipeline(
   // Return best result after all attempts
   if (bestResult && bestArtDirection) {
     console.log(`[Pipeline] Returning best result from ${attempts} attempts (${bestValidation?.accuracyScore}% accuracy)`);
+    sendProgress("complete", `Best result: ${bestValidation?.accuracyScore}% accuracy (${attempts} attempts)`);
     return {
       imageBase64: bestResult.imageBase64,
       mimeType: bestResult.mimeType,

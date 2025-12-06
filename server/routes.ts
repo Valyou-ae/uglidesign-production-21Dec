@@ -7,7 +7,7 @@ import { pool } from "./db";
 import bcrypt from "bcrypt";
 import { insertUserSchema, insertImageSchema, insertWithdrawalSchema } from "@shared/schema";
 import { ZodError } from "zod";
-import { generateImageWithPipeline } from "./gemini";
+import { generateImageWithPipeline, type ProgressCallback } from "./gemini";
 
 const PgSession = ConnectPgSimple(session);
 
@@ -239,6 +239,90 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Image generation error:", error);
       res.status(500).json({ message: error.message || "Failed to generate image" });
+    }
+  });
+
+  // ============== SSE IMAGE GENERATION WITH PROGRESS ==============
+
+  app.get("/api/generate-image-stream", async (req, res) => {
+    const { prompt, style, aspectRatio, enhanceWithAI } = req.query;
+
+    if (!prompt || typeof prompt !== 'string') {
+      return res.status(400).json({ message: "Prompt is required" });
+    }
+
+    // Parse query parameters
+    const styleStr = typeof style === 'string' ? style : undefined;
+    const aspectRatioStr = typeof aspectRatio === 'string' ? aspectRatio : "1:1";
+
+    // Set up SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+
+    // Progress callback to send SSE events
+    const onProgress: ProgressCallback = (phase, message, attempt, maxAttempts) => {
+      const data = JSON.stringify({ phase, message, attempt, maxAttempts });
+      res.write(`data: ${data}\n\n`);
+    };
+
+    try {
+      const result = await generateImageWithPipeline(
+        prompt, 
+        styleStr,
+        onProgress
+      );
+
+      const imageUrl = `data:${result.mimeType};base64,${result.imageBase64}`;
+
+      // Use session userId if logged in, otherwise use a default test user
+      let userId = req.session?.userId;
+      if (!userId) {
+        const testUser = await storage.getUserByUsername("testuser");
+        userId = testUser?.id || "anonymous";
+      }
+
+      const image = await storage.createImage({
+        userId,
+        imageUrl,
+        prompt: result.pipeline?.finalPrompt || prompt,
+        style: styleStr || "default",
+        aspectRatio: aspectRatioStr,
+        generationType: "ai-generated",
+      });
+
+      // Send final result
+      const finalData = JSON.stringify({
+        phase: "done",
+        message: "Complete",
+        result: {
+          image,
+          enhancedPrompt: result.pipeline?.finalPrompt,
+          pipeline: result.pipeline ? {
+            textAnalysis: result.pipeline.textAnalysis,
+            textDirections: result.pipeline.artDirection.textDirections,
+            ocrValidation: result.pipeline.ocrValidation ? {
+              accuracyScore: result.pipeline.ocrValidation.accuracyScore,
+              passedValidation: result.pipeline.ocrValidation.passedValidation,
+              extractedTexts: result.pipeline.ocrValidation.extractedTexts,
+              matchDetails: result.pipeline.ocrValidation.matchDetails,
+            } : undefined,
+            attempts: result.pipeline.attempts,
+          } : undefined,
+        }
+      });
+      res.write(`data: ${finalData}\n\n`);
+      res.end();
+    } catch (error: any) {
+      console.error("Image generation error:", error);
+      const errorData = JSON.stringify({ 
+        phase: "error", 
+        message: error.message || "Failed to generate image" 
+      });
+      res.write(`data: ${errorData}\n\n`);
+      res.end();
     }
   });
 

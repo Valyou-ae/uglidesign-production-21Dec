@@ -93,7 +93,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { useImages } from "@/hooks/use-images";
+import { useImages, type ProgressUpdate, type ProgressPhase } from "@/hooks/use-images";
 import { useAuth } from "@/hooks/use-auth";
 
 // Import generated images for the gallery
@@ -184,6 +184,10 @@ export default function ImageGenerator() {
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
   const [imageToDelete, setImageToDelete] = useState<GeneratedImage | null>(null);
   const [isListening, setIsListening] = useState(false);
+  const [progressPhase, setProgressPhase] = useState<ProgressPhase | null>(null);
+  const [progressMessage, setProgressMessage] = useState<string>("");
+  const [currentAttempt, setCurrentAttempt] = useState<number>(1);
+  const [maxAttempts, setMaxAttempts] = useState<number>(3);
   const [settings, setSettings] = useState({
     style: "auto",
     quality: "standard",
@@ -197,7 +201,7 @@ export default function ImageGenerator() {
   
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { generateImage, isGenerating } = useImages();
+  const { generateImageWithProgress, isGenerating } = useImages();
   const { isAuthenticated } = useAuth();
 
   const downloadImage = (url: string, filename: string) => {
@@ -286,39 +290,50 @@ export default function ImageGenerator() {
     
     setStatus("generating");
     setProgress(0);
+    setProgressPhase(null);
+    setProgressMessage("Starting generation...");
+    setCurrentAttempt(1);
     setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
 
-    // Start progress animation
-    let currentAgentIndex = 0;
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) return 90;
-        return prev + 2;
-      });
-
-      const stage = Math.floor((progress / 100) * 5);
-      if (stage !== currentAgentIndex && stage < 5) {
-        setAgents(prev => prev.map((a, i) => {
-          if (i < stage) return { ...a, status: "complete" };
-          if (i === stage) return { ...a, status: "working" };
-          return { ...a, status: "idle" };
-        }));
-        currentAgentIndex = stage;
-      }
-    }, 200);
+    // Map phase names to agent indices for visual updates
+    const phaseToAgentMap: Record<string, number> = {
+      text_sentinel: 0,
+      style_architect: 1,
+      image_generator: 2,
+      ocr_validator: 3,
+      retry: 3,
+      complete: 4,
+    };
 
     try {
-      const result = await generateImage({
+      const result = await generateImageWithProgress({
         prompt: prompt.trim(),
         style: settings.style,
         aspectRatio: settings.aspectRatio,
         enhanceWithAI: settings.autoOptimize,
+        onProgress: (update) => {
+          setProgressPhase(update.phase);
+          setProgressMessage(update.message);
+          if (update.attempt) setCurrentAttempt(update.attempt);
+          if (update.maxAttempts) setMaxAttempts(update.maxAttempts);
+
+          // Update agents based on phase
+          const agentIndex = phaseToAgentMap[update.phase] ?? -1;
+          if (agentIndex >= 0) {
+            setAgents(prev => prev.map((a, i) => {
+              if (i < agentIndex) return { ...a, status: "complete" };
+              if (i === agentIndex) return { ...a, status: "working", message: update.message };
+              return { ...a, status: "idle" };
+            }));
+            setProgress(Math.min(20 + agentIndex * 20, 95));
+          }
+        }
       });
 
-      clearInterval(progressInterval);
       setProgress(100);
       setStatus("complete");
       setAgents(prev => prev.map(a => ({ ...a, status: "complete" })));
+      setProgressMessage("Complete!");
 
       const newImage: GeneratedImage = {
         id: result.image.id,
@@ -340,10 +355,11 @@ export default function ImageGenerator() {
       });
 
     } catch (error: any) {
-      clearInterval(progressInterval);
       setStatus("idle");
       setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
       setProgress(0);
+      setProgressPhase(null);
+      setProgressMessage("");
 
       toast({
         variant: "destructive",
@@ -356,6 +372,8 @@ export default function ImageGenerator() {
       setStatus("idle");
       setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
       setProgress(0);
+      setProgressPhase(null);
+      setProgressMessage("");
     }, 3000);
   };
 
@@ -411,12 +429,13 @@ export default function ImageGenerator() {
     }
   }, []);
 
-  // Helper function to get progress text
-  const getProgressText = (prog: number) => {
-    if (prog < 20) return "Initializing AI Agents...";
-    if (prog < 40) return "Analyzing prompt structure...";
-    if (prog < 60) return "Synthesizing visual elements...";
-    if (prog < 80) return "Refining details and textures...";
+  // Helper function to get progress text - now uses real progress messages
+  const getProgressText = () => {
+    if (progressMessage) return progressMessage;
+    if (progress < 20) return "Initializing AI Agents...";
+    if (progress < 40) return "Analyzing prompt structure...";
+    if (progress < 60) return "Synthesizing visual elements...";
+    if (progress < 80) return "Refining details and textures...";
     return "Final polishing...";
   };
 
@@ -803,7 +822,7 @@ export default function ImageGenerator() {
                     {/* Progress Bar & Percentage */}
                     <div className="w-3/4 mt-3 space-y-1.5">
                       <div className="flex justify-between items-center px-1">
-                        <span className="text-[10px] font-medium text-white/80">{getProgressText(progress)}</span>
+                        <span className="text-[10px] font-medium text-white/80">{getProgressText()}</span>
                         <span className="text-[10px] font-bold text-white">{progress}%</span>
                       </div>
                       <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
