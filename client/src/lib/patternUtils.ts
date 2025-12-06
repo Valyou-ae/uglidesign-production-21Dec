@@ -37,56 +37,86 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
 /**
  * Offset & Blend - Classic seamless tiling with edge blending
  * Splits the image into quarters and rearranges them so edges meet in the center
- * Then applies gradient blending at the seams
+ * Then applies color-based gradient blending at the seams (not alpha)
  */
 export async function generateOffsetBlend(imageSrc: string): Promise<string> {
   const img = await loadImage(imageSrc);
   const size = Math.min(img.width, img.height);
   const halfSize = size / 2;
   
-  const canvas = createCanvas(size, size);
-  const ctx = canvas.getContext('2d')!;
+  // Create the offset canvas with swapped quadrants
+  const offsetCanvas = createCanvas(size, size);
+  const offsetCtx = offsetCanvas.getContext('2d')!;
   
   // Draw original image cropped to square
   const sourceX = (img.width - size) / 2;
   const sourceY = (img.height - size) / 2;
   
   // Quarter offsets - swap quadrants so edges meet in center
-  // Top-left goes to bottom-right, etc.
-  ctx.drawImage(img, sourceX + halfSize, sourceY + halfSize, halfSize, halfSize, 0, 0, halfSize, halfSize);
-  ctx.drawImage(img, sourceX, sourceY + halfSize, halfSize, halfSize, halfSize, 0, halfSize, halfSize);
-  ctx.drawImage(img, sourceX + halfSize, sourceY, halfSize, halfSize, 0, halfSize, halfSize, halfSize);
-  ctx.drawImage(img, sourceX, sourceY, halfSize, halfSize, halfSize, halfSize, halfSize, halfSize);
+  offsetCtx.drawImage(img, sourceX + halfSize, sourceY + halfSize, halfSize, halfSize, 0, 0, halfSize, halfSize);
+  offsetCtx.drawImage(img, sourceX, sourceY + halfSize, halfSize, halfSize, halfSize, 0, halfSize, halfSize);
+  offsetCtx.drawImage(img, sourceX + halfSize, sourceY, halfSize, halfSize, 0, halfSize, halfSize, halfSize);
+  offsetCtx.drawImage(img, sourceX, sourceY, halfSize, halfSize, halfSize, halfSize, halfSize, halfSize);
   
-  // Apply center cross blend
-  const blendWidth = size * 0.1;
-  const imageData = ctx.getImageData(0, 0, size, size);
-  const data = imageData.data;
+  // Get the offset image data for color blending
+  const offsetData = offsetCtx.getImageData(0, 0, size, size);
+  const data = offsetData.data;
   
-  // Horizontal blend at vertical center
+  // Blend width for the center cross (15% of size for smoother transition)
+  const blendWidth = Math.floor(size * 0.15);
+  
+  // Create a copy of original data for sampling during blend
+  const originalData = new Uint8ClampedArray(data);
+  
+  // Apply color-based blending at horizontal center seam (blend top/bottom)
   for (let y = Math.floor(halfSize - blendWidth); y < Math.floor(halfSize + blendWidth); y++) {
-    const blendFactor = (y - (halfSize - blendWidth)) / (blendWidth * 2);
+    // Calculate blend factor: 0 at edges of blend zone, 1 at center
+    const distFromCenter = Math.abs(y - halfSize);
+    const blendFactor = 1 - (distFromCenter / blendWidth);
+    
     for (let x = 0; x < size; x++) {
       const idx = (y * size + x) * 4;
-      // Soften the transition
-      const alpha = Math.abs(blendFactor - 0.5) * 2;
-      data[idx + 3] = Math.floor(data[idx + 3] * (0.7 + alpha * 0.3));
+      
+      // Sample from corresponding position on opposite side of seam
+      const oppositeY = y < halfSize ? y + halfSize : y - halfSize;
+      const oppositeIdx = (oppositeY * size + x) * 4;
+      
+      // Blend RGB channels (keep alpha at 255 for opaque output)
+      data[idx] = Math.floor(originalData[idx] * (1 - blendFactor * 0.5) + originalData[oppositeIdx] * blendFactor * 0.5);
+      data[idx + 1] = Math.floor(originalData[idx + 1] * (1 - blendFactor * 0.5) + originalData[oppositeIdx + 1] * blendFactor * 0.5);
+      data[idx + 2] = Math.floor(originalData[idx + 2] * (1 - blendFactor * 0.5) + originalData[oppositeIdx + 2] * blendFactor * 0.5);
+      data[idx + 3] = 255; // Ensure full opacity
     }
   }
   
-  // Vertical blend at horizontal center
+  // Update original data with horizontal blend results
+  for (let i = 0; i < data.length; i++) {
+    originalData[i] = data[i];
+  }
+  
+  // Apply color-based blending at vertical center seam (blend left/right)
   for (let x = Math.floor(halfSize - blendWidth); x < Math.floor(halfSize + blendWidth); x++) {
-    const blendFactor = (x - (halfSize - blendWidth)) / (blendWidth * 2);
+    const distFromCenter = Math.abs(x - halfSize);
+    const blendFactor = 1 - (distFromCenter / blendWidth);
+    
     for (let y = 0; y < size; y++) {
       const idx = (y * size + x) * 4;
-      const alpha = Math.abs(blendFactor - 0.5) * 2;
-      data[idx + 3] = Math.floor(data[idx + 3] * (0.7 + alpha * 0.3));
+      
+      // Sample from corresponding position on opposite side of seam
+      const oppositeX = x < halfSize ? x + halfSize : x - halfSize;
+      const oppositeIdx = (y * size + oppositeX) * 4;
+      
+      // Blend RGB channels
+      data[idx] = Math.floor(originalData[idx] * (1 - blendFactor * 0.5) + originalData[oppositeIdx] * blendFactor * 0.5);
+      data[idx + 1] = Math.floor(originalData[idx + 1] * (1 - blendFactor * 0.5) + originalData[oppositeIdx + 1] * blendFactor * 0.5);
+      data[idx + 2] = Math.floor(originalData[idx + 2] * (1 - blendFactor * 0.5) + originalData[oppositeIdx + 2] * blendFactor * 0.5);
+      data[idx + 3] = 255; // Ensure full opacity
     }
   }
   
-  ctx.putImageData(imageData, 0, 0);
+  offsetCtx.putImageData(offsetData, 0, 0);
   
-  return canvas.toDataURL('image/png');
+  return offsetCanvas.toDataURL('image/png');
 }
 
 /**
