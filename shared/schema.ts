@@ -25,6 +25,7 @@ export const generatedImages = pgTable("generated_images", {
   prompt: text("prompt").notNull(),
   style: text("style"),
   aspectRatio: text("aspect_ratio"),
+  generationType: text("generation_type").default("ai-generated"),
   isFavorite: boolean("is_favorite").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

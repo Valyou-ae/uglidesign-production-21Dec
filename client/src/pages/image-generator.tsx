@@ -93,6 +93,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
+import { useImages } from "@/hooks/use-images";
+import { useAuth } from "@/hooks/use-auth";
 
 // Import generated images for the gallery
 import cyberpunkCity from "@assets/generated_images/futuristic_cyberpunk_city_street_at_night_with_neon_lights_and_rain.png";
@@ -195,6 +197,8 @@ export default function ImageGenerator() {
   
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { generateImage, isGenerating } = useImages();
+  const { isAuthenticated } = useAuth();
 
   const downloadImage = (url: string, filename: string) => {
     const link = document.createElement('a');
@@ -277,29 +281,30 @@ export default function ImageGenerator() {
     }
   }, [generations, activeFilter]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!prompt.trim()) return;
+    
+    if (!isAuthenticated) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please log in to generate images.",
+      });
+      return;
+    }
     
     setStatus("generating");
     setProgress(0);
     setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
 
-    // Simulation pipeline
+    // Start progress animation
     let currentAgentIndex = 0;
-    const totalDuration = 5000; // 5 seconds total
-    const intervalTime = totalDuration / 100;
-    
-    const interval = setInterval(() => {
+    const progressInterval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          completeGeneration();
-          return 100;
-        }
-        return prev + 1;
+        if (prev >= 90) return 90;
+        return prev + 2;
       });
 
-      // Update agents based on progress
       const stage = Math.floor((progress / 100) * 5);
       if (stage !== currentAgentIndex && stage < 5) {
         setAgents(prev => prev.map((a, i) => {
@@ -309,34 +314,53 @@ export default function ImageGenerator() {
         }));
         currentAgentIndex = stage;
       }
-    }, intervalTime);
-  };
+    }, 200);
 
-  const completeGeneration = () => {
-    setStatus("complete");
-    setAgents(prev => prev.map(a => ({ ...a, status: "complete" })));
-    
-    // Add new generation
-    const newImage: GeneratedImage = {
-      id: Date.now().toString(),
-      src: cyberpunkCity, // Just using one as example result
-      prompt: prompt,
-      style: settings.style,
-      aspectRatio: settings.aspectRatio,
-      timestamp: "Just now",
-      isNew: true,
-      isFavorite: false
-    };
-    
-    setGenerations(prev => [newImage, ...prev]);
-    
-    toast({
-      title: "Image Generated!",
-      description: "Your creation is ready.",
-      className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
-    });
+    try {
+      const result = await generateImage({
+        prompt: prompt.trim(),
+        style: settings.style,
+        aspectRatio: settings.aspectRatio,
+        enhanceWithAI: settings.autoOptimize,
+      });
 
-    // Reset agents after delay
+      clearInterval(progressInterval);
+      setProgress(100);
+      setStatus("complete");
+      setAgents(prev => prev.map(a => ({ ...a, status: "complete" })));
+
+      const newImage: GeneratedImage = {
+        id: result.image.id,
+        src: result.image.imageUrl,
+        prompt: result.enhancedPrompt || prompt,
+        style: settings.style,
+        aspectRatio: settings.aspectRatio,
+        timestamp: "Just now",
+        isNew: true,
+        isFavorite: result.image.isFavorite || false
+      };
+
+      setGenerations(prev => [newImage, ...prev]);
+
+      toast({
+        title: "Image Generated!",
+        description: result.enhancedPrompt ? "Your prompt was enhanced by AI." : "Your creation is ready.",
+        className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
+      });
+
+    } catch (error: any) {
+      clearInterval(progressInterval);
+      setStatus("idle");
+      setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
+      setProgress(0);
+
+      toast({
+        variant: "destructive",
+        title: "Generation Failed",
+        description: error.message || "Failed to generate image. Please try again.",
+      });
+    }
+
     setTimeout(() => {
       setStatus("idle");
       setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));

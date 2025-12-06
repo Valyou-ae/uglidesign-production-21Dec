@@ -7,6 +7,7 @@ import { pool } from "./db";
 import bcrypt from "bcrypt";
 import { insertUserSchema, insertImageSchema, insertWithdrawalSchema } from "@shared/schema";
 import { ZodError } from "zod";
+import { generateImage, enhancePrompt } from "./gemini";
 
 const PgSession = ConnectPgSimple(session);
 
@@ -183,6 +184,44 @@ export async function registerRoutes(
       res.json({ user });
     } catch (error) {
       res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // ============== IMAGE GENERATION ROUTES ==============
+
+  app.post("/api/generate-image", requireAuth, async (req, res) => {
+    try {
+      const { prompt, style, aspectRatio, enhanceWithAI } = req.body;
+
+      if (!prompt) {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+
+      let finalPrompt = prompt;
+      if (enhanceWithAI && style) {
+        finalPrompt = await enhancePrompt(prompt, style);
+      }
+
+      const result = await generateImage(finalPrompt);
+      
+      const imageUrl = `data:${result.mimeType};base64,${result.imageBase64}`;
+
+      const image = await storage.createImage({
+        userId: req.session.userId!,
+        imageUrl,
+        prompt: finalPrompt,
+        style: style || "default",
+        aspectRatio: aspectRatio || "1:1",
+        generationType: "ai-generated",
+      });
+
+      res.json({ 
+        image,
+        enhancedPrompt: enhanceWithAI ? finalPrompt : undefined,
+      });
+    } catch (error: any) {
+      console.error("Image generation error:", error);
+      res.status(500).json({ message: error.message || "Failed to generate image" });
     }
   });
 

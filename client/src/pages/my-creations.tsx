@@ -55,20 +55,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock Data for My Creations
-const ITEMS = [
-  { id: "1", name: "Golden Hour Portrait", type: "image", date: "Dec 15, 2024", time: "2:30 PM", size: "2.4 MB", dimensions: "1024×1024", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop", tags: ["Cinematic", "Premium"], favorite: true },
-  { id: "2", name: "Neon Cyberpunk City", type: "image", date: "Dec 14, 2024", time: "10:15 AM", size: "3.1 MB", dimensions: "1024×1024", src: "https://images.unsplash.com/photo-1580584126903-c17d41830450?q=80&w=1000&auto=format&fit=crop", tags: ["Sci-Fi", "Vibrant"], favorite: false },
-  { id: "3", name: "Minimalist Logo Mockup", type: "mockup", date: "Dec 12, 2024", time: "4:45 PM", size: "1.8 MB", dimensions: "2000×2000", src: "https://images.unsplash.com/photo-1507133750069-69d3cdad863a?q=80&w=1000&auto=format&fit=crop", tags: ["Clean", "Branding"], favorite: true },
-  { id: "4", name: "Product Transparent BG", type: "bg-removed", date: "Dec 10, 2024", time: "11:20 AM", size: "1.2 MB", dimensions: "800×800", src: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop", tags: ["E-commerce"], favorite: false },
-  { id: "5", name: "Abstract Fluid Art", type: "image", date: "Dec 08, 2024", time: "9:00 AM", size: "4.5 MB", dimensions: "1024×1024", src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1000&auto=format&fit=crop", tags: ["Abstract", "Colorful"], favorite: true },
-  { id: "6", name: "T-Shirt Design Mockup", type: "mockup", date: "Dec 05, 2024", time: "3:30 PM", size: "3.8 MB", dimensions: "2400×2400", src: "https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?q=80&w=1000&auto=format&fit=crop", tags: ["Apparel", "Streetwear"], favorite: false },
-  { id: "7", name: "Fantasy Dragon", type: "image", date: "Dec 03, 2024", time: "1:15 PM", size: "2.9 MB", dimensions: "1024×1024", src: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000&auto=format&fit=crop", tags: ["Fantasy", "Epic"], favorite: true },
-  { id: "8", name: "Headshot Portrait", type: "bg-removed", date: "Nov 28, 2024", time: "10:00 AM", size: "1.5 MB", dimensions: "1000×1000", src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop", tags: ["Professional"], favorite: false },
-];
-
+import { useImages } from "@/hooks/use-images";
+import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
+
+type CreationItem = {
+  id: string;
+  name: string;
+  type: string;
+  date: string;
+  time: string;
+  size: string;
+  dimensions: string;
+  src: string;
+  tags: string[];
+  favorite: boolean;
+};
 
 export default function MyCreations() {
   const [, setLocation] = useLocation();
@@ -79,11 +81,25 @@ export default function MyCreations() {
   const [sortMode, setSortMode] = useState("Date Added");
   const [selectMode, setSelectMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [items, setItems] = useState(ITEMS);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<typeof ITEMS[0] | null>(null);
+  const [selectedItem, setSelectedItem] = useState<CreationItem | null>(null);
   const { toast } = useToast();
+  const { images, isLoading, toggleFavorite: toggleFavoriteApi, deleteImage } = useImages();
+  const { isAuthenticated } = useAuth();
+
+  const items: CreationItem[] = images.map((img: any) => ({
+    id: img.id,
+    name: img.prompt?.substring(0, 30) + "..." || "Untitled",
+    type: img.generationType || "image",
+    date: img.createdAt ? new Date(img.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Unknown",
+    time: img.createdAt ? new Date(img.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "",
+    size: "N/A",
+    dimensions: img.aspectRatio === "1:1" ? "1024×1024" : img.aspectRatio === "16:9" ? "1920×1080" : "1080×1920",
+    src: img.imageUrl,
+    tags: [img.style || "Default"],
+    favorite: img.isFavorite || false,
+  }));
 
   const toggleSelection = (id: string) => {
     if (selectedItems.includes(id)) {
@@ -93,10 +109,18 @@ export default function MyCreations() {
     }
   };
 
-  const toggleFavorite = (id: string) => {
-    setItems(prev => prev.map(item => item.id === id ? { ...item, favorite: !item.favorite } : item));
-    if (selectedItem && selectedItem.id === id) {
-      setSelectedItem(prev => prev ? { ...prev, favorite: !prev.favorite } : null);
+  const toggleFavorite = async (id: string) => {
+    try {
+      await toggleFavoriteApi(id);
+      if (selectedItem && selectedItem.id === id) {
+        setSelectedItem(prev => prev ? { ...prev, favorite: !prev.favorite } : null);
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update favorite status",
+      });
     }
   };
 
@@ -142,7 +166,7 @@ export default function MyCreations() {
     }
   };
 
-  const handleAction = (action: string, item: typeof ITEMS[0]) => {
+  const handleAction = (action: string, item: CreationItem) => {
     if (action === "Open") {
       setSelectedItem(item);
       return;
@@ -168,9 +192,10 @@ export default function MyCreations() {
     }
 
     if (action === "Duplicate") {
-      const newItem = { ...item, id: Date.now().toString(), name: `${item.name} (Copy)` };
-      setItems([newItem, ...items]);
-      toast({ title: "Item Duplicated", description: `${item.name} has been duplicated.` });
+      toast({ 
+        title: "Duplicate Feature", 
+        description: "Duplication requires re-generation. Use the original prompt in Image Generator." 
+      });
       return;
     }
 
@@ -180,12 +205,23 @@ export default function MyCreations() {
     });
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (itemToDelete) {
-      setItems(items.filter(i => i.id !== itemToDelete));
-      toast({ title: "Item Deleted", description: "The item has been permanently deleted." });
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
+      try {
+        await deleteImage(itemToDelete);
+        toast({ title: "Item Deleted", description: "The item has been permanently deleted." });
+        setDeleteDialogOpen(false);
+        setItemToDelete(null);
+        if (selectedItem?.id === itemToDelete) {
+          setSelectedItem(null);
+        }
+      } catch (error) {
+        toast({ 
+          variant: "destructive",
+          title: "Delete Failed", 
+          description: "Failed to delete the item." 
+        });
+      }
     }
   };
 

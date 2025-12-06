@@ -67,11 +67,12 @@ Keep the enhanced prompt under 200 words. Return only the enhanced prompt, nothi
       config: {
         systemInstruction: systemPrompt,
       },
-      contents: userPrompt,
+      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
     });
 
     return response.text || userPrompt;
   } catch (error) {
+    console.error("Prompt enhancement error:", error);
     return userPrompt;
   }
 }
