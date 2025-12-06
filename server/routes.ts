@@ -666,7 +666,7 @@ export async function registerRoutes(
           "HISPANIC": "Hispanic",
           "SOUTH_ASIAN": "Indian",
           "INDIAN": "Indian",
-          "MIDDLE_EASTERN": "Diverse",
+          "MIDDLE_EASTERN": "Indian",
           "SOUTHEAST_ASIAN": "Southeast Asian",
           "MIXED": "Diverse",
           "INDIGENOUS": "Indigenous",
@@ -717,6 +717,8 @@ export async function registerRoutes(
           angles: angles,
           modelDetails: mappedModelDetails
         });
+
+        sendEvent("status", { stage: "preparing", message: "Preparing model reference...", progress: 8 });
 
         try {
           const batch = await eliteGenerator.generateMockupBatch({

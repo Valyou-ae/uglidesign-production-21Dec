@@ -305,7 +305,7 @@ export function buildRenderSpecification(
 - Persona ID: ${personaLock.persona.id}
 - Name: ${personaLock.persona.name}
 - Age: ${personaLock.persona.age}
-- Sex: ${personaLock.persona.sex}
+- Sex: ${personaLock.persona.sex} (MUST be ${personaLock.persona.sex.toLowerCase()} - do not show opposite sex)
 - Ethnicity: ${personaLock.persona.ethnicity}
 - Height: ${personaLock.persona.height}
 - Weight: ${personaLock.persona.weight}
@@ -316,7 +316,11 @@ export function buildRenderSpecification(
 - Facial features: ${personaLock.persona.facialFeatures}
 - Full description: ${personaLock.somaticDescription}
 
-CRITICAL: If a reference headshot image is provided, this person MUST appear EXACTLY as shown in that headshot. Match all facial features, hair, skin tone, and identity markers precisely.
+CRITICAL IDENTITY ENFORCEMENT:
+- Sex: The model MUST be ${personaLock.persona.sex.toLowerCase()}. Do not show a ${personaLock.persona.sex === 'Male' ? 'female' : 'male'}.
+- Ethnicity: The model MUST have ${personaLock.persona.ethnicity} ethnic appearance with appropriate skin tone, facial features, and hair characteristics.
+- Body Size: The model body MUST match the specified build (${personaLock.persona.build}) and weight (${personaLock.persona.weight}).
+- If a reference headshot image is provided, this person MUST appear EXACTLY as shown in that headshot. Match all facial features, hair, skin tone, and identity markers precisely.
 
 ${getFullHumanRealismPrompt()}
 ===== END PERSONA LOCK =====` : product.isWearable ? `
@@ -357,6 +361,13 @@ DTG PRINT METHOD:
 - Maintains original colors and proportions
 - Slight texture integration with fabric
 - Design follows natural fabric contours and folds
+
+CRITICAL PLACEMENT RULES FOR DTG:
+- The design/graphic MUST be placed CENTERED on the chest area
+- Design should be horizontally centered between left and right edges of shirt front
+- Design should be vertically positioned in the upper-center chest area (below collar, above stomach)
+- DO NOT place the design on the side, shoulder, sleeve, or off-center
+- The design must appear as if professionally screen-printed in the traditional chest logo position
 ${fabricPhysics ? `
 FABRIC BEHAVIOR:
 - Weight: ${fabricPhysics.weight}

@@ -1938,43 +1938,10 @@ export default function MockupGenerator() {
                                       </div>
 
                                       <Badge className="absolute top-2 left-2 bg-black/50 backdrop-blur-md text-[10px] border-0 text-white font-normal px-2 py-0.5">
-                                        Front View
-                                      </Badge>
-                                    </div>
-                                  ))}
-                                  {/* Repeat for demo grid effect */}
-                                  {generatedMockups.map((img, i) => (
-                                    <div key={`dup-${i}`} className="group relative aspect-[3/4] rounded-xl overflow-hidden border border-border cursor-pointer">
-                                      <img src={img} alt="Mockup" className="w-full h-full object-cover" />
-                                      
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-4">
-                                        <div className="flex items-center justify-end gap-2">
-                                          <Button 
-                                            size="icon" 
-                                            className="h-8 w-8 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setSelectedMockup({ src: img, name: `Mockup Side ${i + 1}` });
-                                            }}
-                                          >
-                                            <Maximize className="h-3.5 w-3.5" />
-                                          </Button>
-                                          <Button 
-                                            size="sm" 
-                                            className="h-8 px-3 text-xs bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              downloadImage(img, `mockup_side_${i}.png`);
-                                            }}
-                                          >
-                                            <Download className="h-3.5 w-3.5 mr-1.5" />
-                                            Download
-                                          </Button>
-                                        </div>
-                                      </div>
-
-                                      <Badge className="absolute top-2 left-2 bg-black/50 backdrop-blur-md text-[10px] border-0 text-white font-normal px-2 py-0.5">
-                                        Side View
+                                        {selectedAngles[i % selectedAngles.length] === 'front' ? 'Front View' : 
+                                         selectedAngles[i % selectedAngles.length] === 'three-quarter' ? 'Three-Quarter View' :
+                                         selectedAngles[i % selectedAngles.length] === 'side' ? 'Side View' :
+                                         selectedAngles[i % selectedAngles.length] === 'closeup' ? 'Close-up View' : 'View'}
                                       </Badge>
                                     </div>
                                   ))}
