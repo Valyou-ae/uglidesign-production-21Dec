@@ -27,13 +27,15 @@ const STYLE_ARCHITECT_TEMPERATURE = 0.7;
 // Phase 3: Image Generator - Best for text rendering
 const IMAGE_GENERATOR_MODEL = "gemini-3-pro-image-preview";
 const IMAGE_GENERATOR_FALLBACK = "gemini-2.5-flash-image";
+// Escalation model for attempts 4-5 (when primary model keeps failing)
+const IMAGE_GENERATOR_ESCALATION = "imagen-3.0-generate-002";
 
 // Phase 4: OCR Validator - Vision model for text verification
 const OCR_VALIDATOR_MODEL = "gemini-2.5-flash";
 
 // Verification settings
-const MAX_RETRY_ATTEMPTS = 3;
-const ACCURACY_THRESHOLD = 85; // Minimum acceptable accuracy percentage
+const MAX_RETRY_ATTEMPTS = 5;
+const ACCURACY_THRESHOLD = 100; // ZERO TOLERANCE - exact match required
 
 // ============== TYPES ==============
 
@@ -173,39 +175,59 @@ export async function analyzeTextRequirements(userPrompt: string): Promise<TextA
 // ============== PHASE 2: STYLE ARCHITECT ==============
 // Creates detailed Art Direction prompts with physical text properties
 
-const STYLE_ARCHITECT_SYSTEM = `You are an expert AI Art Director. Your job is to create a master prompt for an advanced AI image generator that renders text with 100% accuracy.
+const STYLE_ARCHITECT_SYSTEM = `You are an expert AI Art Director specializing in 100% ACCURATE text rendering in images.
 
-PRIME DIRECTIVE: PHYSICAL TEXT RENDERING. When the image includes text, this text MUST be rendered as a physical object within the scene's 3D space, NOT as a 2D overlay.
+## ABSOLUTE REQUIREMENTS - ZERO TOLERANCE FOR ERRORS
 
-CRITICAL TEXT ACCURACY RULES:
-1. NEVER paraphrase, abbreviate, or modify the exact text strings - they MUST appear CHARACTER-FOR-CHARACTER as provided
-2. Include EVERY piece of text exactly as specified - do not omit any
-3. Preserve ALL special characters: $, @, #, !, %, &, etc.
-4. Preserve ALL punctuation: periods, commas, colons, dashes, parentheses
-5. Keep EXACT spacing and formatting
-6. Dollar signs ($) must ALWAYS appear before prices
-7. Do not mix up or combine unrelated text elements
+Your generated prompt MUST result in an image where every text element is rendered EXACTLY as specified. Any deviation = failure.
 
-For each piece of text that must appear in the image, provide detailed "Art Direction for Text" covering:
+## MANDATORY TEXT BLUEPRINT FORMAT
 
-1. **Material**: What is the text physically made of? 
-   Examples: 'carved ice', 'glowing neon tube', 'embossed leather', 'painted wooden sign', 'chalk on blackboard', 'gold leaf on marble'
+For EACH text element that must appear, you MUST specify:
 
-2. **Lighting Interaction**: How does the scene's light affect it?
-   Examples: 'catches rim light', 'casts a soft shadow below', 'glows with inner luminescence', 'reflects ambient light'
+### TEXT ELEMENT [N]: "[EXACT_STRING]"
+- **EXACT_CHARACTERS**: List every character including spaces, punctuation, special symbols
+- **FORBIDDEN MODIFICATIONS**: 
+  - NO line breaks within this text
+  - NO hyphenation
+  - NO character substitutions
+  - NO character omissions
+  - NO case changes
+- **SYMBOL PRESERVATION**: 
+  - Dollar signs ($) MUST appear exactly where shown
+  - All punctuation MUST be preserved
+- **LAYOUT RULE**: [single-line/multi-line as specified]
+- **PHYSICAL FORM**: [material, 3D presence, how it exists in the scene]
+- **LEGIBILITY REQUIREMENTS**: High contrast, clear spacing, readable size
 
-3. **Surface Texture**: What is its surface like?
-   Examples: 'rough chiseled stone', 'smooth polished chrome', 'matte paint with subtle cracking', 'glossy enamel'
+## CRITICAL DIRECTIVES
 
-4. **Environmental Interaction**: How does it affect its surroundings?
-   Examples: 'emits a soft glow onto the snow', 'creates reflections on nearby surfaces', 'weathered by rain exposure'
+1. **VERBATIM TEXT**: The image generator MUST render "[exact text]" character-for-character
+2. **NO INTERPRETATION**: Do not rephrase, summarize, or "improve" any text
+3. **COMPLETE INCLUSION**: Every specified text MUST appear - no omissions allowed
+4. **SYMBOL FIDELITY**: Special characters ($, @, #, %, &, !) are as important as letters
+5. **SINGLE-LINE DEFAULT**: Unless explicitly multi-line, all text stays on ONE line
+6. **PRICE FORMAT**: Prices like "$4.50" MUST show the dollar sign - "4.50" alone is WRONG
 
-5. **Perspective & Depth**: Where is it in 3D space?
-   Examples: 'in the foreground, matching the ground perspective', 'mounted flat against the wall, seen from slight angle'
+## OUTPUT FORMAT
 
-OUTPUT FORMAT:
-Return a complete, detailed prompt ready to send to the image generation model. The prompt should be comprehensive but focused.
-At the END of your prompt, include a "TEXT ACCURACY CHECKLIST" that lists every text string that MUST appear exactly as written.`;
+Your complete Art Direction prompt must:
+1. Describe the scene/composition
+2. For each text element, include the full TEXT BLUEPRINT block
+3. End with a VERIFICATION CHECKLIST showing each exact string
+
+## EXAMPLE TEXT BLUEPRINT:
+
+### TEXT ELEMENT 1: "Latte $4.50"
+- **EXACT_CHARACTERS**: L-a-t-t-e-[space]-$-4-.-5-0
+- **FORBIDDEN MODIFICATIONS**: No line breaks, no removing $, no "Latte 4.50"
+- **SYMBOL PRESERVATION**: Dollar sign $ MUST precede 4.50
+- **LAYOUT RULE**: Single line, horizontal
+- **PHYSICAL FORM**: Chalk text on blackboard, matte white, hand-drawn style
+- **LEGIBILITY**: High contrast white on dark background, 2 inch height
+
+VERIFICATION CHECKLIST:
+[ ] "Latte $4.50" - includes dollar sign, single line, exact spelling`;
 
 export async function createArtDirection(
   userPrompt: string, 
@@ -218,21 +240,35 @@ export async function createArtDirection(
     
     let textRequirements = "";
     if (textAnalysis.hasExplicitText && textAnalysis.extractedTexts.length > 0) {
-      textRequirements = "\n\nEXACT TEXT THAT MUST APPEAR IN THE IMAGE (CHARACTER-FOR-CHARACTER, NO MODIFICATIONS):\n";
+      textRequirements = "\n\n## MANDATORY TEXT ELEMENTS - ZERO TOLERANCE FOR ERRORS\n\n";
       textAnalysis.extractedTexts.forEach((t, i) => {
-        textRequirements += `${i + 1}. "${t.text}" - Context: ${t.context} (${t.importance} importance)\n`;
+        const chars = t.text.split('').map(c => {
+          if (c === ' ') return '[SPACE]';
+          if (c === '$') return '[DOLLAR]';
+          return c;
+        }).join('-');
+        
+        textRequirements += `### TEXT ELEMENT ${i + 1}: "${t.text}"\n`;
+        textRequirements += `- **CHARACTER SEQUENCE**: ${chars}\n`;
+        textRequirements += `- **CONTEXT**: ${t.context}\n`;
+        textRequirements += `- **IMPORTANCE**: ${t.importance}\n`;
+        textRequirements += `- **FORBIDDEN**: NO line breaks, NO omissions, NO substitutions\n`;
+        if (t.text.includes('$')) {
+          textRequirements += `- **CRITICAL**: Dollar sign ($) MUST be rendered - "${t.text}" not "${t.text.replace(/\$/g, '')}"\n`;
+        }
+        textRequirements += `\n`;
       });
-      textRequirements += "\nCRITICAL: Each text string above must appear EXACTLY as written, including all $ signs, punctuation, and spacing.";
+      textRequirements += "## ABSOLUTE REQUIREMENT\nEvery text element above MUST appear in the final image EXACTLY as specified. Missing even ONE character = FAILURE.";
     }
 
     const styleNote = style && style !== "auto" ? `\nRequested visual style: ${style}` : "";
     
-    // Include correction feedback if this is a retry
-    const correctionNote = correctionFeedback ? `\n\n⚠️ CORRECTION REQUIRED - PREVIOUS ATTEMPT HAD ERRORS:\n${correctionFeedback}\n\nYou MUST fix these errors in this attempt. Pay extra attention to the exact character sequences.` : "";
+    // Include correction feedback if this is a retry - with verbatim error details
+    const correctionNote = correctionFeedback ? `\n\n## ⚠️ CRITICAL ERRORS FROM PREVIOUS ATTEMPT - MUST FIX\n\n${correctionFeedback}\n\n## CORRECTION INSTRUCTIONS\nThe above errors are UNACCEPTABLE. You MUST ensure the EXACT text appears. Study each character carefully.` : "";
     
-    const fullPrompt = `Original user request: ${userPrompt}${styleNote}${textRequirements}${correctionNote}
+    const fullPrompt = `## USER REQUEST\n${userPrompt}${styleNote}${textRequirements}${correctionNote}
 
-Create a detailed Art Direction prompt that will produce an image with 100% accurate text rendering.`;
+Create a detailed Art Direction prompt using the TEXT BLUEPRINT format. Every text element MUST be rendered with 100% character accuracy.`;
 
     const response = await ai.models.generateContent({
       model: STYLE_ARCHITECT_MODEL,
@@ -272,22 +308,53 @@ Create a detailed Art Direction prompt that will produce an image with 100% accu
 // ============== PHASE 3: IMAGE GENERATOR ==============
 // Generates an image using the Art Direction prompt
 
-async function generateImageOnly(prompt: string): Promise<{ imageBase64: string; mimeType: string; textResponse?: string }> {
-  console.log("[Image Generator] Generating image with model:", IMAGE_GENERATOR_MODEL);
+async function generateImageOnly(prompt: string, attempt: number = 1): Promise<{ imageBase64: string; mimeType: string; textResponse?: string }> {
+  // Use escalation model for attempts 4-5 for better text fidelity
+  const useEscalation = attempt >= 4;
+  const primaryModel = useEscalation ? IMAGE_GENERATOR_ESCALATION : IMAGE_GENERATOR_MODEL;
+  
+  console.log(`[Image Generator] Attempt ${attempt} - Using model: ${primaryModel}${useEscalation ? ' (ESCALATION MODE)' : ''}`);
   
   let response;
-  let modelUsed = IMAGE_GENERATOR_MODEL;
+  let modelUsed = primaryModel;
   
   try {
-    response = await ai.models.generateContent({
-      model: IMAGE_GENERATOR_MODEL,
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      config: {
-        responseModalities: [Modality.TEXT, Modality.IMAGE],
-      },
-    });
+    if (useEscalation) {
+      // Imagen 3 uses a different API format - generate images directly
+      console.log("[Image Generator] Using Imagen 3 for enhanced text accuracy");
+      response = await ai.models.generateImages({
+        model: IMAGE_GENERATOR_ESCALATION,
+        prompt: prompt,
+        config: {
+          numberOfImages: 1,
+        }
+      });
+      
+      // Imagen returns images differently
+      const generatedImage = response.generatedImages?.[0];
+      if (!generatedImage?.image?.imageBytes) {
+        throw new Error("No image from Imagen");
+      }
+      
+      console.log("[Image Generator] Complete with Imagen 3 escalation model");
+      return {
+        imageBase64: generatedImage.image.imageBytes,
+        mimeType: "image/png",
+        textResponse: undefined
+      };
+    } else {
+      // Standard Gemini image generation
+      response = await ai.models.generateContent({
+        model: primaryModel,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          responseModalities: [Modality.TEXT, Modality.IMAGE],
+        },
+      });
+    }
   } catch (primaryError: any) {
-    console.log("[Image Generator] Primary model failed, trying fallback:", IMAGE_GENERATOR_FALLBACK);
+    console.log("[Image Generator] Primary model failed:", primaryError.message);
+    console.log("[Image Generator] Trying fallback:", IMAGE_GENERATOR_FALLBACK);
     modelUsed = IMAGE_GENERATOR_FALLBACK;
     
     response = await ai.models.generateContent({
@@ -379,27 +446,32 @@ export async function validateImageText(
     console.log("[OCR Validator] Extracted texts:", extractedTexts);
     
     // Calculate accuracy by comparing expected vs extracted
+    // ZERO TOLERANCE MODE: Only exact matches (similarity == 1.0) count as success
     const matchDetails = expectedTexts.map(expected => {
       const bestMatch = findBestMatch(expected, extractedTexts);
+      // EXACT MATCH REQUIRED - similarity must be 1.0 (100% identical)
+      const isExactMatch = bestMatch.similarity === 1.0;
       return {
         expected,
         found: bestMatch.match,
-        matched: bestMatch.similarity >= 0.9,
+        matched: isExactMatch,
         similarity: bestMatch.similarity
       };
     });
     
-    // Calculate overall accuracy score
+    // Calculate overall accuracy score - STRICT MODE
+    // Every text must match exactly, or it's a failure
     const totalExpected = expectedTexts.length;
     const matchedCount = matchDetails.filter(m => m.matched).length;
-    const avgSimilarity = matchDetails.reduce((sum, m) => sum + m.similarity, 0) / Math.max(totalExpected, 1);
     
-    // Weighted accuracy: 70% match rate + 30% average similarity
+    // Score is simple: 100% only if ALL texts match exactly
+    // Otherwise, score = (matched / total) * 100
     const accuracyScore = totalExpected > 0 
-      ? Math.round((matchedCount / totalExpected) * 70 + avgSimilarity * 30)
+      ? Math.round((matchedCount / totalExpected) * 100)
       : 100;
     
-    const passedValidation = accuracyScore >= ACCURACY_THRESHOLD;
+    // ZERO TOLERANCE: Must be 100% to pass
+    const passedValidation = matchedCount === totalExpected;
     
     console.log("[OCR Validator] Accuracy Score:", accuracyScore, "% | Passed:", passedValidation);
     console.log("[OCR Validator] Match Details:", JSON.stringify(matchDetails, null, 2));
@@ -412,30 +484,39 @@ export async function validateImageText(
     };
   } catch (error: any) {
     console.error("[OCR Validator] Error:", error.message);
-    // If OCR fails, pass validation to avoid blocking
+    // If OCR fails, FAIL validation to trigger retry
+    // Do NOT auto-pass - we need to verify text accuracy
     return {
       extractedTexts: [],
-      accuracyScore: 100,
-      matchDetails: [],
-      passedValidation: true
+      accuracyScore: 0,
+      matchDetails: expectedTexts.map(text => ({
+        expected: text,
+        found: null,
+        matched: false,
+        similarity: 0
+      })),
+      passedValidation: false
     };
   }
 }
 
 // Helper: Calculate string similarity using Levenshtein distance
+// CASE-SENSITIVE: "LATTE" != "Latte" for exact text accuracy
 function calculateSimilarity(str1: string, str2: string): number {
-  const s1 = str1.toLowerCase().trim();
-  const s2 = str2.toLowerCase().trim();
+  // Normalize whitespace only, preserve case for exact matching
+  const s1 = str1.trim().replace(/\s+/g, ' ');
+  const s2 = str2.trim().replace(/\s+/g, ' ');
   
+  // EXACT MATCH REQUIRED - case sensitive
   if (s1 === s2) return 1;
   if (s1.length === 0 || s2.length === 0) return 0;
   
-  // Check if one contains the other
+  // For containment, require exact case match
   if (s1.includes(s2) || s2.includes(s1)) {
     return Math.min(s1.length, s2.length) / Math.max(s1.length, s2.length);
   }
   
-  // Levenshtein distance
+  // Levenshtein distance - case sensitive
   const matrix: number[][] = [];
   for (let i = 0; i <= s1.length; i++) {
     matrix[i] = [i];
@@ -512,17 +593,49 @@ function findBestMatch(expected: string, extractedTexts: string[]): { match: str
 }
 
 // ============== CORRECTION PROMPT GENERATOR ==============
-// Creates enhanced prompts for retry attempts based on validation errors
+// Creates verbatim error feedback for retry attempts
 
-function generateCorrectionFeedback(validation: OCRValidationResult): string {
+function generateCorrectionFeedback(validation: OCRValidationResult, expectedTexts: string[]): string {
   const errors: string[] = [];
   
   for (const match of validation.matchDetails) {
     if (!match.matched) {
-      if (match.found) {
-        errors.push(`- Expected "${match.expected}" but found "${match.found}" (${Math.round(match.similarity * 100)}% similar)`);
+      const expectedChars = match.expected.split('').map(c => {
+        if (c === ' ') return '[SPACE]';
+        if (c === '$') return '[DOLLAR]';
+        return c;
+      }).join('');
+      
+      if (match.found && !match.found.startsWith('[partial')) {
+        const foundChars = match.found.split('').map(c => {
+          if (c === ' ') return '[SPACE]';
+          if (c === '$') return '[DOLLAR]';
+          return c;
+        }).join('');
+        
+        // Character-by-character comparison
+        let diff = "CHARACTER COMPARISON:\n";
+        const maxLen = Math.max(match.expected.length, match.found.length);
+        for (let i = 0; i < maxLen; i++) {
+          const expChar = match.expected[i] || '[MISSING]';
+          const foundChar = match.found[i] || '[MISSING]';
+          if (expChar !== foundChar) {
+            diff += `  Position ${i + 1}: Expected '${expChar}' but got '${foundChar}'\n`;
+          }
+        }
+        
+        errors.push(`### ERROR: Text Mismatch
+**EXPECTED**: "${match.expected}"
+**RENDERED**: "${match.found}"
+**SIMILARITY**: ${Math.round(match.similarity * 100)}%
+${diff}
+**FIX REQUIRED**: Render EXACTLY "${match.expected}" - every character matters`);
       } else {
-        errors.push(`- MISSING: "${match.expected}" was not found in the image`);
+        errors.push(`### ERROR: Missing Text
+**EXPECTED**: "${match.expected}"
+**RENDERED**: NOT FOUND
+**CHARACTER SEQUENCE**: ${expectedChars}
+**FIX REQUIRED**: This text MUST appear in the image. It was completely missing.`);
       }
     }
   }
@@ -531,7 +644,22 @@ function generateCorrectionFeedback(validation: OCRValidationResult): string {
     return "";
   }
   
-  return `The following text errors were detected:\n${errors.join('\n')}\n\nPlease ensure these EXACT text strings appear correctly in the regenerated image.`;
+  // Add overall summary
+  const summary = `## OCR VERIFICATION FAILED - ${errors.length} ERROR(S) DETECTED
+
+Accuracy Score: ${validation.accuracyScore}% (Required: 100%)
+Texts Found: ${validation.extractedTexts.join(', ') || 'NONE'}
+Texts Expected: ${expectedTexts.join(', ')}
+
+${errors.join('\n\n')}
+
+## CRITICAL INSTRUCTION
+The above errors are NOT ACCEPTABLE. You MUST render every text element EXACTLY as specified.
+- If a dollar sign ($) is in the expected text, it MUST appear in the image
+- If text should be on one line, it MUST be on one line (no line breaks)
+- Every single character must match exactly`;
+
+  return summary;
 }
 
 // ============== PROGRESS CALLBACK TYPE ==============
@@ -588,9 +716,13 @@ export async function generateImageWithPipeline(
       }
       const artDirection = await createArtDirection(prompt, textAnalysis, style, correctionFeedback);
       
-      // Phase 3: Image Generation
-      sendProgress("image_generator", "Generating your image...", attempts, MAX_RETRY_ATTEMPTS);
-      const imageResult = await generateImageOnly(artDirection.enhancedPrompt);
+      // Phase 3: Image Generation (escalates to Imagen on attempts 4-5)
+      const isEscalation = attempts >= 4;
+      const phaseMsg = isEscalation 
+        ? `Generating with enhanced model (attempt ${attempts}/${MAX_RETRY_ATTEMPTS})...`
+        : "Generating your image...";
+      sendProgress("image_generator", phaseMsg, attempts, MAX_RETRY_ATTEMPTS);
+      const imageResult = await generateImageOnly(artDirection.enhancedPrompt, attempts);
       
       // Phase 4: OCR Validation (only if there's expected text)
       if (expectedTexts.length > 0) {
@@ -626,8 +758,8 @@ export async function generateImageWithPipeline(
           };
         }
         
-        // Prepare correction feedback for next attempt
-        correctionFeedback = generateCorrectionFeedback(validation);
+        // Prepare correction feedback for next attempt with verbatim error details
+        correctionFeedback = generateCorrectionFeedback(validation, expectedTexts);
         console.log(`[Pipeline] ❌ Validation FAILED (${validation.accuracyScore}% accuracy). Retrying with corrections...`);
         
         if (attempts < MAX_RETRY_ATTEMPTS) {
