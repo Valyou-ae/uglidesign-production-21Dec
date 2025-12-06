@@ -1,0 +1,38 @@
+1. Persona Headshot Display
+Current Implementation: The "Persona Lock" headshot is generated and stored in the application's state (store.ts -> personaLockImage) and used in the background for every API call, but it is not currently displayed anywhere in the UI.
+Recommendation for Replit: This is a key UX improvement. To give the user confidence that the consistency lock is working, you should display this headshot. The best place for it is on the final generation/results screen (StepGenerate.tsx).
+Implementation:
+On the summary screen (before clicking "Generate"), add a small section that says "Generating Character Reference..." to let the user know this initial step will happen.
+On the results screen, display the generated personaLockImage in a dedicated card at the top of the grid, labeled "Character Reference." This gives the user a clear visual anchor to compare all the generated mockups against, confirming that the model is indeed the same person.
+2. Size/Color/Angle Metadata
+Answer: Yes, this data is available for each generated image, but it's important to understand how.
+Architecture Clarification: Since this is a client-side application, there is no backend sending Server-Sent Events (SSE). Instead, our client-side GenerationQueue service manages the results.
+Data Availability: The GeneratedImage object type, defined in types.ts, explicitly stores the colorName and angle for each individual image result. The UI (ResultCard component) already uses this data to display the badges on each mockup.
+Size Data: The modelSize is consistent for the entire batch and is stored in the global state (modelDetails.modelSize). While it's not duplicated in every single GeneratedImage object, it's readily available in the store and can be easily accessed and displayed on each card.
+Conclusion: You have all the necessary data to correctly label each mockup card.
+3. Filtering and Sorting
+Current Implementation: The application does not currently include any filtering or sorting functionality on the results page. The mockups are displayed in a simple grid in the order they are generated.
+Recommendation for Replit: This is a great feature to add for improved usability, especially when a user generates a large batch (e.g., 8 colors x 4 angles = 32 images).
+Implementation: You could add filter dropdowns for "Color" and "Angle" above the results grid in StepGenerate.tsx. These would update a local state, and you would then apply a .filter() method to the generatedResults array from the Zustand store before mapping over it to render the cards. This can be done entirely on the client side.
+4. Download Naming Convention
+Current Implementation: The current download naming convention, found in the ResultCard component within StepGenerate.tsx, is:
+mockup-${result.colorName}-${result.angle}.png
+Recommendation for Replit: Your proposed format, mockup_[size]_[angle]_[index].png, is a significant improvement. It adds more valuable metadata (size) and includes a unique identifier (index/ID) which is crucial to prevent overwriting files if a user refines and re-downloads the same variant.
+Implementation: To implement your superior format, you would modify the download attribute in the <a> tag within StepGenerate.tsx. You'll need to access the modelSize from the store and use the result.id for a unique index.
+Here is the exact code change:
+In components/StepGenerate.tsx, inside the ResultCard component:
+Access the model size from the store:
+code
+JavaScript
+const modelSize = useStore(s => s.modelDetails.modelSize);
+Update the download link's download attribute:
+code
+Jsx
+<a 
+  href={result.url} 
+  download={`mockup_${modelSize}_${result.colorName}_${result.angle}_${result.id}.png`} 
+  className="p-2 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200"
+>
+  <Download size={16} />
+</a>
+This will produce a much more descriptive and robust filename, such as mockup_M_True Royal_front_img-1672531200000.png.

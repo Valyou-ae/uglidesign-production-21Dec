@@ -2049,7 +2049,12 @@ export default function MockupGenerator() {
                                   </Button>
                                   <Button 
                                     className="bg-indigo-600 hover:bg-indigo-700 text-white flex-1 sm:flex-none"
-                                    onClick={() => generatedMockups.forEach((mockup, i) => downloadImage(mockup.src, `mockup_${mockup.size}_${mockup.angle}_${i}.png`))}
+                                    onClick={() => {
+                                      const timestamp = Date.now();
+                                      generatedMockups.forEach((mockup, i) => 
+                                        downloadImage(mockup.src, `mockup_${mockup.size}_${mockup.color.replace(/\s+/g, '-')}_${mockup.angle}_${timestamp}_${i}.png`)
+                                      );
+                                    }}
                                     disabled={isGenerating || generatedMockups.length === 0}
                                   >
                                     <Download className="mr-2 h-4 w-4" />
@@ -2195,6 +2200,24 @@ export default function MockupGenerator() {
 
                               <div className="flex-1 overflow-y-auto min-h-0 -mx-4 px-4 md:mx-0 md:px-0">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pb-20">
+                                  {personaHeadshot && useModel && (
+                                    <motion.div
+                                      initial={{ opacity: 0, scale: 0.95 }}
+                                      animate={{ opacity: 1, scale: 1 }}
+                                      transition={{ duration: 0.3 }}
+                                      className="relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-indigo-500/50 bg-gradient-to-b from-indigo-500/10 to-transparent"
+                                    >
+                                      <img src={personaHeadshot} alt="Character Reference" className="w-full h-full object-cover" />
+                                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                                        <p className="text-white text-xs font-medium text-center">Character Reference</p>
+                                        <p className="text-white/70 text-[10px] text-center">All mockups feature this model</p>
+                                      </div>
+                                      <Badge className="absolute top-2 left-2 bg-indigo-600 text-[10px] border-0 text-white font-semibold px-2 py-0.5">
+                                        <User className="h-3 w-3 mr-1" />
+                                        Persona Lock
+                                      </Badge>
+                                    </motion.div>
+                                  )}
                                   {generatedMockups.map((mockup, i) => {
                                     const angleName = mockup.angle === 'front' ? 'Front View' : 
                                                      mockup.angle === 'three-quarter' ? 'Three-Quarter View' :
@@ -2235,7 +2258,7 @@ export default function MockupGenerator() {
                                               className="h-8 px-3 text-xs bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                downloadImage(mockup.src, `mockup_${mockup.size}_${mockup.angle}_${i}.png`);
+                                                downloadImage(mockup.src, `mockup_${mockup.size}_${mockup.color.replace(/\s+/g, '-')}_${mockup.angle}_${Date.now()}_${i}.png`);
                                               }}
                                             >
                                               <Download className="h-3.5 w-3.5 mr-1.5" />
@@ -2247,9 +2270,14 @@ export default function MockupGenerator() {
                                         <Badge className="absolute top-2 left-2 bg-black/50 backdrop-blur-md text-[10px] border-0 text-white font-normal px-2 py-0.5">
                                           {angleName}
                                         </Badge>
-                                        <Badge className="absolute top-2 right-2 bg-indigo-600/80 backdrop-blur-md text-[10px] border-0 text-white font-semibold px-2 py-0.5">
-                                          {mockup.size}
-                                        </Badge>
+                                        <div className="absolute top-2 right-2 flex flex-col gap-1">
+                                          <Badge className="bg-indigo-600/80 backdrop-blur-md text-[10px] border-0 text-white font-semibold px-2 py-0.5">
+                                            {mockup.size}
+                                          </Badge>
+                                          <Badge className="bg-emerald-600/80 backdrop-blur-md text-[10px] border-0 text-white font-normal px-2 py-0.5">
+                                            {mockup.color}
+                                          </Badge>
+                                        </div>
                                       </motion.div>
                                     );
                                   })}
