@@ -215,8 +215,8 @@ interface GeneratedMockupData {
   size: string;
 }
 
-const DTG_STEPS: WizardStep[] = ["upload", "product", "model", "style", "scene", "angles", "generate"];
-const AOP_STEPS: WizardStep[] = ["upload", "seamless", "product", "model", "style", "scene", "angles", "generate"];
+const DTG_STEPS: WizardStep[] = ["upload", "product", "style", "scene", "angles", "generate"];
+const AOP_STEPS: WizardStep[] = ["upload", "seamless", "product", "style", "scene", "angles", "generate"];
 
 interface ProductItem {
   name: string;
@@ -421,7 +421,7 @@ export default function MockupGenerator() {
   };
 
   const aopStepsForJourney = isAlreadySeamless 
-    ? (["upload", "product", "model", "style", "scene", "angles", "generate"] as WizardStep[])
+    ? (["upload", "product", "style", "scene", "angles", "generate"] as WizardStep[])
     : AOP_STEPS;
   const steps = journey === "AOP" ? aopStepsForJourney : DTG_STEPS;
   const currentStep = steps[currentStepIndex];
@@ -575,24 +575,13 @@ export default function MockupGenerator() {
 
   const handleNext = () => {
     if (currentStepIndex < steps.length - 1) {
-      let nextIndex = currentStepIndex + 1;
-      // Skip model step for non-wearable categories (Accessories, Home & Living)
-      if (steps[nextIndex] === "model" && isNonWearableCategory(activeCategory)) {
-        setUseModel(false);
-        nextIndex = nextIndex + 1;
-      }
-      setCurrentStepIndex(nextIndex);
+      setCurrentStepIndex(currentStepIndex + 1);
     }
   };
 
   const handleBack = () => {
     if (currentStepIndex > 0) {
-      let prevIndex = currentStepIndex - 1;
-      // Skip model step when going back for non-wearable categories
-      if (steps[prevIndex] === "model" && isNonWearableCategory(activeCategory)) {
-        prevIndex = prevIndex - 1;
-      }
-      setCurrentStepIndex(Math.max(0, prevIndex));
+      setCurrentStepIndex(currentStepIndex - 1);
     } else {
       setJourney(null);
     }
@@ -1017,437 +1006,316 @@ export default function MockupGenerator() {
                       )}
 
                       {currentStep === "product" && (
-                        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8 h-auto lg:h-full min-h-full">
-                          {/* Categories - Mobile: Horizontal Scroll, Desktop: Vertical List */}
-                          <div className="lg:col-span-3 lg:border-r border-border lg:pr-6 flex flex-col gap-4 lg:gap-6 shrink-0">
-                            <div className="flex items-center gap-2 text-foreground lg:mb-4">
-                              <LayoutGrid className="h-4 w-4 text-indigo-600" />
-                              <h3 className="text-lg font-bold">Select Category</h3>
-                            </div>
-
-                            <div className="flex lg:flex-col overflow-x-auto pb-2 lg:pb-0 gap-2 lg:gap-1 no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
-                              {productCategories.map((cat) => {
-                                const isActive = effectiveActiveCategory === cat.name;
-                                return (
-                                  <button 
-                                    key={cat.name}
-                                    onClick={() => {
-                                      setActiveCategory(cat.name);
-                                      // For non-wearable categories, auto-set to no model
-                                      if (isNonWearableCategory(cat.name)) {
-                                        setUseModel(false);
-                                      } else {
-                                        setUseModel(true);
-                                        const autoGender = getGenderFromCategory(cat.name);
-                                        if (autoGender) {
-                                          setModelDetails(prev => ({...prev, sex: autoGender}));
-                                          setGenderAutoSelected(true);
-                                        }
-                                      }
-                                    }}
-                                    className={cn(
-                                      "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0 lg:w-full lg:justify-between lg:px-3 lg:py-3 lg:rounded-xl",
-                                      isActive 
-                                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20" 
-                                        : "bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border lg:border-transparent lg:hover:border-border"
-                                    )}
-                                  >
-                                    <div className="flex items-center gap-2 lg:gap-3">
-                                      <cat.icon className={cn("h-4 w-4 lg:h-5 lg:w-5", isActive ? "text-white" : "text-muted-foreground")} />
-                                      {cat.name}
-                                    </div>
-                                    {isActive && <ChevronRight className="h-4 w-4 opacity-80 hidden lg:block" />}
-                                  </button>
-                                );
-                              })}
-                            </div>
+                        <div className="flex flex-col h-full animate-fade-in">
+                          {/* Header */}
+                          <div className="text-center mb-8">
+                            <h2 className="text-2xl font-bold mb-2">Configure Your Product</h2>
+                            <p className="text-muted-foreground">Select product, sizes, colors, and model preferences</p>
                           </div>
 
-                          {/* Product Grid */}
-                          <div className="lg:col-span-6 w-full lg:flex-1 flex flex-col lg:min-h-0">
-                            <div className="flex items-center gap-2 text-foreground mb-4 shrink-0">
-                              <ShoppingBag className="h-4 w-4 text-indigo-600" />
-                              <h3 className="text-lg font-bold">Choose Product</h3>
-                            </div>
-                            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 lg:gap-3 lg:overflow-y-auto pr-2 pb-4 content-start h-auto lg:h-full min-h-0">
-                              {effectiveItems.map((item) => {
-                                const isSelected = selectedProductType === item.name;
-                                return (
-                                  <div 
-                                    key={item.name} 
-                                    onClick={() => setSelectedProductType(item.name)}
-                                    className={cn(
-                                      "group relative border rounded-xl p-2 md:p-4 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 md:gap-3 h-[100px] md:h-[140px]",
-                                      isSelected 
-                                        ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-sm" 
-                                        : "border-border hover:border-indigo-300 hover:shadow-md bg-card"
-                                    )}
-                                  >
-                                    <div className={cn(
-                                      "h-8 w-8 md:h-12 md:w-12 rounded-full flex items-center justify-center transition-colors",
-                                      isSelected ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300" : "bg-muted text-muted-foreground group-hover:text-indigo-600 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20"
-                                    )}>
-                                      <item.icon className="h-4 w-4 md:h-6 md:w-6" />
-                                    </div>
-                                    <p className={cn("font-medium text-[10px] md:text-sm leading-tight", isSelected ? "text-indigo-700 dark:text-indigo-300" : "text-foreground")}>{item.name}</p>
-                                    
-                                    {isSelected && (
-                                      <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 h-3.5 w-3.5 md:h-5 md:w-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
-                                        <Check className="h-2 w-2 md:h-3 md:w-3" />
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* Model Config - Desktop: Column, Mobile: Bottom Sheet/Section */}
-                          <div className="lg:col-span-3 border-t lg:border-t-0 lg:border-l border-border pt-6 lg:pt-0 lg:pl-6">
-                            <div className="flex items-center gap-2 text-foreground mb-4">
-                              <Sparkles className="h-4 w-4 text-indigo-600" />
-                              <h3 className="text-lg font-bold">Configuration</h3>
-                            </div>
-                            <div className="lg:sticky lg:top-6">
-                              
-                              <div className="space-y-6 bg-card/50 rounded-xl p-1">
-                                {/* Product Size Selection */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Product Sizes</label>
-                                    <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">
-                                      {selectedSizes.length} Selected
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"].map((size) => {
-                                      const isSelected = selectedSizes.includes(size);
-                                      return (
-                                        <button
-                                          key={size}
-                                          onClick={() => {
-                                            if (isSelected) {
-                                              setSelectedSizes(selectedSizes.filter(s => s !== size));
-                                            } else {
-                                              setSelectedSizes([...selectedSizes, size]);
-                                            }
-                                          }}
-                                          className={cn(
-                                            "h-9 min-w-[36px] px-2 rounded-lg text-xs font-medium border transition-all",
-                                            isSelected 
-                                              ? "bg-indigo-600 border-indigo-600 text-white shadow-sm" 
-                                              : "bg-background border-border text-muted-foreground hover:border-indigo-300 hover:text-foreground"
-                                          )}
-                                        >
-                                          {size}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-
-                                <Separator />
-
-                                {/* Color Selection */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Color</label>
-                                    {journey !== "AOP" && (
-                                      <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">
-                                        {selectedColors.length} Selected
-                                      </span>
-                                    )}
-                                  </div>
-                                  
-                                  {journey === "AOP" ? (
-                                    <div className="space-y-3">
-                                      <div className="flex items-center gap-3 p-3 rounded-xl border border-indigo-200 bg-indigo-50/50 dark:bg-indigo-900/20 dark:border-indigo-800">
-                                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-white to-gray-100 border border-gray-200 shadow-sm flex items-center justify-center">
-                                          <Palette className="h-4 w-4 text-indigo-600" />
-                                        </div>
-                                        <div className="flex-1">
-                                          <p className="font-medium text-sm text-foreground">Pattern-Derived Colors</p>
-                                          <p className="text-xs text-muted-foreground">Base color and trim color will be automatically extracted from your seamless pattern</p>
-                                        </div>
-                                        <CheckCircle2 className="h-5 w-5 text-indigo-600" />
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="grid grid-cols-8 gap-1.5">
-                                      {[
-                                        { name: "White", class: "bg-white border-gray-200" },
-                                        { name: "Black", class: "bg-black border-black" },
-                                        { name: "Sport Grey", class: "bg-[#9E9E9E] border-gray-400" },
-                                        { name: "Dark Heather", class: "bg-[#545454] border-gray-600" },
-                                        { name: "Charcoal", class: "bg-[#424242] border-gray-700" },
-                                        { name: "Navy", class: "bg-[#1A237E] border-blue-900" },
-                                        { name: "Royal", class: "bg-[#0D47A1] border-blue-700" },
-                                        { name: "Light Blue", class: "bg-[#ADD8E6] border-blue-200" },
-                                        { name: "Red", class: "bg-[#D32F2F] border-red-600" },
-                                        { name: "Cardinal", class: "bg-[#880E4F] border-red-900" },
-                                        { name: "Maroon", class: "bg-[#4A148C] border-purple-900" },
-                                        { name: "Orange", class: "bg-[#F57C00] border-orange-600" },
-                                        { name: "Gold", class: "bg-[#FBC02D] border-yellow-500" },
-                                        { name: "Yellow", class: "bg-[#FFEB3B] border-yellow-400" },
-                                        { name: "Irish Green", class: "bg-[#388E3C] border-green-600" },
-                                        { name: "Military Green", class: "bg-[#558B2F] border-green-700" },
-                                        { name: "Forest", class: "bg-[#1B5E20] border-green-900" },
-                                        { name: "Purple", class: "bg-[#7B1FA2] border-purple-700" },
-                                        { name: "Light Pink", class: "bg-[#F8BBD0] border-pink-200" },
-                                        { name: "Sand", class: "bg-[#F5F5DC] border-stone-200" },
-                                      ].map((color) => {
-                                        const isSelected = selectedColors.includes(color.name);
-                                        return (
-                                          <TooltipProvider key={color.name}>
-                                            <Tooltip delayDuration={0}>
-                                              <TooltipTrigger asChild>
-                                                <div 
-                                                  onClick={() => {
-                                                    if (isSelected) {
-                                                      setSelectedColors(selectedColors.filter(c => c !== color.name));
-                                                    } else {
-                                                      setSelectedColors([...selectedColors, color.name]);
-                                                    }
-                                                  }}
-                                                  className="group relative h-6 w-6 rounded-full border cursor-pointer transition-all hover:scale-110 flex items-center justify-center"
-                                                >
-                                                  <div className={cn(
-                                                    "h-full w-full rounded-full border shadow-sm",
-                                                    color.class,
-                                                    isSelected ? "ring-2 ring-indigo-600 ring-offset-1 dark:ring-offset-background" : ""
-                                                  )} />
-                                                  {isSelected && (
-                                                    <div className="absolute -top-0.5 -right-0.5 bg-indigo-600 rounded-full p-[1px] border border-background z-10">
-                                                      <CheckIcon className="h-1.5 w-1.5 text-white" />
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              </TooltipTrigger>
-                                              <TooltipContent side="bottom" className="text-[10px] px-2 py-1">
-                                                <p>{color.name}</p>
-                                              </TooltipContent>
-                                            </Tooltip>
-                                          </TooltipProvider>
-                                        );
-                                      })}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Footer Navigation */}
-                              <div className="mt-6 pt-6 border-t border-border flex flex-col gap-2 shrink-0">
-                                <div className="flex items-center justify-between">
-                                    <Button
-                                        variant="ghost"
-                                        onClick={handleBack}
-                                        className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                        Back
-                                    </Button>
-                                    <Button
-                                        onClick={handleNext}
-                                        disabled={!selectedProductType || selectedSizes.length === 0 || (journey !== "AOP" && selectedColors.length === 0)}
-                                        className={cn(
-                                            "gap-2 px-6 transition-all",
-                                            (selectedProductType && selectedSizes.length > 0 && (journey === "AOP" || selectedColors.length > 0))
-                                                ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
-                                                : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
-                                        )}
-                                    >
-                                        Next Step
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                
-                                <div className="flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
-                                    <span className="flex items-center gap-1">
-                                        <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Enter</kbd> 
-                                        Next
-                                    </span>
-                                    <span className="mx-1">•</span>
-                                    <span className="flex items-center gap-1">
-                                        <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Esc</kbd> 
-                                        Back
-                                    </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {currentStep === "model" && (
-                        <div className="flex flex-col h-full max-w-[800px] mx-auto w-full animate-fade-in">
-                          <div className="mb-6 text-center">
-                            <h2 className="text-2xl font-bold mb-2">Choose Your Model</h2>
-                            <p className="text-muted-foreground">Select the model who will wear your product in the mockups</p>
-                          </div>
-
-                          <div className="flex items-center justify-center gap-4 mb-6">
-                            <button
-                              onClick={() => setUseModel(true)}
-                              className={cn(
-                                "flex items-center gap-3 px-6 py-4 rounded-xl border-2 transition-all",
-                                useModel 
-                                  ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20" 
-                                  : "border-border hover:border-indigo-300"
-                              )}
-                            >
-                              <User className={cn("h-6 w-6", useModel ? "text-indigo-600" : "text-muted-foreground")} />
-                              <div className="text-left">
-                                <p className={cn("font-semibold", useModel ? "text-indigo-900 dark:text-indigo-100" : "")}>On Model</p>
-                                <p className="text-xs text-muted-foreground">Show on a real person</p>
-                              </div>
-                              {useModel && <Check className="h-5 w-5 text-indigo-600" />}
-                            </button>
-                            <button
-                              onClick={() => setUseModel(false)}
-                              className={cn(
-                                "flex items-center gap-3 px-6 py-4 rounded-xl border-2 transition-all",
-                                !useModel 
-                                  ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20" 
-                                  : "border-border hover:border-indigo-300"
-                              )}
-                            >
-                              <Shirt className={cn("h-6 w-6", !useModel ? "text-indigo-600" : "text-muted-foreground")} />
-                              <div className="text-left">
-                                <p className={cn("font-semibold", !useModel ? "text-indigo-900 dark:text-indigo-100" : "")}>Flat Lay</p>
-                                <p className="text-xs text-muted-foreground">Product only, no model</p>
-                              </div>
-                              {!useModel && <Check className="h-5 w-5 text-indigo-600" />}
-                            </button>
-                          </div>
-
-                          {useModel && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-                              <div className="space-y-4">
-                                <div className="space-y-2">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <label className="text-sm font-semibold text-foreground">Sex</label>
-                                    {genderAutoSelected && getGenderFromCategory(activeCategory) && (
-                                      <span className="text-xs text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400 px-2 py-0.5 rounded-full">
-                                        Auto-selected based on product
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="flex gap-2">
-                                    {(["MALE", "FEMALE"] as Sex[]).map((sex) => (
-                                      <button
-                                        key={sex}
+                          {/* Main Content - Scrollable */}
+                          <div className="flex-1 overflow-y-auto space-y-8 pb-6">
+                            {/* Row 1: Category + Product Selection */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                              {/* Categories */}
+                              <div className="lg:col-span-3">
+                                <label className="text-sm font-bold text-foreground mb-3 block">Category</label>
+                                <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 -mx-2 px-2 lg:mx-0 lg:px-0">
+                                  {productCategories.map((cat) => {
+                                    const isActive = effectiveActiveCategory === cat.name;
+                                    return (
+                                      <button 
+                                        key={cat.name}
                                         onClick={() => {
-                                          setModelDetails({...modelDetails, sex});
-                                          setGenderAutoSelected(false);
+                                          setActiveCategory(cat.name);
+                                          if (isNonWearableCategory(cat.name)) {
+                                            setUseModel(false);
+                                          } else {
+                                            setUseModel(true);
+                                            const autoGender = getGenderFromCategory(cat.name);
+                                            if (autoGender) {
+                                              setModelDetails(prev => ({...prev, sex: autoGender}));
+                                              setGenderAutoSelected(true);
+                                            }
+                                          }
                                         }}
                                         className={cn(
-                                          "flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all",
-                                          modelDetails.sex === sex
-                                            ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
-                                            : "border-border hover:border-indigo-300"
+                                          "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap",
+                                          isActive 
+                                            ? "bg-indigo-600 text-white shadow-md" 
+                                            : "bg-card border border-border hover:border-indigo-300 text-muted-foreground hover:text-foreground"
                                         )}
                                       >
-                                        {sex === "MALE" ? "Male" : "Female"}
+                                        <cat.icon className={cn("h-4 w-4", isActive ? "text-white" : "text-muted-foreground")} />
+                                        <span className="hidden lg:inline">{cat.name}</span>
+                                        <span className="lg:hidden">{cat.name.split(' ')[0]}</span>
                                       </button>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-sm font-semibold text-foreground">Age Group</label>
-                                  <Select 
-                                    value={modelDetails.age} 
-                                    onValueChange={(value: AgeGroup) => setModelDetails({...modelDetails, age: value})}
-                                  >
-                                    <SelectTrigger className="w-full h-12 rounded-lg">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="TEEN">Teen (13-17)</SelectItem>
-                                      <SelectItem value="YOUNG_ADULT">Young Adult (18-25)</SelectItem>
-                                      <SelectItem value="ADULT">Adult (26-45)</SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                                    );
+                                  })}
                                 </div>
                               </div>
 
-                              <div className="space-y-4">
-                                <div className="space-y-2">
-                                  <label className="text-sm font-semibold text-foreground">Ethnicity</label>
-                                  <Select 
-                                    value={modelDetails.ethnicity} 
-                                    onValueChange={(value: Ethnicity) => setModelDetails({...modelDetails, ethnicity: value})}
-                                  >
-                                    <SelectTrigger className="w-full h-12 rounded-lg">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="CAUCASIAN">Caucasian</SelectItem>
-                                      <SelectItem value="AFRICAN">African</SelectItem>
-                                      <SelectItem value="ASIAN">Asian</SelectItem>
-                                      <SelectItem value="SOUTHEAST_ASIAN">Southeast Asian</SelectItem>
-                                      <SelectItem value="HISPANIC">Hispanic</SelectItem>
-                                      <SelectItem value="SOUTH_ASIAN">South Asian</SelectItem>
-                                      <SelectItem value="MIDDLE_EASTERN">Middle Eastern</SelectItem>
-                                      <SelectItem value="INDIGENOUS">Indigenous</SelectItem>
-                                      <SelectItem value="MIXED">Mixed</SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                              {/* Products Grid */}
+                              <div className="lg:col-span-9">
+                                <label className="text-sm font-bold text-foreground mb-3 block">Product</label>
+                                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                                  {effectiveItems.map((item) => {
+                                    const isSelected = selectedProductType === item.name;
+                                    return (
+                                      <div 
+                                        key={item.name} 
+                                        onClick={() => setSelectedProductType(item.name)}
+                                        className={cn(
+                                          "group relative border rounded-xl p-4 cursor-pointer transition-all flex flex-col items-center text-center gap-2",
+                                          isSelected 
+                                            ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-sm" 
+                                            : "border-border hover:border-indigo-300 bg-card"
+                                        )}
+                                      >
+                                        <div className={cn(
+                                          "h-10 w-10 rounded-full flex items-center justify-center",
+                                          isSelected ? "bg-indigo-100 text-indigo-600" : "bg-muted text-muted-foreground group-hover:text-indigo-600"
+                                        )}>
+                                          <item.icon className="h-5 w-5" />
+                                        </div>
+                                        <p className={cn("font-medium text-xs leading-tight", isSelected ? "text-indigo-700" : "text-foreground")}>{item.name}</p>
+                                        {isSelected && (
+                                          <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                                            <Check className="h-3 w-3" />
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
+                              </div>
+                            </div>
 
-                                <div className="space-y-2">
-                                  <label className="text-sm font-semibold text-foreground">Model Size</label>
-                                  <div className="grid grid-cols-6 gap-1.5">
-                                    {(["XS", "S", "M", "L", "XL", "XXL"] as ModelSize[]).map((size) => (
+                            {/* Row 2: Sizes + Colors */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              {/* Sizes */}
+                              <div className="bg-card rounded-xl border border-border p-5">
+                                <div className="flex items-center justify-between mb-4">
+                                  <label className="text-sm font-bold text-foreground">Product Sizes</label>
+                                  <Badge variant="secondary" className="text-xs">{selectedSizes.length} selected</Badge>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"].map((size) => {
+                                    const isSelected = selectedSizes.includes(size);
+                                    return (
                                       <button
                                         key={size}
-                                        onClick={() => setModelDetails({...modelDetails, modelSize: size})}
+                                        onClick={() => {
+                                          if (isSelected) {
+                                            setSelectedSizes(selectedSizes.filter(s => s !== size));
+                                          } else {
+                                            setSelectedSizes([...selectedSizes, size]);
+                                          }
+                                        }}
                                         className={cn(
-                                          "py-2.5 rounded-lg border-2 text-sm font-medium transition-all",
-                                          modelDetails.modelSize === size
-                                            ? "border-indigo-600 bg-indigo-600 text-white"
-                                            : "border-border hover:border-indigo-300"
+                                          "h-10 min-w-[44px] px-3 rounded-lg text-sm font-medium border-2 transition-all",
+                                          isSelected 
+                                            ? "bg-indigo-600 border-indigo-600 text-white" 
+                                            : "bg-background border-border text-muted-foreground hover:border-indigo-300"
                                         )}
                                       >
                                         {size}
                                       </button>
-                                    ))}
-                                  </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
-                            </div>
-                          )}
 
-                          {!useModel && (
-                            <div className="flex-1 flex items-center justify-center">
-                              <div className="text-center p-8 bg-muted/50 rounded-2xl max-w-md">
-                                <Shirt className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold mb-2">Flat Lay Mode</h3>
-                                <p className="text-muted-foreground text-sm">
-                                  Your product will be displayed on a flat surface or invisible mannequin without a human model.
-                                </p>
+                              {/* Colors */}
+                              <div className="bg-card rounded-xl border border-border p-5">
+                                <div className="flex items-center justify-between mb-4">
+                                  <label className="text-sm font-bold text-foreground">Colors</label>
+                                  {journey !== "AOP" && <Badge variant="secondary" className="text-xs">{selectedColors.length} selected</Badge>}
+                                </div>
+                                {journey === "AOP" ? (
+                                  <div className="flex items-center gap-3 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20">
+                                    <Palette className="h-5 w-5 text-indigo-600" />
+                                    <div className="flex-1">
+                                      <p className="font-medium text-sm">Pattern-Derived Colors</p>
+                                      <p className="text-xs text-muted-foreground">Colors extracted from your seamless pattern</p>
+                                    </div>
+                                    <CheckCircle2 className="h-5 w-5 text-indigo-600" />
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-wrap gap-2">
+                                    {[
+                                      { name: "White", class: "bg-white border-gray-300" },
+                                      { name: "Black", class: "bg-black border-black" },
+                                      { name: "Sport Grey", class: "bg-[#9E9E9E]" },
+                                      { name: "Dark Heather", class: "bg-[#545454]" },
+                                      { name: "Charcoal", class: "bg-[#424242]" },
+                                      { name: "Navy", class: "bg-[#1A237E]" },
+                                      { name: "Royal", class: "bg-[#0D47A1]" },
+                                      { name: "Light Blue", class: "bg-[#ADD8E6]" },
+                                      { name: "Red", class: "bg-[#D32F2F]" },
+                                      { name: "Cardinal", class: "bg-[#880E4F]" },
+                                      { name: "Maroon", class: "bg-[#4A148C]" },
+                                      { name: "Orange", class: "bg-[#F57C00]" },
+                                      { name: "Gold", class: "bg-[#FBC02D]" },
+                                      { name: "Irish Green", class: "bg-[#388E3C]" },
+                                      { name: "Forest", class: "bg-[#1B5E20]" },
+                                      { name: "Purple", class: "bg-[#7B1FA2]" },
+                                      { name: "Light Pink", class: "bg-[#F8BBD0]" },
+                                      { name: "Sand", class: "bg-[#F5F5DC] border-gray-200" },
+                                    ].map((color) => {
+                                      const isSelected = selectedColors.includes(color.name);
+                                      return (
+                                        <TooltipProvider key={color.name}>
+                                          <Tooltip delayDuration={0}>
+                                            <TooltipTrigger asChild>
+                                              <button 
+                                                onClick={() => {
+                                                  if (isSelected) {
+                                                    setSelectedColors(selectedColors.filter(c => c !== color.name));
+                                                  } else {
+                                                    setSelectedColors([...selectedColors, color.name]);
+                                                  }
+                                                }}
+                                                className={cn(
+                                                  "h-8 w-8 rounded-full border-2 transition-all hover:scale-110",
+                                                  color.class,
+                                                  isSelected ? "ring-2 ring-indigo-600 ring-offset-2" : "border-transparent"
+                                                )}
+                                              />
+                                            </TooltipTrigger>
+                                            <TooltipContent side="bottom" className="text-xs">{color.name}</TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      );
+                                    })}
+                                  </div>
+                                )}
                               </div>
                             </div>
-                          )}
 
-                          <div className="mt-6 pt-6 border-t border-border flex flex-col gap-2 shrink-0">
-                            <div className="flex items-center justify-between">
-                              <Button
-                                variant="ghost"
-                                onClick={handleBack}
-                                className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
-                              >
-                                <ChevronLeft className="h-4 w-4" />
-                                Back
-                              </Button>
-                              <Button
-                                onClick={handleNext}
-                                className="gap-2 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5 transition-all"
-                              >
-                                Next Step
-                                <ChevronRight className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            {/* Row 3: Model Options (only for wearable products) */}
+                            {!isNonWearableCategory(effectiveActiveCategory) && (
+                              <div className="bg-card rounded-xl border border-border p-5">
+                                <div className="flex items-center justify-between mb-4">
+                                  <label className="text-sm font-bold text-foreground">Model Options</label>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => setUseModel(true)}
+                                      className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                                        useModel ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
+                                      )}
+                                    >
+                                      <User className="h-4 w-4" />
+                                      On Model
+                                    </button>
+                                    <button
+                                      onClick={() => setUseModel(false)}
+                                      className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                                        !useModel ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
+                                      )}
+                                    >
+                                      <Shirt className="h-4 w-4" />
+                                      Flat Lay
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {useModel && (
+                                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                                    <div>
+                                      <label className="text-xs text-muted-foreground mb-2 block">Sex</label>
+                                      <div className="flex gap-2">
+                                        {(["MALE", "FEMALE"] as Sex[]).map((sex) => (
+                                          <button
+                                            key={sex}
+                                            onClick={() => {
+                                              setModelDetails({...modelDetails, sex});
+                                              setGenderAutoSelected(false);
+                                            }}
+                                            className={cn(
+                                              "flex-1 py-2.5 rounded-lg text-sm font-medium border-2 transition-all",
+                                              modelDetails.sex === sex
+                                                ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                                                : "border-border hover:border-indigo-300"
+                                            )}
+                                          >
+                                            {sex === "MALE" ? "Male" : "Female"}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-muted-foreground mb-2 block">Age Group</label>
+                                      <Select value={modelDetails.age} onValueChange={(value: AgeGroup) => setModelDetails({...modelDetails, age: value})}>
+                                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="TEEN">Teen (13-17)</SelectItem>
+                                          <SelectItem value="YOUNG_ADULT">Young Adult (18-25)</SelectItem>
+                                          <SelectItem value="ADULT">Adult (26-45)</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-muted-foreground mb-2 block">Ethnicity</label>
+                                      <Select value={modelDetails.ethnicity} onValueChange={(value: Ethnicity) => setModelDetails({...modelDetails, ethnicity: value})}>
+                                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="CAUCASIAN">Caucasian</SelectItem>
+                                          <SelectItem value="AFRICAN">African</SelectItem>
+                                          <SelectItem value="ASIAN">Asian</SelectItem>
+                                          <SelectItem value="SOUTHEAST_ASIAN">Southeast Asian</SelectItem>
+                                          <SelectItem value="HISPANIC">Hispanic</SelectItem>
+                                          <SelectItem value="SOUTH_ASIAN">South Asian</SelectItem>
+                                          <SelectItem value="MIDDLE_EASTERN">Middle Eastern</SelectItem>
+                                          <SelectItem value="INDIGENOUS">Indigenous</SelectItem>
+                                          <SelectItem value="MIXED">Mixed</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-muted-foreground mb-2 block">Body Size</label>
+                                      <div className="flex gap-1">
+                                        {(["S", "M", "L", "XL"] as ModelSize[]).map((size) => (
+                                          <button
+                                            key={size}
+                                            onClick={() => setModelDetails({...modelDetails, modelSize: size})}
+                                            className={cn(
+                                              "flex-1 py-2.5 rounded-lg text-sm font-medium border-2 transition-all",
+                                              modelDetails.modelSize === size
+                                                ? "border-indigo-600 bg-indigo-600 text-white"
+                                                : "border-border hover:border-indigo-300"
+                                            )}
+                                          >
+                                            {size}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Footer Navigation */}
+                          <div className="pt-6 border-t border-border flex items-center justify-between shrink-0">
+                            <Button variant="ghost" onClick={handleBack} className="gap-2">
+                              <ChevronLeft className="h-4 w-4" /> Back
+                            </Button>
+                            <Button
+                              onClick={handleNext}
+                              disabled={!selectedProductType || selectedSizes.length === 0 || (journey !== "AOP" && selectedColors.length === 0)}
+                              className={cn(
+                                "gap-2 px-6",
+                                (selectedProductType && selectedSizes.length > 0 && (journey === "AOP" || selectedColors.length > 0))
+                                  ? "bg-indigo-600 hover:bg-indigo-700 text-white" 
+                                  : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
+                              )}
+                            >
+                              Next Step <ChevronRight className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                       )}
