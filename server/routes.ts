@@ -39,8 +39,17 @@ export async function registerRoutes(
     })
   );
 
-  // Auth middleware
+  // Testing mode - skip auth when TEST_MODE is enabled
+  const isTestMode = process.env.TEST_MODE === "true";
+  const TEST_USER_ID = "86375c89-623d-4e4f-b05b-056bc1663bf5";
+
+  // Auth middleware - bypassed in test mode
   const requireAuth = (req: any, res: any, next: any) => {
+    if (isTestMode) {
+      // In test mode, use the test user ID
+      req.session.userId = req.session.userId || TEST_USER_ID;
+      return next();
+    }
     if (!req.session.userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
