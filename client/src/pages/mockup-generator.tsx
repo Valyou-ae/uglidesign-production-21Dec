@@ -393,6 +393,8 @@ export default function MockupGenerator() {
   const [useModel, setUseModel] = useState<boolean>(true);
   const [genderAutoSelected, setGenderAutoSelected] = useState<boolean>(true);
   const [personaHeadshot, setPersonaHeadshot] = useState<string | null>(null);
+  // AOP-specific state
+  const [isAlreadySeamless, setIsAlreadySeamless] = useState<boolean>(false);
   // Seamless Pattern State
   const [seamlessPhase, setSeamlessPhase] = useState<'analyzing' | 'generating' | 'selecting'>('analyzing');
   const [seamlessVariations, setSeamlessVariations] = useState<PatternVariation[]>([]);
@@ -421,7 +423,10 @@ export default function MockupGenerator() {
     document.body.removeChild(link);
   };
 
-  const steps = journey === "AOP" ? AOP_STEPS : DTG_STEPS;
+  const aopStepsForJourney = isAlreadySeamless 
+    ? (["upload", "product", "model", "style", "scene", "angles", "generate"] as WizardStep[])
+    : AOP_STEPS;
+  const steps = journey === "AOP" ? aopStepsForJourney : DTG_STEPS;
   const currentStep = steps[currentStepIndex];
   
   const productCategories = journey === "AOP" ? AOP_PRODUCT_CATEGORIES : DTG_PRODUCT_CATEGORIES;
@@ -439,6 +444,20 @@ export default function MockupGenerator() {
       }
     }
   }, [journey, activeCategory, productCategories]);
+  
+  useEffect(() => {
+    if (journey === "AOP" && isAlreadySeamless && uploadedImage) {
+      setSelectedVariationId("original-seamless");
+      setSeamlessVariations([{
+        id: "original-seamless",
+        name: "Original Pattern",
+        description: "Your uploaded seamless pattern",
+        url: uploadedImage,
+        isRecommended: true
+      }]);
+      setSeamlessPhase('selecting');
+    }
+  }, [isAlreadySeamless, journey, uploadedImage]);
 
   // Generate pattern variations when entering seamless step
   const generatePatternVariations = useCallback(async () => {
@@ -605,7 +624,8 @@ export default function MockupGenerator() {
 
     const styleName = selectedStyle || "minimal";
     const productName = selectedProductType || "t-shirt";
-    const colors = selectedColors.length > 0 ? selectedColors : ["White"];
+    const isAopJourney = journey === "AOP";
+    const colors = isAopJourney ? ["White"] : (selectedColors.length > 0 ? selectedColors : ["White"]);
     const sizes = selectedSizes.length > 0 ? selectedSizes : ["M"];
     const scene = environmentPrompt || "studio";
     const totalExpected = Math.max(1, selectedAngles.length * colors.length * sizes.length);
@@ -620,7 +640,6 @@ export default function MockupGenerator() {
 
     const generatedImages: GeneratedMockupData[] = [];
 
-    const isAopJourney = journey === "AOP";
     const selectedPattern = isAopJourney && selectedVariationId 
       ? seamlessVariations.find(v => v.id === selectedVariationId)
       : null;
@@ -925,19 +944,36 @@ export default function MockupGenerator() {
                               <Badge variant="outline" className="text-xs text-muted-foreground">PNG recommended • Max 20MB</Badge>
                             </div>
                           ) : (
-                            <div className="relative w-full aspect-square max-w-[400px] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbC1vcGFjaXR5PSIwLjEiPjxyZWN0IHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMDAwIi8+PC9zdmc+')] bg-repeat rounded-xl border border-border overflow-hidden">
-                              <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-contain" />
-                              <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-sm p-3 flex justify-between items-center">
-                                <span className="text-xs text-white truncate">design_v1.png</span>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => setUploadedImage(null)}
-                                  className="text-white hover:text-white hover:bg-white/20 h-6 px-2 text-xs"
-                                >
-                                  Change
-                                </Button>
+                            <div className="flex flex-col items-center gap-4">
+                              <div className="relative w-full aspect-square max-w-[400px] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbC1vcGFjaXR5PSIwLjEiPjxyZWN0IHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMDAwIi8+PC9zdmc+')] bg-repeat rounded-xl border border-border overflow-hidden">
+                                <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-contain" />
+                                <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-sm p-3 flex justify-between items-center">
+                                  <span className="text-xs text-white truncate">design_v1.png</span>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => setUploadedImage(null)}
+                                    className="text-white hover:text-white hover:bg-white/20 h-6 px-2 text-xs"
+                                  >
+                                    Change
+                                  </Button>
+                                </div>
                               </div>
+                              
+                              {journey === "AOP" && (
+                                <label className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 cursor-pointer transition-colors max-w-[400px] w-full">
+                                  <input 
+                                    type="checkbox"
+                                    checked={isAlreadySeamless}
+                                    onChange={(e) => setIsAlreadySeamless(e.target.checked)}
+                                    className="h-5 w-5 rounded border-border text-indigo-600 focus:ring-indigo-500"
+                                  />
+                                  <div className="flex-1">
+                                    <p className="font-medium text-sm text-foreground">This design is already a seamless pattern</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">Check this if your design is already tileable and ready for all-over printing</p>
+                                  </div>
+                                </label>
+                              )}
                             </div>
                           )}
                           </div>
@@ -1119,68 +1155,86 @@ export default function MockupGenerator() {
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
                                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Color</label>
-                                    <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">
-                                      {selectedColors.length} Selected
-                                    </span>
+                                    {journey !== "AOP" && (
+                                      <span className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full dark:bg-indigo-900/30 dark:text-indigo-400">
+                                        {selectedColors.length} Selected
+                                      </span>
+                                    )}
                                   </div>
-                                  <div className="grid grid-cols-8 gap-1.5">
-                                    {[
-                                      { name: "White", class: "bg-white border-gray-200" },
-                                      { name: "Black", class: "bg-black border-black" },
-                                      { name: "Sport Grey", class: "bg-[#9E9E9E] border-gray-400" },
-                                      { name: "Dark Heather", class: "bg-[#545454] border-gray-600" },
-                                      { name: "Charcoal", class: "bg-[#424242] border-gray-700" },
-                                      { name: "Navy", class: "bg-[#1A237E] border-blue-900" },
-                                      { name: "Royal", class: "bg-[#0D47A1] border-blue-700" },
-                                      { name: "Light Blue", class: "bg-[#ADD8E6] border-blue-200" },
-                                      { name: "Red", class: "bg-[#D32F2F] border-red-600" },
-                                      { name: "Cardinal", class: "bg-[#880E4F] border-red-900" },
-                                      { name: "Maroon", class: "bg-[#4A148C] border-purple-900" },
-                                      { name: "Orange", class: "bg-[#F57C00] border-orange-600" },
-                                      { name: "Gold", class: "bg-[#FBC02D] border-yellow-500" },
-                                      { name: "Yellow", class: "bg-[#FFEB3B] border-yellow-400" },
-                                      { name: "Irish Green", class: "bg-[#388E3C] border-green-600" },
-                                      { name: "Military Green", class: "bg-[#558B2F] border-green-700" },
-                                      { name: "Forest", class: "bg-[#1B5E20] border-green-900" },
-                                      { name: "Purple", class: "bg-[#7B1FA2] border-purple-700" },
-                                      { name: "Light Pink", class: "bg-[#F8BBD0] border-pink-200" },
-                                      { name: "Sand", class: "bg-[#F5F5DC] border-stone-200" },
-                                    ].map((color) => {
-                                      const isSelected = selectedColors.includes(color.name);
-                                      return (
-                                        <TooltipProvider key={color.name}>
-                                          <Tooltip delayDuration={0}>
-                                            <TooltipTrigger asChild>
-                                              <div 
-                                                onClick={() => {
-                                                  if (isSelected) {
-                                                    setSelectedColors(selectedColors.filter(c => c !== color.name));
-                                                  } else {
-                                                    setSelectedColors([...selectedColors, color.name]);
-                                                  }
-                                                }}
-                                                className="group relative h-6 w-6 rounded-full border cursor-pointer transition-all hover:scale-110 flex items-center justify-center"
-                                              >
-                                                <div className={cn(
-                                                  "h-full w-full rounded-full border shadow-sm",
-                                                  color.class,
-                                                  isSelected ? "ring-2 ring-indigo-600 ring-offset-1 dark:ring-offset-background" : ""
-                                                )} />
-                                                {isSelected && (
-                                                  <div className="absolute -top-0.5 -right-0.5 bg-indigo-600 rounded-full p-[1px] border border-background z-10">
-                                                    <CheckIcon className="h-1.5 w-1.5 text-white" />
-                                                  </div>
-                                                )}
-                                              </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent side="bottom" className="text-[10px] px-2 py-1">
-                                              <p>{color.name}</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
-                                      );
-                                    })}
-                                  </div>
+                                  
+                                  {journey === "AOP" ? (
+                                    <div className="space-y-3">
+                                      <div className="flex items-center gap-3 p-3 rounded-xl border border-indigo-200 bg-indigo-50/50 dark:bg-indigo-900/20 dark:border-indigo-800">
+                                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-white to-gray-100 border border-gray-200 shadow-sm flex items-center justify-center">
+                                          <Palette className="h-4 w-4 text-indigo-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                          <p className="font-medium text-sm text-foreground">Pattern-Derived Colors</p>
+                                          <p className="text-xs text-muted-foreground">Base color and trim color will be automatically extracted from your seamless pattern</p>
+                                        </div>
+                                        <CheckCircle2 className="h-5 w-5 text-indigo-600" />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="grid grid-cols-8 gap-1.5">
+                                      {[
+                                        { name: "White", class: "bg-white border-gray-200" },
+                                        { name: "Black", class: "bg-black border-black" },
+                                        { name: "Sport Grey", class: "bg-[#9E9E9E] border-gray-400" },
+                                        { name: "Dark Heather", class: "bg-[#545454] border-gray-600" },
+                                        { name: "Charcoal", class: "bg-[#424242] border-gray-700" },
+                                        { name: "Navy", class: "bg-[#1A237E] border-blue-900" },
+                                        { name: "Royal", class: "bg-[#0D47A1] border-blue-700" },
+                                        { name: "Light Blue", class: "bg-[#ADD8E6] border-blue-200" },
+                                        { name: "Red", class: "bg-[#D32F2F] border-red-600" },
+                                        { name: "Cardinal", class: "bg-[#880E4F] border-red-900" },
+                                        { name: "Maroon", class: "bg-[#4A148C] border-purple-900" },
+                                        { name: "Orange", class: "bg-[#F57C00] border-orange-600" },
+                                        { name: "Gold", class: "bg-[#FBC02D] border-yellow-500" },
+                                        { name: "Yellow", class: "bg-[#FFEB3B] border-yellow-400" },
+                                        { name: "Irish Green", class: "bg-[#388E3C] border-green-600" },
+                                        { name: "Military Green", class: "bg-[#558B2F] border-green-700" },
+                                        { name: "Forest", class: "bg-[#1B5E20] border-green-900" },
+                                        { name: "Purple", class: "bg-[#7B1FA2] border-purple-700" },
+                                        { name: "Light Pink", class: "bg-[#F8BBD0] border-pink-200" },
+                                        { name: "Sand", class: "bg-[#F5F5DC] border-stone-200" },
+                                      ].map((color) => {
+                                        const isSelected = selectedColors.includes(color.name);
+                                        return (
+                                          <TooltipProvider key={color.name}>
+                                            <Tooltip delayDuration={0}>
+                                              <TooltipTrigger asChild>
+                                                <div 
+                                                  onClick={() => {
+                                                    if (isSelected) {
+                                                      setSelectedColors(selectedColors.filter(c => c !== color.name));
+                                                    } else {
+                                                      setSelectedColors([...selectedColors, color.name]);
+                                                    }
+                                                  }}
+                                                  className="group relative h-6 w-6 rounded-full border cursor-pointer transition-all hover:scale-110 flex items-center justify-center"
+                                                >
+                                                  <div className={cn(
+                                                    "h-full w-full rounded-full border shadow-sm",
+                                                    color.class,
+                                                    isSelected ? "ring-2 ring-indigo-600 ring-offset-1 dark:ring-offset-background" : ""
+                                                  )} />
+                                                  {isSelected && (
+                                                    <div className="absolute -top-0.5 -right-0.5 bg-indigo-600 rounded-full p-[1px] border border-background z-10">
+                                                      <CheckIcon className="h-1.5 w-1.5 text-white" />
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </TooltipTrigger>
+                                              <TooltipContent side="bottom" className="text-[10px] px-2 py-1">
+                                                <p>{color.name}</p>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
@@ -1197,10 +1251,10 @@ export default function MockupGenerator() {
                                     </Button>
                                     <Button
                                         onClick={handleNext}
-                                        disabled={!selectedProductType || selectedSizes.length === 0 || selectedColors.length === 0}
+                                        disabled={!selectedProductType || selectedSizes.length === 0 || (journey !== "AOP" && selectedColors.length === 0)}
                                         className={cn(
                                             "gap-2 px-6 transition-all",
-                                            (selectedProductType && selectedSizes.length > 0 && selectedColors.length > 0)
+                                            (selectedProductType && selectedSizes.length > 0 && (journey === "AOP" || selectedColors.length > 0))
                                                 ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
                                                 : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                         )}
@@ -1612,7 +1666,7 @@ export default function MockupGenerator() {
                                           <Slider 
                                             value={[patternScale]}
                                             onValueChange={(val) => setPatternScale(val[0])}
-                                            min={1}
+                                            min={10}
                                             max={100}
                                             step={1}
                                             className="py-2"
