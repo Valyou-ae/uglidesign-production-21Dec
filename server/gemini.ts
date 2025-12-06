@@ -21,14 +21,14 @@ const ai = new GoogleGenAI({
 const TEXT_SENTINEL_MODEL = "gemini-2.5-flash";
 
 // Phase 2: Style Architect - Advanced reasoning for prompt enhancement
-const STYLE_ARCHITECT_MODEL = "gemini-3-pro-preview";
+const STYLE_ARCHITECT_MODEL = "gemini-2.5-pro";
 const STYLE_ARCHITECT_TEMPERATURE = 0.7;
 
 // Phase 3: Image Generator - Best for text rendering
-const IMAGE_GENERATOR_MODEL = "gemini-3-pro-image-preview";
-const IMAGE_GENERATOR_FALLBACK = "gemini-2.5-flash-image";
+const IMAGE_GENERATOR_MODEL = "gemini-2.0-flash-exp";
+const IMAGE_GENERATOR_FALLBACK = "gemini-2.0-flash-preview-image-generation";
 // Escalation model for attempts 4-5 (when primary model keeps failing)
-const IMAGE_GENERATOR_ESCALATION = "imagen-3.0-generate-002";
+const IMAGE_GENERATOR_ESCALATION = "imagen-3.0-generate-001";
 
 // Phase 4: OCR Validator - Vision model for text verification
 const OCR_VALIDATOR_MODEL = "gemini-2.5-flash";
