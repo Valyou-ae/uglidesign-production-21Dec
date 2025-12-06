@@ -188,7 +188,7 @@ export default function ImageGenerator() {
     style: "auto",
     quality: "standard",
     aspectRatio: "1:1",
-    variations: "4",
+    variations: "1",
     refiner: false,
     refinerPreset: "cinematic",
     aiCuration: true,
@@ -572,12 +572,12 @@ export default function ImageGenerator() {
                   exit={{ height: 0, opacity: 0, y: -10 }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-muted/30 border border-border rounded-xl p-3 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 shadow-inner mb-4">
+                  <div className="bg-muted/30 border border-border rounded-xl p-4 flex flex-wrap items-start gap-6 shadow-inner mb-4">
                     
                     {/* Quality */}
-                    <div className="space-y-1.5 col-span-1">
+                    <div className="space-y-2 min-w-[180px]">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Quality</label>
-                      <div className="flex gap-1.5">
+                      <div className="flex gap-1">
                         {QUALITY_PRESETS.map(q => (
                           <TooltipProvider key={q.id}>
                             <Tooltip>
@@ -585,14 +585,14 @@ export default function ImageGenerator() {
                                 <button
                                   onClick={() => setSettings({...settings, quality: q.id})}
                                   className={cn(
-                                    "flex-1 h-9 rounded-lg flex items-center justify-center gap-1.5 transition-all border",
+                                    "h-8 px-2.5 rounded-md flex items-center justify-center gap-1.5 transition-all border text-[11px] font-medium whitespace-nowrap",
                                     settings.quality === q.id 
                                       ? "bg-background border-primary/50 text-primary shadow-sm" 
                                       : "bg-background/50 border-transparent text-muted-foreground hover:bg-background hover:text-foreground"
                                   )}
                                 >
-                                  <q.icon className={cn("h-3.5 w-3.5", settings.quality === q.id ? "text-primary" : "opacity-70")} />
-                                  <span className="text-[10px] font-medium">{q.name}</span>
+                                  <q.icon className={cn("h-3.5 w-3.5 shrink-0", settings.quality === q.id ? "text-primary" : "opacity-70")} />
+                                  <span>{q.name}</span>
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent side="bottom"><p>{q.tooltip}</p></TooltipContent>
@@ -603,9 +603,9 @@ export default function ImageGenerator() {
                     </div>
 
                     {/* Aspect Ratio */}
-                    <div className="space-y-1.5 col-span-1">
+                    <div className="space-y-2 min-w-[200px]">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Ratio</label>
-                      <div className="flex gap-1.5">
+                      <div className="flex gap-1">
                         {ASPECT_RATIOS.map(r => (
                           <TooltipProvider key={r.id}>
                             <Tooltip>
@@ -613,17 +613,17 @@ export default function ImageGenerator() {
                                 <button
                                   onClick={() => setSettings({...settings, aspectRatio: r.id})}
                                   className={cn(
-                                    "flex-1 h-9 rounded-lg flex items-center justify-center gap-1 transition-all border",
+                                    "h-8 px-2 rounded-md flex items-center justify-center gap-1 transition-all border text-[11px] font-medium",
                                     settings.aspectRatio === r.id 
                                       ? "bg-background border-primary/50 text-primary shadow-sm" 
                                       : "bg-background/50 border-transparent text-muted-foreground hover:bg-background hover:text-foreground"
                                   )}
                                 >
-                                  <r.icon className={cn("h-3.5 w-3.5", settings.aspectRatio === r.id ? "text-primary" : "opacity-70")} />
-                                  <span className="text-[9px] text-muted-foreground/70 font-medium hidden sm:inline">{r.ratioText}</span>
+                                  <r.icon className={cn("h-3.5 w-3.5 shrink-0", settings.aspectRatio === r.id ? "text-primary" : "opacity-70")} />
+                                  <span className="text-muted-foreground/80">{r.ratioText}</span>
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom"><p>{r.label}</p></TooltipContent>
+                              <TooltipContent side="bottom"><p>{r.tooltip}</p></TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         ))}
@@ -631,20 +631,18 @@ export default function ImageGenerator() {
                     </div>
 
                     {/* Style */}
-                    <div className="space-y-1.5 col-span-1">
+                    <div className="space-y-2 min-w-[120px]">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Style</label>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="outline" className="w-full justify-between h-9 text-xs bg-background/50 border-transparent hover:bg-background px-2">
+                          <Button variant="outline" className="w-full justify-between h-8 text-[11px] bg-background/50 border-transparent hover:bg-background px-3 min-w-[120px]">
                             <div className="flex items-center gap-2 overflow-hidden">
-                              {STYLE_PRESETS.find(s => s.id === settings.style)?.icon && (
-                                 <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-                              )}
-                              <span className="font-medium truncate text-[10px]">
+                              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <span className="font-medium truncate">
                                 {STYLE_PRESETS.find(s => s.id === settings.style)?.name}
                               </span>
                             </div>
-                            <ChevronDown className="h-3 w-3 opacity-50 flex-shrink-0 ml-1" />
+                            <ChevronDown className="h-3 w-3 opacity-50 flex-shrink-0 ml-2" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-[180px] max-h-[300px] overflow-y-auto">
@@ -664,16 +662,16 @@ export default function ImageGenerator() {
                       </DropdownMenu>
                     </div>
 
-                    {/* Previews (Variations) */}
-                    <div className="space-y-1.5 col-span-1">
+                    {/* Previews (Count) */}
+                    <div className="space-y-2 min-w-[100px]">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Count</label>
-                      <div className="flex bg-background/50 rounded-lg p-0.5 h-9 items-center border border-transparent hover:border-border/50 transition-colors">
+                      <div className="flex bg-background/50 rounded-md p-0.5 h-8 items-center border border-transparent hover:border-border/50 transition-colors">
                         {["1", "2", "4"].map(v => (
                           <button
                             key={v}
                             onClick={() => setSettings({...settings, variations: v})}
                             className={cn(
-                              "flex-1 h-full rounded-md flex items-center justify-center text-[10px] font-medium transition-all",
+                              "w-8 h-full rounded flex items-center justify-center text-[11px] font-medium transition-all",
                               settings.variations === v 
                                 ? "bg-background shadow-sm text-primary font-bold" 
                                 : "text-muted-foreground hover:text-foreground"
@@ -686,18 +684,18 @@ export default function ImageGenerator() {
                     </div>
 
                     {/* Master Refiner */}
-                    <div className="space-y-1.5 col-span-2 md:col-span-4 lg:col-span-1">
-                      <div className="flex items-center justify-between h-[15px]">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Refiner</label>
+                    <div className="space-y-2 min-w-[140px]">
+                      <div className="flex items-center gap-3">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Refiner</label>
                         <Switch 
                           checked={settings.refiner}
                           onCheckedChange={(c) => setSettings({...settings, refiner: c})}
-                          className="scale-75 origin-right data-[state=checked]:bg-primary"
+                          className="scale-75 data-[state=checked]:bg-primary"
                         />
                       </div>
                       
                       <div className={cn(
-                        "grid grid-cols-4 lg:grid-cols-2 gap-1.5 transition-all duration-300 h-9",
+                        "flex gap-1 transition-all duration-300",
                         settings.refiner ? "opacity-100" : "opacity-40 pointer-events-none grayscale"
                       )}>
                         {REFINER_PRESETS.slice(0, 2).map(preset => (
@@ -706,14 +704,14 @@ export default function ImageGenerator() {
                             onClick={() => setSettings({...settings, refinerPreset: preset.id})}
                             disabled={!settings.refiner}
                             className={cn(
-                              "h-full rounded-md flex items-center justify-center gap-1 px-1 text-[9px] font-medium transition-all border",
+                              "h-8 px-2.5 rounded-md flex items-center justify-center gap-1 text-[10px] font-medium transition-all border whitespace-nowrap",
                               settings.refinerPreset === preset.id 
                                 ? "bg-primary/10 border-primary/30 text-primary" 
                                 : "bg-background/30 border-transparent text-muted-foreground hover:bg-background/50"
                             )}
                           >
                             <preset.icon className="h-3 w-3 shrink-0" />
-                            <span className="truncate hidden xl:inline">{preset.name}</span>
+                            <span>{preset.name}</span>
                           </button>
                         ))}
                       </div>
