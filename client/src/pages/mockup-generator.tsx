@@ -1,4 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { 
+  generateAllPatternVariations, 
+  downloadTexture, 
+  type PatternVariation 
+} from "@/lib/patternUtils";
 import { 
   Shirt, 
   Grid, 
@@ -253,7 +258,8 @@ export default function MockupGenerator() {
   const [personaHeadshot, setPersonaHeadshot] = useState<string | null>(null);
   // Seamless Pattern State
   const [seamlessPhase, setSeamlessPhase] = useState<'analyzing' | 'generating' | 'selecting'>('analyzing');
-  const [seamlessVariations, setSeamlessVariations] = useState<any[]>([]);
+  const [seamlessVariations, setSeamlessVariations] = useState<PatternVariation[]>([]);
+  const [isGeneratingPatterns, setIsGeneratingPatterns] = useState(false);
   const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
   const [patternScale, setPatternScale] = useState(50);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -280,29 +286,47 @@ export default function MockupGenerator() {
   const steps = journey === "AOP" ? AOP_STEPS : DTG_STEPS;
   const currentStep = steps[currentStepIndex];
 
-  // Mock effect to simulate analyzing phase
-  useEffect(() => {
-    if (currentStep === "seamless" && seamlessPhase === 'analyzing') {
-      const timer = setTimeout(() => {
-        setSeamlessPhase('generating');
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
+  // Generate pattern variations when entering seamless step
+  const generatePatternVariations = useCallback(async () => {
+    if (!uploadedImage || isGeneratingPatterns) return;
     
-    if (currentStep === "seamless" && seamlessPhase === 'generating') {
-      const timer = setTimeout(() => {
-        setSeamlessPhase('selecting');
-        setSeamlessVariations([
-          { id: 'offset_blend', name: 'Offset & Blend', description: 'Classic seamless tile', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=300&q=80', isRecommended: true },
-          { id: 'mirror', name: 'Mirror Symmetry', description: 'Kaleidoscopic effect', url: 'https://images.unsplash.com/photo-1548586196-aa5803b77379?auto=format&fit=crop&w=300&q=80', isRecommended: false },
-          { id: 'graph_cut', name: 'Graph-Cut', description: 'Advanced texture synthesis', url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=300&q=80', isRecommended: false },
-          { id: 'edge_average', name: 'Edge Average', description: 'Smooth edge blending', url: 'https://images.unsplash.com/photo-1550684847-75bdda21cc95?auto=format&fit=crop&w=300&q=80', isRecommended: false },
-          { id: 'ai_enhanced', name: 'AI Enhanced', description: 'Creative AI-generated pattern (slower)', url: '', isRecommended: false },
-        ]);
-      }, 1500);
-      return () => clearTimeout(timer);
+    setIsGeneratingPatterns(true);
+    setSeamlessPhase('analyzing');
+    
+    try {
+      // Short delay for analyzing phase visual feedback
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setSeamlessPhase('generating');
+      
+      // Generate actual pattern variations from uploaded image
+      const variations = await generateAllPatternVariations(uploadedImage);
+      setSeamlessVariations(variations);
+      setSeamlessPhase('selecting');
+      
+      // Auto-select the recommended variation
+      const recommended = variations.find(v => v.isRecommended);
+      if (recommended) {
+        setSelectedVariationId(recommended.id);
+      }
+    } catch (error) {
+      console.error('Failed to generate patterns:', error);
+      toast({
+        title: "Pattern Generation Failed",
+        description: "Could not generate seamless patterns. Please try again.",
+        variant: "destructive",
+      });
+      setSeamlessPhase('selecting');
+    } finally {
+      setIsGeneratingPatterns(false);
     }
-  }, [currentStep, seamlessPhase]);
+  }, [uploadedImage, isGeneratingPatterns, toast]);
+  
+  // Trigger pattern generation when entering seamless step
+  useEffect(() => {
+    if (currentStep === "seamless" && seamlessPhase === 'analyzing' && !isGeneratingPatterns && seamlessVariations.length === 0) {
+      generatePatternVariations();
+    }
+  }, [currentStep, seamlessPhase, isGeneratingPatterns, seamlessVariations.length, generatePatternVariations]);
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -1461,7 +1485,19 @@ export default function MockupGenerator() {
                                   <div className="bg-card border-2 border-border rounded-xl p-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <div className="flex justify-between items-center mb-3">
                                       <h3 className="text-sm font-bold text-foreground">Live Preview & Scale</h3>
-                                      <button className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+                                      <button 
+                                        onClick={() => {
+                                          const selectedPattern = seamlessVariations.find(v => v.id === selectedVariationId);
+                                          if (selectedPattern?.url) {
+                                            downloadTexture(
+                                              selectedPattern.url, 
+                                              patternScale, 
+                                              `seamless-${selectedVariationId}-scale${patternScale}.png`
+                                            );
+                                          }
+                                        }}
+                                        className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                                      >
                                         <Download className="h-4 w-4" />
                                         Download Texture
                                       </button>
@@ -1482,7 +1518,7 @@ export default function MockupGenerator() {
                                       <div className="flex flex-col gap-3">
                                         <div className="bg-background border border-border rounded-lg p-4">
                                           <div className="flex items-center gap-2 mb-3">
-                                            <Ruler className="h-4 w-4 text-muted-foreground" />
+                                            <Layers className="h-4 w-4 text-muted-foreground" />
                                             <span className="text-xs font-bold text-foreground">Pattern Scale</span>
                                           </div>
                                           
