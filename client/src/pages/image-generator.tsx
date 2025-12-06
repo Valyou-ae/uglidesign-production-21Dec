@@ -93,8 +93,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { useImages, type ProgressUpdate, type ProgressPhase } from "@/hooks/use-images";
-import { useAuth } from "@/hooks/use-auth";
 
 // Import generated images for the gallery
 import cyberpunkCity from "@assets/generated_images/futuristic_cyberpunk_city_street_at_night_with_neon_lights_and_rain.png";
@@ -126,9 +124,11 @@ type Agent = {
 };
 
 const AGENTS: Agent[] = [
-  { id: 1, name: "Prompt Analyst", status: "idle", message: "Analyzing prompt...", icon: BrainCircuit, activeColor: "#3B82F6" },
-  { id: 2, name: "Style Architect", status: "idle", message: "Creating cinematic DNA...", icon: Sparkles, activeColor: "#8B5CF6" },
-  { id: 3, name: "Image Generator", status: "idle", message: "Generating image...", icon: Palette, activeColor: "#EC4899" },
+  { id: 1, name: "Text Sentinel", status: "idle", message: "Checking spelling...", icon: Bot, activeColor: "#3B82F6" },
+  { id: 2, name: "Style Architect", status: "idle", message: "Enhancing style...", icon: Sparkles, activeColor: "#8B5CF6" },
+  { id: 3, name: "Visual Synthesizer", status: "idle", message: "Generating image...", icon: Palette, activeColor: "#EC4899" },
+  { id: 4, name: "Master Refiner", status: "idle", message: "Refining details...", icon: SlidersHorizontal, activeColor: "#F59E0B" },
+  { id: 5, name: "Quality Analyst", status: "idle", message: "Analyzing quality...", icon: BrainCircuit, activeColor: "#10B981" },
 ];
 
 const STYLE_PRESETS = [
@@ -182,15 +182,11 @@ export default function ImageGenerator() {
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
   const [imageToDelete, setImageToDelete] = useState<GeneratedImage | null>(null);
   const [isListening, setIsListening] = useState(false);
-  const [progressPhase, setProgressPhase] = useState<ProgressPhase | null>(null);
-  const [progressMessage, setProgressMessage] = useState<string>("");
-  const [currentAttempt, setCurrentAttempt] = useState<number>(1);
-  const [maxAttempts, setMaxAttempts] = useState<number>(3);
   const [settings, setSettings] = useState({
     style: "auto",
     quality: "standard",
     aspectRatio: "1:1",
-    variations: "1",
+    variations: "4",
     refiner: false,
     refinerPreset: "cinematic",
     aiCuration: true,
@@ -199,8 +195,6 @@ export default function ImageGenerator() {
   
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { generateImageWithProgress, isGenerating } = useImages();
-  const { isAuthenticated } = useAuth();
 
   const downloadImage = (url: string, filename: string) => {
     const link = document.createElement('a');
@@ -283,91 +277,70 @@ export default function ImageGenerator() {
     }
   }, [generations, activeFilter]);
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     if (!prompt.trim()) return;
     
     setStatus("generating");
     setProgress(0);
-    setProgressPhase(null);
-    setProgressMessage("Starting generation...");
-    setCurrentAttempt(1);
     setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
 
-    // Map phase names to agent indices for visual updates (AI Studio 3-phase flow)
-    const phaseToAgentMap: Record<string, number> = {
-      analysis: 0,        // Phase 1: Initial analysis (text + deep)
-      draft_prompt: 1,    // Phase 2: Creating cinematic draft prompt
-      image_generation: 2,// Phase 3: Generating image
-      complete: 2,
-    };
-
-    try {
-      const result = await generateImageWithProgress({
-        prompt: prompt.trim(),
-        style: settings.style,
-        aspectRatio: settings.aspectRatio,
-        enhanceWithAI: settings.autoOptimize,
-        onProgress: (update) => {
-          setProgressPhase(update.phase);
-          setProgressMessage(update.message);
-
-          // Update agents based on phase (AI Studio 3-phase flow)
-          const agentIndex = phaseToAgentMap[update.phase] ?? -1;
-          if (agentIndex >= 0) {
-            setAgents(prev => prev.map((a, i) => {
-              if (i < agentIndex) return { ...a, status: "complete" };
-              if (i === agentIndex) return { ...a, status: "working", message: update.message };
-              return { ...a, status: "idle" };
-            }));
-            setProgress(Math.min(20 + agentIndex * 20, 95));
-          }
+    // Simulation pipeline
+    let currentAgentIndex = 0;
+    const totalDuration = 5000; // 5 seconds total
+    const intervalTime = totalDuration / 100;
+    
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          completeGeneration();
+          return 100;
         }
+        return prev + 1;
       });
 
-      setProgress(100);
-      setStatus("complete");
-      setAgents(prev => prev.map(a => ({ ...a, status: "complete" })));
-      setProgressMessage("Complete!");
+      // Update agents based on progress
+      const stage = Math.floor((progress / 100) * 5);
+      if (stage !== currentAgentIndex && stage < 5) {
+        setAgents(prev => prev.map((a, i) => {
+          if (i < stage) return { ...a, status: "complete" };
+          if (i === stage) return { ...a, status: "working" };
+          return { ...a, status: "idle" };
+        }));
+        currentAgentIndex = stage;
+      }
+    }, intervalTime);
+  };
 
-      const newImage: GeneratedImage = {
-        id: result.image.id,
-        src: result.image.imageUrl,
-        prompt: result.enhancedPrompt || prompt,
-        style: settings.style,
-        aspectRatio: settings.aspectRatio,
-        timestamp: "Just now",
-        isNew: true,
-        isFavorite: result.image.isFavorite || false
-      };
+  const completeGeneration = () => {
+    setStatus("complete");
+    setAgents(prev => prev.map(a => ({ ...a, status: "complete" })));
+    
+    // Add new generation
+    const newImage: GeneratedImage = {
+      id: Date.now().toString(),
+      src: cyberpunkCity, // Just using one as example result
+      prompt: prompt,
+      style: settings.style,
+      aspectRatio: settings.aspectRatio,
+      timestamp: "Just now",
+      isNew: true,
+      isFavorite: false
+    };
+    
+    setGenerations(prev => [newImage, ...prev]);
+    
+    toast({
+      title: "Image Generated!",
+      description: "Your creation is ready.",
+      className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
+    });
 
-      setGenerations(prev => [newImage, ...prev]);
-
-      toast({
-        title: "Image Generated!",
-        description: result.enhancedPrompt ? "Your prompt was enhanced by AI." : "Your creation is ready.",
-        className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
-      });
-
-    } catch (error: any) {
-      setStatus("idle");
-      setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
-      setProgress(0);
-      setProgressPhase(null);
-      setProgressMessage("");
-
-      toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: error.message || "Failed to generate image. Please try again.",
-      });
-    }
-
+    // Reset agents after delay
     setTimeout(() => {
       setStatus("idle");
       setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
       setProgress(0);
-      setProgressPhase(null);
-      setProgressMessage("");
     }, 3000);
   };
 
@@ -423,13 +396,12 @@ export default function ImageGenerator() {
     }
   }, []);
 
-  // Helper function to get progress text - now uses real progress messages
-  const getProgressText = () => {
-    if (progressMessage) return progressMessage;
-    if (progress < 20) return "Initializing AI Agents...";
-    if (progress < 40) return "Analyzing prompt structure...";
-    if (progress < 60) return "Synthesizing visual elements...";
-    if (progress < 80) return "Refining details and textures...";
+  // Helper function to get progress text
+  const getProgressText = (prog: number) => {
+    if (prog < 20) return "Initializing AI Agents...";
+    if (prog < 40) return "Analyzing prompt structure...";
+    if (prog < 60) return "Synthesizing visual elements...";
+    if (prog < 80) return "Refining details and textures...";
     return "Final polishing...";
   };
 
@@ -576,12 +548,12 @@ export default function ImageGenerator() {
                   exit={{ height: 0, opacity: 0, y: -10 }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-muted/30 border border-border rounded-xl p-4 flex flex-wrap items-start gap-6 shadow-inner mb-4">
+                  <div className="bg-muted/30 border border-border rounded-xl p-3 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 shadow-inner mb-4">
                     
                     {/* Quality */}
-                    <div className="space-y-2 min-w-[180px]">
+                    <div className="space-y-1.5 col-span-1">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Quality</label>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1.5">
                         {QUALITY_PRESETS.map(q => (
                           <TooltipProvider key={q.id}>
                             <Tooltip>
@@ -589,14 +561,14 @@ export default function ImageGenerator() {
                                 <button
                                   onClick={() => setSettings({...settings, quality: q.id})}
                                   className={cn(
-                                    "h-8 px-2.5 rounded-md flex items-center justify-center gap-1.5 transition-all border text-[11px] font-medium whitespace-nowrap",
+                                    "flex-1 h-9 rounded-lg flex items-center justify-center gap-1.5 transition-all border",
                                     settings.quality === q.id 
                                       ? "bg-background border-primary/50 text-primary shadow-sm" 
                                       : "bg-background/50 border-transparent text-muted-foreground hover:bg-background hover:text-foreground"
                                   )}
                                 >
-                                  <q.icon className={cn("h-3.5 w-3.5 shrink-0", settings.quality === q.id ? "text-primary" : "opacity-70")} />
-                                  <span>{q.name}</span>
+                                  <q.icon className={cn("h-3.5 w-3.5", settings.quality === q.id ? "text-primary" : "opacity-70")} />
+                                  <span className="text-[10px] font-medium">{q.name}</span>
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent side="bottom"><p>{q.tooltip}</p></TooltipContent>
@@ -607,9 +579,9 @@ export default function ImageGenerator() {
                     </div>
 
                     {/* Aspect Ratio */}
-                    <div className="space-y-2 min-w-[200px]">
+                    <div className="space-y-1.5 col-span-1">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Ratio</label>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1.5">
                         {ASPECT_RATIOS.map(r => (
                           <TooltipProvider key={r.id}>
                             <Tooltip>
@@ -617,17 +589,17 @@ export default function ImageGenerator() {
                                 <button
                                   onClick={() => setSettings({...settings, aspectRatio: r.id})}
                                   className={cn(
-                                    "h-8 px-2 rounded-md flex items-center justify-center gap-1 transition-all border text-[11px] font-medium",
+                                    "flex-1 h-9 rounded-lg flex items-center justify-center gap-1 transition-all border",
                                     settings.aspectRatio === r.id 
                                       ? "bg-background border-primary/50 text-primary shadow-sm" 
                                       : "bg-background/50 border-transparent text-muted-foreground hover:bg-background hover:text-foreground"
                                   )}
                                 >
-                                  <r.icon className={cn("h-3.5 w-3.5 shrink-0", settings.aspectRatio === r.id ? "text-primary" : "opacity-70")} />
-                                  <span className="text-muted-foreground/80">{r.ratioText}</span>
+                                  <r.icon className={cn("h-3.5 w-3.5", settings.aspectRatio === r.id ? "text-primary" : "opacity-70")} />
+                                  <span className="text-[9px] text-muted-foreground/70 font-medium hidden sm:inline">{r.ratioText}</span>
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom"><p>{r.tooltip}</p></TooltipContent>
+                              <TooltipContent side="bottom"><p>{r.label}</p></TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         ))}
@@ -635,18 +607,20 @@ export default function ImageGenerator() {
                     </div>
 
                     {/* Style */}
-                    <div className="space-y-2 min-w-[120px]">
+                    <div className="space-y-1.5 col-span-1">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Style</label>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="outline" className="w-full justify-between h-8 text-[11px] bg-background/50 border-transparent hover:bg-background px-3 min-w-[120px]">
+                          <Button variant="outline" className="w-full justify-between h-9 text-xs bg-background/50 border-transparent hover:bg-background px-2">
                             <div className="flex items-center gap-2 overflow-hidden">
-                              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-                              <span className="font-medium truncate">
+                              {STYLE_PRESETS.find(s => s.id === settings.style)?.icon && (
+                                 <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                              )}
+                              <span className="font-medium truncate text-[10px]">
                                 {STYLE_PRESETS.find(s => s.id === settings.style)?.name}
                               </span>
                             </div>
-                            <ChevronDown className="h-3 w-3 opacity-50 flex-shrink-0 ml-2" />
+                            <ChevronDown className="h-3 w-3 opacity-50 flex-shrink-0 ml-1" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-[180px] max-h-[300px] overflow-y-auto">
@@ -666,16 +640,16 @@ export default function ImageGenerator() {
                       </DropdownMenu>
                     </div>
 
-                    {/* Previews (Count) */}
-                    <div className="space-y-2 min-w-[100px]">
+                    {/* Previews (Variations) */}
+                    <div className="space-y-1.5 col-span-1">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Count</label>
-                      <div className="flex bg-background/50 rounded-md p-0.5 h-8 items-center border border-transparent hover:border-border/50 transition-colors">
+                      <div className="flex bg-background/50 rounded-lg p-0.5 h-9 items-center border border-transparent hover:border-border/50 transition-colors">
                         {["1", "2", "4"].map(v => (
                           <button
                             key={v}
                             onClick={() => setSettings({...settings, variations: v})}
                             className={cn(
-                              "w-8 h-full rounded flex items-center justify-center text-[11px] font-medium transition-all",
+                              "flex-1 h-full rounded-md flex items-center justify-center text-[10px] font-medium transition-all",
                               settings.variations === v 
                                 ? "bg-background shadow-sm text-primary font-bold" 
                                 : "text-muted-foreground hover:text-foreground"
@@ -688,18 +662,18 @@ export default function ImageGenerator() {
                     </div>
 
                     {/* Master Refiner */}
-                    <div className="space-y-2 min-w-[140px]">
-                      <div className="flex items-center gap-3">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Refiner</label>
+                    <div className="space-y-1.5 col-span-2 md:col-span-4 lg:col-span-1">
+                      <div className="flex items-center justify-between h-[15px]">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block px-0.5">Refiner</label>
                         <Switch 
                           checked={settings.refiner}
                           onCheckedChange={(c) => setSettings({...settings, refiner: c})}
-                          className="scale-75 data-[state=checked]:bg-primary"
+                          className="scale-75 origin-right data-[state=checked]:bg-primary"
                         />
                       </div>
                       
                       <div className={cn(
-                        "flex gap-1 transition-all duration-300",
+                        "grid grid-cols-4 lg:grid-cols-2 gap-1.5 transition-all duration-300 h-9",
                         settings.refiner ? "opacity-100" : "opacity-40 pointer-events-none grayscale"
                       )}>
                         {REFINER_PRESETS.slice(0, 2).map(preset => (
@@ -708,14 +682,14 @@ export default function ImageGenerator() {
                             onClick={() => setSettings({...settings, refinerPreset: preset.id})}
                             disabled={!settings.refiner}
                             className={cn(
-                              "h-8 px-2.5 rounded-md flex items-center justify-center gap-1 text-[10px] font-medium transition-all border whitespace-nowrap",
+                              "h-full rounded-md flex items-center justify-center gap-1 px-1 text-[9px] font-medium transition-all border",
                               settings.refinerPreset === preset.id 
                                 ? "bg-primary/10 border-primary/30 text-primary" 
                                 : "bg-background/30 border-transparent text-muted-foreground hover:bg-background/50"
                             )}
                           >
                             <preset.icon className="h-3 w-3 shrink-0" />
-                            <span>{preset.name}</span>
+                            <span className="truncate hidden xl:inline">{preset.name}</span>
                           </button>
                         ))}
                       </div>
@@ -816,7 +790,7 @@ export default function ImageGenerator() {
                     {/* Progress Bar & Percentage */}
                     <div className="w-3/4 mt-3 space-y-1.5">
                       <div className="flex justify-between items-center px-1">
-                        <span className="text-[10px] font-medium text-white/80">{getProgressText()}</span>
+                        <span className="text-[10px] font-medium text-white/80">{getProgressText(progress)}</span>
                         <span className="text-[10px] font-bold text-white">{progress}%</span>
                       </div>
                       <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">

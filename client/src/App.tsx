@@ -27,7 +27,7 @@ import AffiliateProgram from "@/pages/affiliate-program";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={Login} />
       <Route path="/home" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/forgot-password" component={ForgotPassword} />

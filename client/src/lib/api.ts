@@ -64,17 +64,6 @@ export const userApi = {
 
 // Images API
 export const imagesApi = {
-  generate: (data: {
-    prompt: string;
-    style?: string;
-    aspectRatio?: string;
-    enhanceWithAI?: boolean;
-  }) =>
-    fetchApi<{ image: any; enhancedPrompt?: string }>("/generate-image", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-
   create: (data: {
     imageUrl: string;
     prompt: string;
