@@ -1,6 +1,6 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export const MODELS = {
   FAST_ANALYSIS: "gemini-2.5-flash",
@@ -30,7 +30,7 @@ export interface GeneratedImageResult {
 }
 
 export async function analyzePrompt(prompt: string): Promise<PromptAnalysis> {
-  const systemPrompt = `You are an expert Art Director's Assistant. Analyze the user's image generation prompt and extract key creative elements.
+  const systemInstruction = `You are an expert Art Director's Assistant. Analyze the user's image generation prompt and extract key creative elements.
 
 Tasks:
 1. Detect if the user explicitly wants text rendered in the image (look for quotes, "add text", "write", etc.)
@@ -54,13 +54,13 @@ Respond with JSON in this exact format:
 }`;
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await genAI.models.generateContent({
       model: MODELS.FAST_ANALYSIS,
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
-        systemInstruction: systemPrompt,
+        systemInstruction: systemInstruction,
         responseMimeType: "application/json",
       },
-      contents: prompt,
     });
 
     const rawJson = response.text;
@@ -68,27 +68,23 @@ Respond with JSON in this exact format:
       return JSON.parse(rawJson) as PromptAnalysis;
     }
 
-    return {
-      subject: "general",
-      mood: "neutral",
-      lighting: "natural",
-      environment: "unspecified",
-      styleIntent: "photorealistic",
-      hasTextRequest: false,
-      textInfo: null,
-    };
+    return getDefaultAnalysis();
   } catch (error) {
     console.error("Prompt analysis failed:", error);
-    return {
-      subject: "general",
-      mood: "neutral",
-      lighting: "natural",
-      environment: "unspecified",
-      styleIntent: "photorealistic",
-      hasTextRequest: false,
-      textInfo: null,
-    };
+    return getDefaultAnalysis();
   }
+}
+
+function getDefaultAnalysis(): PromptAnalysis {
+  return {
+    subject: "general",
+    mood: "neutral",
+    lighting: "natural",
+    environment: "unspecified",
+    styleIntent: "photorealistic",
+    hasTextRequest: false,
+    textInfo: null,
+  };
 }
 
 export async function enhancePrompt(
@@ -110,7 +106,7 @@ export async function enhancePrompt(
        - Texture: Surface details, material rendering, atmospheric elements
        - Composition: Rule of thirds, leading lines, framing elements`;
 
-  const systemPrompt = `You are the Style Architect, a master prompt engineer for AI image generation.
+  const systemInstruction = `You are the Style Architect, a master prompt engineer for AI image generation.
 
 ${modeInstructions}
 
@@ -135,13 +131,13 @@ Respond with JSON:
 }`;
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await genAI.models.generateContent({
       model: MODELS.FAST_ANALYSIS,
+      contents: [{ role: "user", parts: [{ text: originalPrompt }] }],
       config: {
-        systemInstruction: systemPrompt,
+        systemInstruction: systemInstruction,
         responseMimeType: "application/json",
       },
-      contents: originalPrompt,
     });
 
     const rawJson = response.text;
@@ -171,7 +167,7 @@ Respond with JSON:
       }
 
       return {
-        enhancedPrompt: result.enhancedPrompt,
+        enhancedPrompt: result.enhancedPrompt || originalPrompt,
         negativePrompts: [...baseNegatives, ...(result.negativePrompts || [])],
       };
     }
@@ -198,7 +194,7 @@ export async function generateImage(
       ? `${prompt}\n\nAvoid: ${negativePrompts.join(", ")}`
       : prompt;
 
-    const response = await ai.models.generateContent({
+    const response = await genAI.models.generateContent({
       model: MODELS.IMAGE_GENERATION,
       contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
       config: {
@@ -208,11 +204,13 @@ export async function generateImage(
 
     const candidates = response.candidates;
     if (!candidates || candidates.length === 0) {
+      console.error("No candidates in response");
       return null;
     }
 
     const content = candidates[0].content;
     if (!content || !content.parts) {
+      console.error("No content parts in response");
       return null;
     }
 
@@ -237,6 +235,7 @@ export async function generateImage(
       };
     }
 
+    console.error("No image data in response parts");
     return null;
   } catch (error) {
     console.error("Image generation failed:", error);
@@ -249,7 +248,7 @@ export async function scoreImage(
   originalPrompt: string
 ): Promise<{ composition: number; detail: number; lighting: number; overall: number }> {
   try {
-    const systemPrompt = `You are an expert image quality analyst. Score this generated image on a scale of 1-10 for:
+    const systemInstruction = `You are an expert image quality analyst. Score this generated image on a scale of 1-10 for:
 - Composition: Balance, framing, visual flow
 - Detail: Sharpness, texture quality, fine details
 - Lighting: Light quality, shadows, highlights, mood
@@ -262,21 +261,28 @@ Respond with JSON:
   "overall": number
 }`;
 
-    const response = await ai.models.generateContent({
+    const response = await genAI.models.generateContent({
       model: MODELS.FAST_ANALYSIS,
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: "application/json",
-      },
       contents: [
         {
-          inlineData: {
-            data: imageBase64,
-            mimeType: "image/png",
-          },
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                data: imageBase64,
+                mimeType: "image/png",
+              },
+            },
+            {
+              text: `Original prompt: "${originalPrompt}"\n\nScore this image's quality.`,
+            },
+          ],
         },
-        `Original prompt: "${originalPrompt}"\n\nScore this image's quality.`,
       ],
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: "application/json",
+      },
     });
 
     const rawJson = response.text;
@@ -297,15 +303,24 @@ export async function generateMultipleImages(
   count: number,
   onProgress?: (index: number, result: GeneratedImageResult | null) => void
 ): Promise<(GeneratedImageResult | null)[]> {
-  const results: (GeneratedImageResult | null)[] = [];
+  const results: (GeneratedImageResult | null)[] = new Array(count).fill(null);
   
   const promises = Array.from({ length: count }, async (_, index) => {
-    const result = await generateImage(prompt, negativePrompts);
-    results[index] = result;
-    if (onProgress) {
-      onProgress(index, result);
+    try {
+      const result = await generateImage(prompt, negativePrompts);
+      results[index] = result;
+      if (onProgress) {
+        onProgress(index, result);
+      }
+      return result;
+    } catch (error) {
+      console.error(`Generation ${index} failed:`, error);
+      results[index] = null;
+      if (onProgress) {
+        onProgress(index, null);
+      }
+      return null;
     }
-    return result;
   });
 
   await Promise.all(promises);

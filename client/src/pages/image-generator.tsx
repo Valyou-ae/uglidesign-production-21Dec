@@ -93,6 +93,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
+import { generateApi, GenerationEvent } from "@/lib/api";
 
 // Import generated images for the gallery
 import cyberpunkCity from "@assets/generated_images/futuristic_cyberpunk_city_street_at_night_with_neon_lights_and_rain.png";
@@ -277,39 +278,126 @@ export default function ImageGenerator() {
     }
   }, [generations, activeFilter]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!prompt.trim()) return;
     
     setStatus("generating");
     setProgress(0);
     setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
 
-    // Simulation pipeline
-    let currentAgentIndex = 0;
-    const totalDuration = 5000; // 5 seconds total
-    const intervalTime = totalDuration / 100;
-    
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          completeGeneration();
-          return 100;
-        }
-        return prev + 1;
-      });
+    const generatedImages: GeneratedImage[] = [];
+    let imageCount = 0;
+    let totalExpected = settings.quality === "draft" ? 4 : 2;
 
-      // Update agents based on progress
-      const stage = Math.floor((progress / 100) * 5);
-      if (stage !== currentAgentIndex && stage < 5) {
-        setAgents(prev => prev.map((a, i) => {
-          if (i < stage) return { ...a, status: "complete" };
-          if (i === stage) return { ...a, status: "working" };
-          return { ...a, status: "idle" };
+    const handleEvent = (event: GenerationEvent) => {
+      const { type, data } = event;
+
+      if (type === "status" && data.agent && data.status) {
+        setAgents(prev => prev.map(a => {
+          if (a.name === data.agent) {
+            return { ...a, status: data.status as Agent["status"], message: data.message || a.message };
+          }
+          return a;
         }));
-        currentAgentIndex = stage;
       }
-    }, intervalTime);
+
+      if (type === "progress" && data.completed !== undefined && data.total !== undefined) {
+        const progressPercent = Math.round((data.completed / data.total) * 100);
+        setProgress(progressPercent);
+        totalExpected = data.total;
+      }
+
+      if (type === "image" && data.imageData && data.mimeType) {
+        imageCount++;
+        const newImage: GeneratedImage = {
+          id: `${Date.now()}-${imageCount}`,
+          src: `data:${data.mimeType};base64,${data.imageData}`,
+          prompt: prompt,
+          style: settings.style,
+          aspectRatio: settings.aspectRatio,
+          timestamp: "Just now",
+          isNew: true,
+          isFavorite: false
+        };
+        generatedImages.push(newImage);
+        setGenerations(prev => [newImage, ...prev]);
+      }
+
+      if (type === "final_image" && data.imageData && data.mimeType) {
+        imageCount++;
+        const newImage: GeneratedImage = {
+          id: `${Date.now()}-${imageCount}`,
+          src: `data:${data.mimeType};base64,${data.imageData}`,
+          prompt: prompt,
+          style: settings.style,
+          aspectRatio: settings.aspectRatio,
+          timestamp: "Just now",
+          isNew: true,
+          isFavorite: false
+        };
+        generatedImages.push(newImage);
+        setGenerations(prev => [newImage, ...prev]);
+      }
+
+      if (type === "complete") {
+        setProgress(100);
+        setAgents(prev => prev.map(a => ({ ...a, status: "complete" })));
+        setStatus("complete");
+        
+        toast({
+          title: "Image Generated!",
+          description: `Created ${imageCount} image${imageCount > 1 ? "s" : ""}.`,
+          className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
+        });
+
+        setTimeout(() => {
+          setStatus("idle");
+          setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
+          setProgress(0);
+        }, 3000);
+      }
+
+      if (type === "error") {
+        setStatus("idle");
+        setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
+        setProgress(0);
+        toast({
+          title: "Generation Failed",
+          description: data.message || "An error occurred during generation.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    try {
+      if (settings.quality === "draft") {
+        await generateApi.draft(
+          prompt,
+          { stylePreset: settings.style, aspectRatio: settings.aspectRatio },
+          handleEvent
+        );
+      } else {
+        await generateApi.final(
+          prompt,
+          { 
+            stylePreset: settings.style, 
+            qualityLevel: settings.quality,
+            aspectRatio: settings.aspectRatio,
+            enableCuration: settings.aiCuration
+          },
+          handleEvent
+        );
+      }
+    } catch (error) {
+      setStatus("idle");
+      setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
+      setProgress(0);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "An error occurred during generation.",
+        variant: "destructive",
+      });
+    }
   };
 
   const completeGeneration = () => {
