@@ -373,6 +373,13 @@ ${journey === 'AOP' && designAnalysis.aopAccentColor ? `- AOP accent color (coll
 ${materialPreset.promptAddition}
 ===== END SIZE/FIT LOCK =====` : "";
 
+  const printSpec = product.printSpec;
+  const printAreaDesc = printSpec 
+    ? `${printSpec.printAreaWidth}" x ${printSpec.printAreaHeight}" (${printSpec.printAreaWidthPixels}x${printSpec.printAreaHeightPixels}px at ${printSpec.dpi}dpi)`
+    : '12" x 16" (3600x4800px at 300dpi)';
+  const placementDesc = printSpec?.placementDescription || 'Center-chest placement';
+  const surfaceDesc = printSpec?.surfaceType || 'flexible';
+
   const designLockBlock = `
 ===== DESIGN LOCK =====
 [LOCKED - DESIGN APPLICATION AND SIZE RULES]
@@ -381,20 +388,30 @@ ${materialPreset.promptAddition}
 - Design style: ${designAnalysis.style}
 - Design complexity: ${designAnalysis.complexity}
 - Design type: ${designAnalysis.designType}
-- Placement: ${designAnalysis.suggestedPlacement}
+- Placement: ${printSpec?.placement || designAnalysis.suggestedPlacement}
+
+===== PRINT SPECIFICATION (POD INDUSTRY STANDARD) =====
+[MANDATORY - PRODUCT-SPECIFIC PRINT AREA]
+- Product: ${product.name}
+- Print area: ${printAreaDesc}
+- Placement: ${printSpec?.placement || 'center'}
+- Placement description: ${placementDesc}
+- Surface type: ${surfaceDesc}
+${printSpec?.bleed ? `- Bleed: ${printSpec.bleed}"` : ''}
+${printSpec?.safeZone ? `- Safe zone: ${printSpec.safeZone}" from edges` : ''}
+${printSpec?.wrapAround ? '- Wrap-around: Yes (design continues around edges/seams)' : ''}
+${printSpec?.notes ? `- Notes: ${printSpec.notes}` : ''}
 
 ===== DESIGN SIZE LOCK (CRITICAL) =====
 [MANDATORY - IDENTICAL DESIGN SIZE ACROSS ALL ANGLES]
-- Print area: 12 inches wide x 14 inches tall (standard DTG chest print)
-- The design occupies approximately 30-40% of the shirt front visible area
+- The design must be printed at EXACTLY the specified print area dimensions
 - Design size must be IDENTICAL whether viewed from front, side, three-quarter, or any angle
 - DO NOT make the design smaller in some shots and larger in others
-- When the camera angle changes, the design should appear the SAME physical size on the garment
-- The design height should span from below the collar to approximately mid-torso
+- When the camera angle changes, the design should appear the SAME physical size on the product
 - Only the close-up shot should show the design larger (because the camera is zoomed in)
 
 SIZE CONSISTENCY RULES:
-1. FRONT VIEW: Design visible as standard chest print, ~12" wide
+1. FRONT VIEW: Design visible at full print area size (${printSpec?.printAreaWidth || 12}" wide)
 2. THREE-QUARTER VIEW: Same design, same size, visible at an angle (appears slightly compressed due to perspective)
 3. SIDE VIEW: Design may be partially visible from the side, but same physical size
 4. CLOSE-UP VIEW: Zoomed in on the design, so it appears larger (this is expected)
