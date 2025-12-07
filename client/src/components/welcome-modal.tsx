@@ -22,7 +22,7 @@ const WELCOME_STEPS: WelcomeStep[] = [
     title: "Professional Mockups",
     description: "Turn your designs into product-ready mockups. Perfect for e-commerce, print-on-demand, and presentations.",
     icon: Shirt,
-    gradient: "from-blue-500 to-blue-700",
+    gradient: "from-[#664D3F] to-[#4A3830]",
   },
   {
     title: "Remove Backgrounds",

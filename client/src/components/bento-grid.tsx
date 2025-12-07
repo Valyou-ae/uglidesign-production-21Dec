@@ -132,10 +132,10 @@ function StatCard({ icon: Icon, value, label, trend, colorClass, delay }: any) {
 
 function QuickAction({ icon: Icon, label, href }: any) {
   const content = (
-    <div className="group flex items-center justify-between p-3.5 bg-card border border-sidebar-border/50 rounded-xl cursor-pointer hover:shadow-md hover:border-green-500/30 transition-all duration-300">
+    <div className="group flex items-center justify-between p-3.5 bg-card border border-sidebar-border/50 rounded-xl cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-300">
       <div className="flex items-center gap-3">
-        <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-green-50 dark:group-hover:bg-green-900/20 transition-colors">
-          <Icon className="h-4 w-4 text-muted-foreground group-hover:text-green-600 transition-colors" />
+        <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-primary/10 dark:group-hover:bg-primary/20 transition-colors">
+          <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
         </div>
         <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">{label}</span>
       </div>
@@ -153,7 +153,7 @@ function QuickAction({ icon: Icon, label, href }: any) {
 function ProjectCard({ image, title, time, type, delay, prompt, journey, restoreImage }: any) {
   const colors = {
     image: "border-[#B94E30]/50 hover:shadow-[#B94E30]/20",
-    mockup: "border-blue-500/50 hover:shadow-blue-500/20",
+    mockup: "border-[#664D3F]/50 hover:shadow-[#664D3F]/20",
     bg: "border-[#E3B436]/50 hover:shadow-[#E3B436]/20",
   };
 
@@ -223,8 +223,8 @@ export function BentoGrid() {
           title="Mockup Generator" 
           description="Professional product mockups"
           icon={Shirt}
-          gradient="bg-gradient-to-br from-blue-500 to-blue-700"
-          circleColor="#60A5FA"
+          gradient="bg-gradient-to-br from-[#664D3F] to-[#4A3830]"
+          circleColor="#664D3F"
           badge="50+ Products"
           delay={0.2}
           href="/mockup"
@@ -264,7 +264,7 @@ export function BentoGrid() {
             value="89" 
             label="Mockups Gen" 
             trend="↑ 8%" 
-            colorClass="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+            colorClass="bg-[#664D3F]/10 text-[#664D3F] dark:bg-[#664D3F]/20 dark:text-[#8B6B5A]"
             delay={0.5}
           />
           <StatCard 

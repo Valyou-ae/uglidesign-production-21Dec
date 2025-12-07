@@ -33,8 +33,8 @@ const NOTIFICATIONS = [
     time: "1h ago",
     read: false,
     icon: Info,
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
+    color: "text-[#664D3F]",
+    bg: "bg-[#664D3F]/10",
   },
   {
     id: 3,
@@ -43,8 +43,8 @@ const NOTIFICATIONS = [
     time: "1d ago",
     read: true,
     icon: CheckCircle2,
-    color: "text-green-500",
-    bg: "bg-green-500/10",
+    color: "text-secondary",
+    bg: "bg-secondary/10",
   },
 ];
 
@@ -100,7 +100,7 @@ export function TopBar() {
                       </p>
                     </div>
                     {!notification.read && (
-                      <div className="h-2 w-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+                      <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
                     )}
                   </button>
                 ))}

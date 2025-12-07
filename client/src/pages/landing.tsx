@@ -30,7 +30,7 @@ const FEATURES = [
     icon: Shirt,
     title: "Product Mockups",
     description: "Generate professional mockups for 50+ products. Perfect for e-commerce.",
-    gradient: "from-blue-500 to-blue-700",
+    gradient: "from-[#664D3F] to-[#4A3830]",
   },
   {
     icon: Scissors,
