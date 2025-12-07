@@ -608,6 +608,7 @@ export async function registerRoutes(
         journey = "DTG",
         patternScale,
         isSeamlessPattern,
+        outputQuality = "high",
       } = req.body;
 
       if (!designImage || typeof designImage !== "string") {
@@ -800,13 +801,17 @@ export async function registerRoutes(
               product: product,
               colors: colors,
               angles: angles as any[],
-              modelDetails: sizeModelDetails as any,
+              modelDetails: {
+                ...sizeModelDetails,
+                customization: modelDetails.customization
+              } as any,
               brandStyle: mappedStyle as any,
               lightingPreset: 'three-point-classic',
               materialCondition: 'BRAND_NEW',
               environmentPrompt: scene,
               existingPersonaLock: sharedPersonaLock,
-              patternScale: isAopJourney ? patternScale : undefined
+              patternScale: isAopJourney ? patternScale : undefined,
+              outputQuality: outputQuality as any
             }, (completed, total, job) => {
               const completedOverall = (sizeIndex * jobsPerSize) + completed;
               const progress = 10 + Math.round((completedOverall / totalJobs) * 85);

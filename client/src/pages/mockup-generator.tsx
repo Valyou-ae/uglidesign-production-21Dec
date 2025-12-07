@@ -201,13 +201,30 @@ type AgeGroup = "ADULT" | "YOUNG_ADULT" | "TEEN";
 type Sex = "MALE" | "FEMALE";
 type Ethnicity = "CAUCASIAN" | "AFRICAN" | "ASIAN" | "SOUTHEAST_ASIAN" | "HISPANIC" | "SOUTH_ASIAN" | "MIDDLE_EASTERN" | "INDIGENOUS" | "MIXED";
 type ModelSize = "XS" | "S" | "M" | "L" | "XL" | "XXL";
+type OutputQuality = "standard" | "high" | "ultra";
+type HairStyle = "Short" | "Medium" | "Long" | "Bald";
+type Expression = "Neutral" | "Smiling" | "Serious" | "Candid";
+type PoseSuggestion = "Casual" | "Athletic" | "Professional" | "Lifestyle";
+
+interface ModelCustomization {
+  hairStyle?: HairStyle;
+  expression?: Expression;
+  poseSuggestion?: PoseSuggestion;
+}
 
 interface ModelDetails {
   age: AgeGroup;
   sex: Sex;
   ethnicity: Ethnicity;
   modelSize: ModelSize;
+  customization?: ModelCustomization;
 }
+
+const OUTPUT_QUALITY_OPTIONS: { id: OutputQuality; name: string; resolution: string; credits: number; bestFor: string }[] = [
+  { id: "standard", name: "Standard", resolution: "512px", credits: 1, bestFor: "Web previews, social media thumbnails" },
+  { id: "high", name: "High", resolution: "1024px", credits: 2, bestFor: "E-commerce, websites, high-quality social media" },
+  { id: "ultra", name: "Ultra", resolution: "2048px", credits: 4, bestFor: "Print-ready, large format, professional catalogs" }
+];
 
 interface MockupDetails {
   src: string;
@@ -613,6 +630,8 @@ export default function MockupGenerator() {
   const [useModel, setUseModel] = useState<boolean>(true);
   const [genderAutoSelected, setGenderAutoSelected] = useState<boolean>(true);
   const [personaHeadshot, setPersonaHeadshot] = useState<string | null>(null);
+  const [outputQuality, setOutputQuality] = useState<OutputQuality>("high");
+  const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState<boolean>(false);
   // AOP-specific state
   const [isAlreadySeamless, setIsAlreadySeamless] = useState<boolean>(false);
   // Seamless Pattern State
@@ -986,6 +1005,7 @@ export default function MockupGenerator() {
           journey: journey || "DTG",
           patternScale: isAopJourney ? patternScale : undefined,
           isSeamlessPattern: isAopJourney,
+          outputQuality: outputQuality,
         },
         (event: MockupEvent) => {
           switch (event.type) {
@@ -1572,6 +1592,7 @@ export default function MockupGenerator() {
                                 </div>
 
                                 {useModel && (
+                                  <>
                                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
                                     <div>
                                       <label className="text-xs text-muted-foreground mb-2 block">Sex</label>
@@ -1643,6 +1664,87 @@ export default function MockupGenerator() {
                                       </div>
                                     </div>
                                   </div>
+                                  
+                                  <Collapsible open={advancedOptionsOpen} onOpenChange={setAdvancedOptionsOpen} className="mt-4">
+                                    <CollapsibleTrigger asChild>
+                                      <button 
+                                        className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                        data-testid="button-toggle-advanced-options"
+                                      >
+                                        {advancedOptionsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                        Advanced Model Options
+                                        <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0.5">Optional</Badge>
+                                      </button>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent className="pt-4">
+                                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-border">
+                                        <div>
+                                          <label className="text-xs text-muted-foreground mb-2 block">Hair Style</label>
+                                          <Select 
+                                            value={modelDetails.customization?.hairStyle || ""} 
+                                            onValueChange={(value: HairStyle) => setModelDetails({
+                                              ...modelDetails, 
+                                              customization: { ...modelDetails.customization, hairStyle: value }
+                                            })}
+                                          >
+                                            <SelectTrigger className="h-10" data-testid="select-hair-style">
+                                              <SelectValue placeholder="Any" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="Short">Short</SelectItem>
+                                              <SelectItem value="Medium">Medium</SelectItem>
+                                              <SelectItem value="Long">Long</SelectItem>
+                                              <SelectItem value="Bald">Bald</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-muted-foreground mb-2 block">Expression</label>
+                                          <Select 
+                                            value={modelDetails.customization?.expression || ""} 
+                                            onValueChange={(value: Expression) => setModelDetails({
+                                              ...modelDetails, 
+                                              customization: { ...modelDetails.customization, expression: value }
+                                            })}
+                                          >
+                                            <SelectTrigger className="h-10" data-testid="select-expression">
+                                              <SelectValue placeholder="Any" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="Neutral">Neutral</SelectItem>
+                                              <SelectItem value="Smiling">Smiling</SelectItem>
+                                              <SelectItem value="Serious">Serious</SelectItem>
+                                              <SelectItem value="Candid">Candid</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-muted-foreground mb-2 block">Pose Suggestion</label>
+                                          <Select 
+                                            value={modelDetails.customization?.poseSuggestion || ""} 
+                                            onValueChange={(value: PoseSuggestion) => setModelDetails({
+                                              ...modelDetails, 
+                                              customization: { ...modelDetails.customization, poseSuggestion: value }
+                                            })}
+                                          >
+                                            <SelectTrigger className="h-10" data-testid="select-pose">
+                                              <SelectValue placeholder="Any" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="Casual">Casual</SelectItem>
+                                              <SelectItem value="Athletic">Athletic</SelectItem>
+                                              <SelectItem value="Professional">Professional</SelectItem>
+                                              <SelectItem value="Lifestyle">Lifestyle</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      </div>
+                                      <p className="text-[11px] text-muted-foreground mt-2">
+                                        These optional settings help personalize your model. Leave as "Any" for AI-selected defaults.
+                                      </p>
+                                    </CollapsibleContent>
+                                  </Collapsible>
+                                  </>
                                 )}
                               </div>
                             )}
@@ -2403,6 +2505,48 @@ export default function MockupGenerator() {
                                     </div>
                                   </div>
                                 </div>
+                              </div>
+
+                              <div className="bg-muted/30 rounded-2xl p-6 w-full mb-6 border border-border">
+                                <div className="flex items-center gap-2 mb-4">
+                                  <Maximize2 className="h-4 w-4 text-indigo-600" />
+                                  <span className="text-sm font-bold text-foreground">Output Quality</span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                  {OUTPUT_QUALITY_OPTIONS.map((quality) => (
+                                    <button
+                                      key={quality.id}
+                                      onClick={() => setOutputQuality(quality.id)}
+                                      className={cn(
+                                        "relative flex flex-col items-start p-4 rounded-xl border-2 transition-all text-left",
+                                        outputQuality === quality.id
+                                          ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20"
+                                          : "border-border hover:border-indigo-300"
+                                      )}
+                                      data-testid={`quality-option-${quality.id}`}
+                                    >
+                                      {outputQuality === quality.id && (
+                                        <div className="absolute top-2 right-2">
+                                          <CheckCircle2 className="h-5 w-5 text-indigo-600" />
+                                        </div>
+                                      )}
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-sm font-bold text-foreground">{quality.name}</span>
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                          {quality.resolution}
+                                        </Badge>
+                                      </div>
+                                      <p className="text-xs text-muted-foreground mb-2">{quality.bestFor}</p>
+                                      <div className="flex items-center gap-1 mt-auto">
+                                        <Sparkles className="h-3 w-3 text-amber-500" />
+                                        <span className="text-xs font-medium text-amber-600">{quality.credits} {quality.credits === 1 ? 'credit' : 'credits'}/image</span>
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                                <p className="text-[11px] text-muted-foreground mt-3 text-center">
+                                  Estimated total: {Math.max(1, selectedAngles.length * (journey === "AOP" ? 1 : selectedColors.length)) * (OUTPUT_QUALITY_OPTIONS.find(q => q.id === outputQuality)?.credits || 2)} credits for this batch
+                                </p>
                               </div>
 
                               <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">

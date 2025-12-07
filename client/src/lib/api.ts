@@ -477,10 +477,16 @@ export const mockupApi = {
         sex: string;
         ethnicity: string;
         modelSize: string;
+        customization?: {
+          hairStyle?: 'Short' | 'Medium' | 'Long' | 'Bald';
+          expression?: 'Neutral' | 'Smiling' | 'Serious' | 'Candid';
+          poseSuggestion?: 'Casual' | 'Athletic' | 'Professional' | 'Lifestyle';
+        };
       };
       journey?: 'DTG' | 'AOP';
       patternScale?: number;
       isSeamlessPattern?: boolean;
+      outputQuality?: 'standard' | 'high' | 'ultra';
     } = {},
     onEvent: MockupEventCallback
   ): Promise<void> => {

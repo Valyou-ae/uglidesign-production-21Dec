@@ -25,6 +25,64 @@ export type Ethnicity =
 export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'XXXL';
 
 // ============================================================================
+// OUTPUT QUALITY
+// ============================================================================
+
+export type OutputQuality = 'standard' | 'high' | 'ultra';
+
+export interface OutputQualitySpec {
+  id: OutputQuality;
+  name: string;
+  resolution: number;
+  credits: number;
+  description: string;
+  bestFor: string;
+}
+
+export const OUTPUT_QUALITY_SPECS: Record<OutputQuality, OutputQualitySpec> = {
+  standard: {
+    id: 'standard',
+    name: 'Standard',
+    resolution: 512,
+    credits: 1,
+    description: '512px - Fast generation',
+    bestFor: 'Social media & previews'
+  },
+  high: {
+    id: 'high',
+    name: 'High',
+    resolution: 1024,
+    credits: 2,
+    description: '1024px - Balanced quality',
+    bestFor: 'E-commerce & web'
+  },
+  ultra: {
+    id: 'ultra',
+    name: 'Ultra',
+    resolution: 2048,
+    credits: 4,
+    description: '2048px - Maximum detail',
+    bestFor: 'Print-ready & professional'
+  }
+};
+
+// ============================================================================
+// MODEL CUSTOMIZATION OPTIONS
+// ============================================================================
+
+export type HairStyle = 'Short' | 'Medium' | 'Long' | 'Bald';
+
+export type Expression = 'Neutral' | 'Smiling' | 'Serious' | 'Candid';
+
+export type PoseSuggestion = 'Casual' | 'Athletic' | 'Professional' | 'Lifestyle';
+
+export interface ModelCustomization {
+  hairStyle?: HairStyle;
+  expression?: Expression;
+  poseSuggestion?: PoseSuggestion;
+}
+
+// ============================================================================
 // MODEL DETAILS
 // ============================================================================
 
@@ -33,6 +91,7 @@ export interface ModelDetails {
   sex: Sex;
   ethnicity: Ethnicity;
   modelSize: Size;
+  customization?: ModelCustomization;
 }
 
 export interface UnifiedPersona {
@@ -394,6 +453,7 @@ export interface MockupGenerationRequest {
   patternImage?: string;
   aopBaseColor?: string;
   aopTrimColor?: string;
+  outputQuality?: OutputQuality;
 }
 
 export interface MockupRefinementRequest {

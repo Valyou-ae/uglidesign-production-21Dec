@@ -18,8 +18,11 @@ import type {
   MockupGenerationRequest,
   UnifiedPersona,
   DesignAnalysis,
-  Size
+  Size,
+  OutputQuality,
+  ModelCustomization
 } from "@shared/mockupTypes";
+import { OUTPUT_QUALITY_SPECS } from "@shared/mockupTypes";
 import {
   BRAND_STYLES,
   CAMERA_SPECS,
@@ -292,8 +295,10 @@ export function buildRenderSpecification(
   lightingPreset?: string,
   environmentPrompt?: string,
   currentSize?: string,
-  patternScale?: number
+  patternScale?: number,
+  outputQuality: OutputQuality = 'high'
 ): RenderSpecification {
+  const qualitySpec = OUTPUT_QUALITY_SPECS[outputQuality];
   const style = BRAND_STYLES[brandStyle];
   const cameraSpec = getCameraSpecsForAngle(angle);
   const lightingSetup = lightingPreset ? getLightingSetup(lightingPreset) : getLightingSetup('three-point-classic');
@@ -310,6 +315,24 @@ export function buildRenderSpecification(
     sizeForBody
   ) : null;
 
+  const customization = modelDetails?.customization;
+  const customizationBlock = customization ? `
+===== MODEL CUSTOMIZATION (USER PREFERENCES) =====
+${customization.hairStyle ? `- Hair Style Preference: ${customization.hairStyle} hair length` : ''}
+${customization.expression ? `- Expression: ${customization.expression} facial expression - ${
+  customization.expression === 'Smiling' ? 'warm, genuine smile showing confidence' :
+  customization.expression === 'Serious' ? 'focused, determined, professional demeanor' :
+  customization.expression === 'Candid' ? 'natural, unposed, caught-in-the-moment look' :
+  'neutral, relaxed expression'
+}` : ''}
+${customization.poseSuggestion ? `- Pose Style: ${customization.poseSuggestion} pose - ${
+  customization.poseSuggestion === 'Casual' ? 'relaxed, natural stance, hands in pockets or at sides' :
+  customization.poseSuggestion === 'Athletic' ? 'dynamic, active pose suggesting movement or energy' :
+  customization.poseSuggestion === 'Professional' ? 'confident business stance, poised and polished' :
+  'everyday lifestyle pose, natural and relatable'
+}` : ''}
+===== END MODEL CUSTOMIZATION =====` : '';
+
   const personaLockBlock = product.isWearable && personaLock ? `
 ===== PERSONA LOCK (CONSISTENCY ANCHOR) =====
 [LOCKED - DO NOT DEVIATE FROM THESE IDENTITY DETAILS]
@@ -323,10 +346,11 @@ PRIMARY IDENTITY:
 - Ethnicity: ${personaLock.persona.ethnicity} (CRITICAL - see enforcement below)
 
 FACIAL IDENTITY (KEEP CONSISTENT ACROSS ALL SIZES):
-- Hair: ${personaLock.persona.hairStyle}, ${personaLock.persona.hairColor}
+- Hair: ${customization?.hairStyle || personaLock.persona.hairStyle}, ${personaLock.persona.hairColor}
 - Eyes: ${personaLock.persona.eyeColor}
 - Skin tone: ${personaLock.persona.skinTone}
 - Facial features: ${personaLock.persona.facialFeatures}
+${customizationBlock}
 
 ===== SIZE-SPECIFIC BODY TYPE (SIZE: ${sizeForBody}) =====
 [CRITICAL - BODY MUST MATCH THE GARMENT SIZE]
@@ -627,7 +651,8 @@ ${environmentBlock}
 
 ===== TECHNICAL REQUIREMENTS =====
 - Output: Photorealistic commercial product photography
-- Quality: 8K resolution, sharp focus, professional studio standards
+- Target Resolution: ${qualitySpec.resolution}px (${qualitySpec.name} quality - ${qualitySpec.bestFor})
+- Quality: Sharp focus, professional studio standards, high detail
 - Design: Must follow fabric contours naturally with accurate color reproduction
 - Style: ${style.technicalNotes}
 ===== END REQUIREMENTS =====
@@ -1070,7 +1095,8 @@ export async function generateMockupBatch(
       request.lightingPreset,
       request.environmentPrompt,
       job.modelDetails?.modelSize,
-      request.patternScale
+      request.patternScale,
+      request.outputQuality
     );
 
     const result = await generateMockupWithRetry(
