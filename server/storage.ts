@@ -26,6 +26,10 @@ export interface IStorage {
   // Withdrawal operations
   createWithdrawalRequest(request: InsertWithdrawal): Promise<WithdrawalRequest>;
   getWithdrawalsByUserId(userId: string): Promise<WithdrawalRequest[]>;
+  
+  // Stripe operations
+  updateStripeCustomerId(userId: string, stripeCustomerId: string): Promise<User | undefined>;
+  updateStripeSubscriptionId(userId: string, stripeSubscriptionId: string | null): Promise<User | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -163,6 +167,25 @@ export class DatabaseStorage implements IStorage {
       .from(withdrawalRequests)
       .where(eq(withdrawalRequests.userId, userId))
       .orderBy(desc(withdrawalRequests.createdAt));
+  }
+  
+  // Stripe operations
+  async updateStripeCustomerId(userId: string, stripeCustomerId: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ stripeCustomerId })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
+  }
+
+  async updateStripeSubscriptionId(userId: string, stripeSubscriptionId: string | null): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ stripeSubscriptionId })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
   }
 }
 
