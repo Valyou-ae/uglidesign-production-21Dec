@@ -645,28 +645,45 @@ export function validateBackgroundRemovalOptions(
   };
 }
 
+export type BatchProgressCallback = (
+  completed: number,
+  total: number,
+  progressData: { id: string; result: BackgroundRemovalResult }
+) => void;
+
 export async function removeBackgroundBatch(
-  images: Array<{ id: string; base64: string }>,
-  options: BackgroundRemovalOptions
+  images: Array<{ id: string; imageBase64?: string; base64?: string }>,
+  options: BackgroundRemovalOptions,
+  onProgress?: BatchProgressCallback
 ): Promise<Array<{ id: string; result: BackgroundRemovalResult }>> {
   const results: Array<{ id: string; result: BackgroundRemovalResult }> = [];
 
-  for (const image of images) {
+  for (let i = 0; i < images.length; i++) {
+    const image = images[i];
+    const imageData = image.imageBase64 || image.base64 || '';
+    
     try {
-      const result = await removeBackground(image.base64, options);
+      const result = await removeBackground(imageData, options);
       results.push({ id: image.id, result });
+      
+      if (onProgress) {
+        onProgress(i + 1, images.length, { id: image.id, result });
+      }
     } catch (error) {
-      results.push({
-        id: image.id,
-        result: {
-          success: false,
-          mimeType: 'image/png',
-          processingTimeMs: 0,
-          outputType: options.outputType,
-          quality: options.quality,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      });
+      const errorResult: BackgroundRemovalResult = {
+        success: false,
+        mimeType: 'image/png',
+        processingTimeMs: 0,
+        outputType: options.outputType,
+        quality: options.quality,
+        error: error instanceof Error ? error.message : String(error)
+      };
+      
+      results.push({ id: image.id, result: errorResult });
+      
+      if (onProgress) {
+        onProgress(i + 1, images.length, { id: image.id, result: errorResult });
+      }
     }
   }
 

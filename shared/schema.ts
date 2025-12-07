@@ -15,6 +15,8 @@ export const users = pgTable("users", {
   socialLinks: jsonb("social_links").$type<{ label: string; url: string }[]>().default([]),
   affiliateCode: text("affiliate_code").unique(),
   referredBy: varchar("referred_by"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
