@@ -1,243 +1,53 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import session from "express-session";
-import ConnectPgSimple from "connect-pg-simple";
-import { pool } from "./db";
-import bcrypt from "bcrypt";
-import { insertUserSchema, insertImageSchema, insertWithdrawalSchema, updateProfileSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import { insertImageSchema, insertWithdrawalSchema, updateProfileSchema } from "@shared/schema";
 import { ZodError } from "zod";
-
-const PgSession = ConnectPgSimple(session);
-
-declare module "express-session" {
-  interface SessionData {
-    userId: string;
-  }
-}
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   
-  // Session middleware
-  app.use(
-    session({
-      store: new PgSession({
-        pool,
-        tableName: "session",
-      }),
-      secret: process.env.SESSION_SECRET || "your-secret-key-change-in-production",
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        httpOnly: true,
-        sameSite: "lax",
-      },
-    })
-  );
+  await setupAuth(app);
 
-  // Testing mode - skip auth when TEST_MODE is enabled
   const isTestMode = process.env.TEST_MODE === "true";
   const TEST_USER_ID = "86375c89-623d-4e4f-b05b-056bc1663bf5";
 
-  // Auth middleware - bypassed in test mode
   const requireAuth = (req: any, res: any, next: any) => {
     if (isTestMode) {
-      // In test mode, use the test user ID
-      req.session.userId = req.session.userId || TEST_USER_ID;
+      req.user = req.user || { claims: { sub: TEST_USER_ID } };
       return next();
     }
-    if (!req.session.userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    next();
+    return isAuthenticated(req, res, next);
   };
 
-  // ============== AUTH ROUTES ==============
-  
-  app.post("/api/auth/signup", async (req, res) => {
-    try {
-      const { username, email, password } = insertUserSchema.parse(req.body);
-
-      // Check if user exists
-      const existingUser = await storage.getUserByUsername(username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-
-      const existingEmail = await storage.getUserByEmail(email);
-      if (existingEmail) {
-        return res.status(400).json({ message: "Email already exists" });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Generate unique affiliate code
-      const affiliateCode = `${username.toLowerCase()}-${Math.random().toString(36).substring(7)}`;
-
-      // Create user
-      const user = await storage.createUser({
-        username,
-        email,
-        password: hashedPassword,
-      });
-
-      // Update affiliate code
-      await storage.updateUserProfile(user.id, { affiliateCode });
-
-      // Set session
-      req.session.userId = user.id;
-
-      res.json({ 
-        user: { 
-          id: user.id, 
-          username: user.username,
-          email: user.email,
-          affiliateCode
-        } 
-      });
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({ message: "Invalid input", errors: error.errors });
-      }
-      res.status(500).json({ message: "Server error" });
+  const getUserId = (req: any): string => {
+    if (isTestMode) {
+      return TEST_USER_ID;
     }
-  });
+    return req.user?.claims?.sub;
+  };
 
-  app.post("/api/auth/login", async (req, res) => {
+  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
-      const { username, password } = req.body;
-
-      const user = await storage.getUserByUsername(username);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
       if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
+        return res.status(404).json({ message: "User not found" });
       }
-
-      const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      req.session.userId = user.id;
-
-      res.json({ 
-        user: { 
-          id: user.id, 
-          username: user.username,
-          email: user.email,
-          affiliateCode: user.affiliateCode
-        } 
-      });
+      res.json(user);
     } catch (error) {
-      res.status(500).json({ message: "Server error" });
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
-  app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Logout failed" });
-      }
-      res.json({ message: "Logged out successfully" });
-    });
-  });
-
-  app.post("/api/auth/forgot-password", async (req, res) => {
+  app.get("/api/auth/me", requireAuth, async (req: any, res) => {
     try {
-      const { email } = req.body;
-      
-      if (!email || typeof email !== 'string') {
-        return res.status(400).json({ message: "Email is required" });
-      }
-
-      const user = await storage.getUserByEmail(email);
-      
-      if (!user) {
-        return res.json({ 
-          message: "If an account with that email exists, we've sent a password reset link.",
-          success: true
-        });
-      }
-
-      const crypto = await import('crypto');
-      const resetToken = crypto.randomBytes(32).toString('hex');
-      const tokenHash = await bcrypt.hash(resetToken, 10);
-      const resetExpires = new Date(Date.now() + 60 * 60 * 1000);
-
-      await storage.setPasswordResetToken(email, tokenHash, resetExpires);
-
-      const baseUrl = process.env.REPLIT_DOMAINS 
-        ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
-        : 'http://localhost:5000';
-      
-      const encodedEmail = encodeURIComponent(email);
-      const resetLink = `${baseUrl}/reset-password?token=${resetToken}&email=${encodedEmail}`;
-      
-      console.log(`[Password Reset] Reset link for ${email}: ${resetLink}`);
-
-      res.json({ 
-        message: "If an account with that email exists, we've sent a password reset link.",
-        success: true
-      });
-    } catch (error) {
-      console.error("Password reset error:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.post("/api/auth/reset-password", async (req, res) => {
-    try {
-      const { token, email, password } = req.body;
-      
-      if (!token || typeof token !== 'string') {
-        return res.status(400).json({ message: "Reset token is required" });
-      }
-      
-      if (!email || typeof email !== 'string') {
-        return res.status(400).json({ message: "Email is required" });
-      }
-      
-      if (!password || typeof password !== 'string' || password.length < 6) {
-        return res.status(400).json({ message: "Password must be at least 6 characters" });
-      }
-
-      const user = await storage.getUserWithResetToken(email);
-      
-      if (!user || !user.passwordResetToken) {
-        return res.status(400).json({ message: "Invalid or expired reset token" });
-      }
-
-      if (user.passwordResetExpires && new Date(user.passwordResetExpires) < new Date()) {
-        await storage.clearPasswordResetToken(user.id);
-        return res.status(400).json({ message: "Reset token has expired. Please request a new one." });
-      }
-
-      const validToken = await bcrypt.compare(token, user.passwordResetToken);
-      if (!validToken) {
-        return res.status(400).json({ message: "Invalid or expired reset token" });
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      await storage.updatePassword(user.id, hashedPassword);
-      await storage.clearPasswordResetToken(user.id);
-
-      res.json({ 
-        message: "Password has been reset successfully. You can now log in with your new password.",
-        success: true
-      });
-    } catch (error) {
-      console.error("Password reset error:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.get("/api/auth/me", requireAuth, async (req, res) => {
-    try {
-      const user = await storage.getUser(req.session.userId!);
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -251,6 +61,7 @@ export async function registerRoutes(
           firstName: user.firstName,
           lastName: user.lastName,
           bio: user.bio,
+          profileImageUrl: user.profileImageUrl,
           socialLinks: user.socialLinks || [],
           affiliateCode: user.affiliateCode,
           createdAt: user.createdAt
@@ -263,11 +74,12 @@ export async function registerRoutes(
 
   // ============== USER/PROFILE ROUTES ==============
 
-  app.patch("/api/user/profile", requireAuth, async (req, res) => {
+  app.patch("/api/user/profile", requireAuth, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const profileData = updateProfileSchema.parse(req.body);
 
-      const user = await storage.updateUserProfile(req.session.userId!, profileData);
+      const user = await storage.updateUserProfile(userId, profileData);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -282,6 +94,7 @@ export async function registerRoutes(
           firstName: user.firstName,
           lastName: user.lastName,
           bio: user.bio,
+          profileImageUrl: user.profileImageUrl,
           socialLinks: user.socialLinks || [],
           affiliateCode: user.affiliateCode,
           createdAt: user.createdAt
@@ -297,9 +110,10 @@ export async function registerRoutes(
 
   // ============== USER STATS ROUTES ==============
 
-  app.get("/api/user/stats", requireAuth, async (req, res) => {
+  app.get("/api/user/stats", requireAuth, async (req: any, res) => {
     try {
-      const stats = await storage.getUserStats(req.session.userId!);
+      const userId = getUserId(req);
+      const stats = await storage.getUserStats(userId);
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Server error" });
@@ -330,9 +144,9 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/stripe/create-checkout-session", requireAuth, async (req, res) => {
+  app.post("/api/stripe/create-checkout-session", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.session.userId!;
+      const userId = getUserId(req);
       const { priceId, mode } = req.body;
 
       if (!priceId || typeof priceId !== 'string' || !priceId.startsWith('price_')) {
@@ -376,9 +190,9 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/stripe/create-portal-session", requireAuth, async (req, res) => {
+  app.post("/api/stripe/create-portal-session", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.session.userId!;
+      const userId = getUserId(req);
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -407,9 +221,9 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/stripe/subscription-status", requireAuth, async (req, res) => {
+  app.get("/api/stripe/subscription-status", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.session.userId!;
+      const userId = getUserId(req);
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -475,11 +289,12 @@ export async function registerRoutes(
 
   // ============== IMAGE ROUTES ==============
 
-  app.post("/api/images", requireAuth, async (req, res) => {
+  app.post("/api/images", requireAuth, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const imageData = insertImageSchema.parse({
         ...req.body,
-        userId: req.session.userId,
+        userId,
       });
 
       const image = await storage.createImage(imageData);
@@ -492,18 +307,20 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/images", requireAuth, async (req, res) => {
+  app.get("/api/images", requireAuth, async (req: any, res) => {
     try {
-      const images = await storage.getImagesByUserId(req.session.userId!);
+      const userId = getUserId(req);
+      const images = await storage.getImagesByUserId(userId);
       res.json({ images });
     } catch (error) {
       res.status(500).json({ message: "Server error" });
     }
   });
 
-  app.patch("/api/images/:id/favorite", requireAuth, async (req, res) => {
+  app.patch("/api/images/:id/favorite", requireAuth, async (req: any, res) => {
     try {
-      const image = await storage.toggleImageFavorite(req.params.id, req.session.userId!);
+      const userId = getUserId(req);
+      const image = await storage.toggleImageFavorite(req.params.id, userId);
       if (!image) {
         return res.status(404).json({ message: "Image not found" });
       }
@@ -513,9 +330,10 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/images/:id", requireAuth, async (req, res) => {
+  app.delete("/api/images/:id", requireAuth, async (req: any, res) => {
     try {
-      const success = await storage.deleteImage(req.params.id, req.session.userId!);
+      const userId = getUserId(req);
+      const success = await storage.deleteImage(req.params.id, userId);
       if (!success) {
         return res.status(404).json({ message: "Image not found" });
       }
@@ -527,10 +345,11 @@ export async function registerRoutes(
 
   // ============== AFFILIATE ROUTES ==============
 
-  app.get("/api/affiliate/stats", requireAuth, async (req, res) => {
+  app.get("/api/affiliate/stats", requireAuth, async (req: any, res) => {
     try {
-      const commissions = await storage.getCommissionsByUserId(req.session.userId!);
-      const totalEarnings = await storage.getTotalEarnings(req.session.userId!);
+      const userId = getUserId(req);
+      const commissions = await storage.getCommissionsByUserId(userId);
+      const totalEarnings = await storage.getTotalEarnings(userId);
       
       res.json({ 
         totalEarnings,
@@ -542,20 +361,19 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/affiliate/withdraw", requireAuth, async (req, res) => {
+  app.post("/api/affiliate/withdraw", requireAuth, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const withdrawalData = insertWithdrawalSchema.parse({
         ...req.body,
-        userId: req.session.userId,
+        userId,
       });
 
-      // Validate required banking fields
       if (!withdrawalData.bankName || !withdrawalData.accountNumber || !withdrawalData.accountHolderName) {
         return res.status(400).json({ message: "Bank name, account number, and account holder name are required" });
       }
 
-      // Validate withdrawal amount doesn't exceed available balance
-      const totalEarnings = await storage.getTotalEarnings(req.session.userId!);
+      const totalEarnings = await storage.getTotalEarnings(userId);
       if (withdrawalData.amount > totalEarnings) {
         return res.status(400).json({ message: "Withdrawal amount exceeds available balance" });
       }
@@ -574,9 +392,10 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/affiliate/withdrawals", requireAuth, async (req, res) => {
+  app.get("/api/affiliate/withdrawals", requireAuth, async (req: any, res) => {
     try {
-      const withdrawals = await storage.getWithdrawalsByUserId(req.session.userId!);
+      const userId = getUserId(req);
+      const withdrawals = await storage.getWithdrawalsByUserId(userId);
       res.json({ withdrawals });
     } catch (error) {
       res.status(500).json({ message: "Server error" });

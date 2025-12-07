@@ -1,37 +1,32 @@
-import { users, generatedImages, withdrawalRequests, affiliateCommissions, type User, type InsertUser, type UpdateProfile, type GeneratedImage, type InsertImage, type WithdrawalRequest, type InsertWithdrawal, type AffiliateCommission } from "@shared/schema";
+import { users, generatedImages, withdrawalRequests, affiliateCommissions, type User, type InsertUser, type UpdateProfile, type GeneratedImage, type InsertImage, type WithdrawalRequest, type InsertWithdrawal, type AffiliateCommission, type UpsertUser } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserProfile(userId: string, data: UpdateProfile): Promise<User | undefined>;
+  upsertUser(userData: UpsertUser): Promise<User>;
   
-  // Image operations
   createImage(image: InsertImage): Promise<GeneratedImage>;
   getImagesByUserId(userId: string): Promise<GeneratedImage[]>;
   toggleImageFavorite(imageId: string, userId: string): Promise<GeneratedImage | undefined>;
   deleteImage(imageId: string, userId: string): Promise<boolean>;
   getUserStats(userId: string): Promise<{ images: number; mockups: number; bgRemoved: number; total: number }>;
   
-  // Affiliate operations
   getUserByAffiliateCode(code: string): Promise<User | undefined>;
   createCommission(affiliateUserId: string, referredUserId: string, amount: number): Promise<AffiliateCommission>;
   getCommissionsByUserId(userId: string): Promise<AffiliateCommission[]>;
   getTotalEarnings(userId: string): Promise<number>;
   
-  // Withdrawal operations
   createWithdrawalRequest(request: InsertWithdrawal): Promise<WithdrawalRequest>;
   getWithdrawalsByUserId(userId: string): Promise<WithdrawalRequest[]>;
   
-  // Stripe operations
   updateStripeCustomerId(userId: string, stripeCustomerId: string): Promise<User | undefined>;
   updateStripeSubscriptionId(userId: string, stripeSubscriptionId: string | null): Promise<User | undefined>;
   
-  // Password reset operations
   setPasswordResetToken(email: string, tokenHash: string, expires: Date): Promise<User | undefined>;
   getUserWithResetToken(email: string): Promise<User | undefined>;
   updatePassword(userId: string, hashedPassword: string): Promise<User | undefined>;
@@ -39,7 +34,6 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
@@ -80,7 +74,21 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  // Image operations
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
   async createImage(image: InsertImage): Promise<GeneratedImage> {
     const [created] = await db
       .insert(generatedImages)
@@ -131,7 +139,6 @@ export class DatabaseStorage implements IStorage {
     return { images, mockups, bgRemoved, total: allImages.length };
   }
 
-  // Affiliate operations
   async getUserByAffiliateCode(code: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.affiliateCode, code));
     return user || undefined;
@@ -158,7 +165,6 @@ export class DatabaseStorage implements IStorage {
     return commissions.reduce((total, c) => total + c.amount, 0);
   }
 
-  // Withdrawal operations
   async createWithdrawalRequest(request: InsertWithdrawal): Promise<WithdrawalRequest> {
     const [withdrawal] = await db
       .insert(withdrawalRequests)
@@ -175,7 +181,6 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(withdrawalRequests.createdAt));
   }
   
-  // Stripe operations
   async updateStripeCustomerId(userId: string, stripeCustomerId: string): Promise<User | undefined> {
     const [user] = await db
       .update(users)
@@ -194,7 +199,6 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  // Password reset operations
   async setPasswordResetToken(email: string, tokenHash: string, expires: Date): Promise<User | undefined> {
     const [user] = await db
       .update(users)

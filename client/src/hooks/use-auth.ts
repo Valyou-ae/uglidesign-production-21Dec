@@ -1,58 +1,45 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { authApi } from "@/lib/api";
-import { useLocation } from "wouter";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+async function fetchUser() {
+  const response = await fetch("/api/auth/user", {
+    credentials: "include",
+  });
+  
+  if (!response.ok) {
+    if (response.status === 401) {
+      return null;
+    }
+    throw new Error("Failed to fetch user");
+  }
+  
+  return response.json();
+}
 
 export function useAuth() {
   const queryClient = useQueryClient();
-  const [, setLocation] = useLocation();
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["auth", "me"],
-    queryFn: authApi.me,
+  const { data: user, isLoading, error } = useQuery({
+    queryKey: ["/api/auth/user"],
+    queryFn: fetchUser,
     retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
-  const loginMutation = useMutation({
-    mutationFn: ({ username, password }: { username: string; password: string }) =>
-      authApi.login(username, password),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-    },
-  });
+  const login = () => {
+    window.location.href = "/api/login";
+  };
 
-  const signupMutation = useMutation({
-    mutationFn: ({
-      username,
-      email,
-      password,
-    }: {
-      username: string;
-      email: string;
-      password: string;
-    }) => authApi.signup(username, email, password),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-    },
-  });
-
-  const logoutMutation = useMutation({
-    mutationFn: authApi.logout,
-    onSuccess: () => {
-      queryClient.clear();
-      setLocation("/");
-    },
-  });
+  const logout = () => {
+    queryClient.clear();
+    window.location.href = "/api/logout";
+  };
 
   return {
-    user: data?.user,
+    user,
     isLoading,
-    isAuthenticated: !!data?.user,
+    isAuthenticated: !!user,
     error,
-    login: loginMutation.mutateAsync,
-    signup: signupMutation.mutateAsync,
-    logout: logoutMutation.mutateAsync,
-    isLoggingIn: loginMutation.isPending,
-    isSigningUp: signupMutation.isPending,
+    login,
+    logout,
   };
 }
