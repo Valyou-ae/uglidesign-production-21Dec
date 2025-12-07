@@ -242,4 +242,40 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  
+  .safe-area-pb {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+  
+  /* Touch-friendly tap targets for mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent text selection on mobile for interactive elements */
+  .select-none-touch {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Checkerboard pattern for transparency preview */
+  .bg-checkerboard {
+    background-image: 
+      linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
+      linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+      linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+  
+  .dark .bg-checkerboard {
+    background-image: 
+      linear-gradient(45deg, #333 25%, transparent 25%),
+      linear-gradient(-45deg, #333 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #333 75%),
+      linear-gradient(-45deg, transparent 75%, #333 75%);
+  }
 }

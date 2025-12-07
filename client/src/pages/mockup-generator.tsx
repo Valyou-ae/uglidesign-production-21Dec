@@ -1208,55 +1208,57 @@ export default function MockupGenerator() {
         ) : (
           // State 2: Step-by-Step Wizard
           <div className="flex-1 flex flex-col h-full">
-            {/* Top Progress Bar */}
-            <div className="bg-card border-b border-border px-4 md:px-10 py-4 md:py-6">
+            {/* Top Progress Bar - Mobile scrollable, desktop fixed */}
+            <div className="bg-card border-b border-border px-2 sm:px-4 md:px-10 py-3 md:py-6">
               <div className="max-w-[1000px] mx-auto">
-                <div className="relative flex justify-between items-center">
-                  {/* Connecting Line */}
-                  <div className="absolute top-[18px] left-0 w-full h-[2px] bg-border -z-10">
-                    <motion.div 
-                      className="h-full bg-indigo-600"
-                      initial={{ width: "0%" }}
-                      animate={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </div>
+                <div className="overflow-x-auto scrollbar-hide -mx-2 px-2 sm:overflow-visible sm:mx-0 sm:px-0">
+                  <div className="relative flex justify-between items-center min-w-[340px] sm:min-w-0">
+                    {/* Connecting Line */}
+                    <div className="absolute top-[16px] sm:top-[18px] left-0 w-full h-[2px] bg-border -z-10">
+                      <motion.div 
+                        className="h-full bg-indigo-600"
+                        initial={{ width: "0%" }}
+                        animate={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
 
-                  {steps.map((step, index) => {
-                    const isCompleted = index < currentStepIndex;
-                    const isCurrent = index === currentStepIndex;
-                    
-                    const icons = {
-                      upload: Cloud,
-                      seamless: Repeat,
-                      product: ShoppingBag,
-                      model: User,
-                      style: Sparkles,
-                      scene: MapPin,
-                      angles: Camera,
-                      generate: Wand2
-                    };
-                    const StepIcon = icons[step];
+                    {steps.map((step, index) => {
+                      const isCompleted = index < currentStepIndex;
+                      const isCurrent = index === currentStepIndex;
+                      
+                      const icons = {
+                        upload: Cloud,
+                        seamless: Repeat,
+                        product: ShoppingBag,
+                        model: User,
+                        style: Sparkles,
+                        scene: MapPin,
+                        angles: Camera,
+                        generate: Wand2
+                      };
+                      const StepIcon = icons[step];
 
-                    return (
-                      <div key={step} className="flex flex-col items-center gap-2">
-                        <div className={cn(
-                          "h-9 w-9 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10",
-                          isCompleted ? "bg-indigo-600 border-indigo-600 text-white" :
-                          isCurrent ? "bg-indigo-600 border-indigo-600 text-white ring-4 ring-indigo-600/20" :
-                          "bg-card border-border text-muted-foreground"
-                        )}>
-                          <StepIcon className="h-4 w-4" />
+                      return (
+                        <div key={step} className="flex flex-col items-center gap-1 sm:gap-2 flex-shrink-0">
+                          <div className={cn(
+                            "h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10",
+                            isCompleted ? "bg-indigo-600 border-indigo-600 text-white" :
+                            isCurrent ? "bg-indigo-600 border-indigo-600 text-white ring-2 sm:ring-4 ring-indigo-600/20" :
+                            "bg-card border-border text-muted-foreground"
+                          )}>
+                            <StepIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                          </div>
+                          <span className={cn(
+                            "text-[7px] sm:text-[8px] md:text-[10px] font-bold uppercase tracking-wider transition-colors text-center hidden xs:block sm:block",
+                            isCurrent ? "text-indigo-600" : "text-muted-foreground"
+                          )}>
+                            {step}
+                          </span>
                         </div>
-                        <span className={cn(
-                          "text-[8px] md:text-[10px] font-bold uppercase tracking-wider transition-colors text-center",
-                          isCurrent ? "text-indigo-600" : "text-muted-foreground"
-                        )}>
-                          {step}
-                        </span>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1278,11 +1280,12 @@ export default function MockupGenerator() {
                       {/* STEP CONTENT SWITCHER */}
                       {currentStep === "upload" && (
                         <div className="flex flex-col h-full">
-                          <div className="flex flex-col items-center justify-center h-full max-w-[600px] mx-auto text-center flex-1">
+                          <div className="flex flex-col items-center justify-center h-full max-w-[600px] mx-auto text-center flex-1 px-2 sm:px-0">
                           {!uploadedImage ? (
                             <div 
-                              className="w-full border-2 border-dashed border-border rounded-[20px] p-8 md:p-16 hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all cursor-pointer group"
+                              className="w-full border-2 border-dashed border-border rounded-[16px] sm:rounded-[20px] p-6 sm:p-8 md:p-16 hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all cursor-pointer group active:scale-[0.99]"
                               onClick={() => fileInputRef.current?.click()}
+                              data-testid="dropzone-upload"
                             >
                               <input 
                                 type="file" 
@@ -1291,16 +1294,16 @@ export default function MockupGenerator() {
                                 accept="image/*"
                                 onChange={handleFileUpload}
                               />
-                              <div className="h-16 w-16 md:h-20 md:w-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                                <Cloud className="h-8 w-8 md:h-10 md:w-10 text-indigo-600" />
+                              <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                                <Cloud className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-indigo-600" />
                               </div>
-                              <h2 className="text-xl md:text-2xl font-bold text-foreground mb-2">Drag & drop your design</h2>
-                              <p className="text-sm text-muted-foreground mb-4">or click to browse</p>
+                              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2">Drag & drop your design</h2>
+                              <p className="text-sm text-muted-foreground mb-3 sm:mb-4">or tap to browse</p>
                               <Badge variant="outline" className="text-xs text-muted-foreground">PNG recommended • Max 20MB</Badge>
                             </div>
                           ) : (
-                            <div className="flex flex-col items-center gap-4">
-                              <div className="relative w-full aspect-square max-w-[400px] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbC1vcGFjaXR5PSIwLjEiPjxyZWN0IHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMDAwIi8+PC9zdmc+')] bg-repeat rounded-xl border border-border overflow-hidden">
+                            <div className="flex flex-col items-center gap-4 w-full">
+                              <div className="relative w-full aspect-square max-w-[320px] sm:max-w-[400px] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbC1vcGFjaXR5PSIwLjEiPjxyZWN0IHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMDAwIi8+PC9zdmc+')] bg-repeat rounded-xl border border-border overflow-hidden">
                                 <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-contain" />
                                 <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-sm p-3 flex justify-between items-center">
                                   <span className="text-xs text-white truncate">design_v1.png</span>
@@ -1308,7 +1311,8 @@ export default function MockupGenerator() {
                                     variant="ghost" 
                                     size="sm" 
                                     onClick={() => setUploadedImage(null)}
-                                    className="text-white hover:text-white hover:bg-white/20 h-6 px-2 text-xs"
+                                    className="text-white hover:text-white hover:bg-white/20 h-8 min-h-[44px] px-3 text-xs"
+                                    data-testid="button-change-image"
                                   >
                                     Change
                                   </Button>
@@ -1316,12 +1320,12 @@ export default function MockupGenerator() {
                               </div>
                               
                               {journey === "AOP" && (
-                                <label className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 cursor-pointer transition-colors max-w-[400px] w-full">
+                                <label className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 cursor-pointer transition-colors max-w-[400px] w-full min-h-[60px]">
                                   <input 
                                     type="checkbox"
                                     checked={isAlreadySeamless}
                                     onChange={(e) => setIsAlreadySeamless(e.target.checked)}
-                                    className="h-5 w-5 rounded border-border text-indigo-600 focus:ring-indigo-500"
+                                    className="h-5 w-5 min-w-[20px] rounded border-border text-indigo-600 focus:ring-indigo-500"
                                   />
                                   <div className="flex-1">
                                     <p className="font-medium text-sm text-foreground">This design is already a seamless pattern</p>
@@ -1335,31 +1339,33 @@ export default function MockupGenerator() {
 
                           {/* Footer Navigation */}
                           <div className="mt-auto pt-4 md:pt-6 border-t border-border flex flex-col gap-2 shrink-0">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between gap-3">
                                 <Button
                                     variant="ghost"
                                     onClick={handleBack}
-                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
+                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground min-h-[44px] h-11 sm:h-10"
+                                    data-testid="button-back"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
-                                    Back
+                                    <span className="hidden sm:inline">Back</span>
                                 </Button>
                                 <Button
                                     onClick={handleNext}
                                     disabled={!uploadedImage}
                                     className={cn(
-                                        "gap-2 px-6 transition-all",
+                                        "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                         uploadedImage
                                             ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
                                             : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                     )}
+                                    data-testid="button-next"
                                 >
                                     Next Step
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
                             
-                            <div className="flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
+                            <div className="hidden sm:flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
                                 <span className="flex items-center gap-1">
                                     <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Enter</kbd> 
                                     Next
@@ -1377,19 +1383,19 @@ export default function MockupGenerator() {
                       {currentStep === "product" && (
                         <div className="flex flex-col h-full animate-fade-in">
                           {/* Header */}
-                          <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold mb-2">Configure Your Product</h2>
-                            <p className="text-muted-foreground">Select product, sizes, colors, and model preferences</p>
+                          <div className="text-center mb-4 sm:mb-8">
+                            <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Configure Your Product</h2>
+                            <p className="text-sm text-muted-foreground">Select product, sizes, colors, and model preferences</p>
                           </div>
 
                           {/* Main Content - Scrollable */}
-                          <div className="flex-1 overflow-y-auto space-y-8 pb-6">
+                          <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-8 pb-6">
                             {/* Row 1: Category + Product Selection */}
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                              {/* Categories */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+                              {/* Categories - Horizontal scrollable on mobile */}
                               <div className="lg:col-span-3">
-                                <label className="text-sm font-bold text-foreground mb-3 block">Category</label>
-                                <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 -mx-2 px-2 lg:mx-0 lg:px-0">
+                                <label className="text-sm font-bold text-foreground mb-2 sm:mb-3 block">Category</label>
+                                <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 -mx-2 px-2 lg:mx-0 lg:px-0 scrollbar-hide">
                                   {productCategories.map((cat) => {
                                     const isActive = effectiveActiveCategory === cat.name;
                                     return (
@@ -1409,25 +1415,26 @@ export default function MockupGenerator() {
                                           }
                                         }}
                                         className={cn(
-                                          "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap",
+                                          "flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap min-h-[44px] flex-shrink-0",
                                           isActive 
                                             ? "bg-indigo-600 text-white shadow-md" 
                                             : "bg-card border border-border hover:border-indigo-300 text-muted-foreground hover:text-foreground"
                                         )}
+                                        data-testid={`category-${cat.name.replace(/\s+/g, '-').toLowerCase()}`}
                                       >
-                                        <cat.icon className={cn("h-4 w-4", isActive ? "text-white" : "text-muted-foreground")} />
-                                        <span className="hidden lg:inline">{cat.name}</span>
-                                        <span className="lg:hidden">{cat.name.split(' ')[0]}</span>
+                                        <cat.icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-white" : "text-muted-foreground")} />
+                                        <span className="hidden sm:inline lg:inline">{cat.name}</span>
+                                        <span className="sm:hidden lg:hidden">{cat.name.split(' ')[0]}</span>
                                       </button>
                                     );
                                   })}
                                 </div>
                               </div>
 
-                              {/* Products Grid */}
+                              {/* Products Grid - 2 cols on mobile, 3 on sm, 4 on md, 5 on lg */}
                               <div className="lg:col-span-9">
-                                <label className="text-sm font-bold text-foreground mb-3 block">Product</label>
-                                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                                <label className="text-sm font-bold text-foreground mb-2 sm:mb-3 block">Product</label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                                   {effectiveItems.map((item) => {
                                     const isSelected = selectedProductType === item.name;
                                     return (
@@ -1436,7 +1443,7 @@ export default function MockupGenerator() {
                                         onClick={() => setSelectedProductType(item.name)}
                                         data-testid={`card-product-${item.name.replace(/\s+/g, '-').toLowerCase()}`}
                                         className={cn(
-                                          "group relative border rounded-xl p-4 cursor-pointer transition-all flex flex-col items-center text-center gap-2",
+                                          "group relative border rounded-xl p-3 sm:p-4 cursor-pointer transition-all flex flex-col items-center text-center gap-1.5 sm:gap-2 min-h-[90px] active:scale-[0.98]",
                                           isSelected 
                                             ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-sm" 
                                             : "border-border hover:border-indigo-300 bg-card"
@@ -1447,10 +1454,10 @@ export default function MockupGenerator() {
                                           isSelected={isSelected}
                                           color={isSelected ? undefined : (PRODUCT_COLOR_MAP[selectedColors[0]] || "#FFFFFF")}
                                         />
-                                        <p className={cn("font-medium text-xs leading-tight", isSelected ? "text-indigo-700" : "text-foreground")}>{item.name}</p>
+                                        <p className={cn("font-medium text-[10px] sm:text-xs leading-tight line-clamp-2", isSelected ? "text-indigo-700" : "text-foreground")}>{item.name}</p>
                                         {isSelected && (
-                                          <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
-                                            <Check className="h-3 w-3" />
+                                          <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                                            <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                                           </div>
                                         )}
                                       </div>
@@ -1461,10 +1468,10 @@ export default function MockupGenerator() {
                             </div>
 
                             {/* Row 2: Sizes + Colors */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                               {/* Sizes */}
-                              <div className="bg-card rounded-xl border border-border p-5">
-                                <div className="flex items-center justify-between mb-4">
+                              <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
+                                <div className="flex items-center justify-between mb-3 sm:mb-4">
                                   <label className="text-sm font-bold text-foreground">Product Sizes</label>
                                   <Badge variant="secondary" className="text-xs">{selectedSizes.length} selected</Badge>
                                 </div>
@@ -1482,11 +1489,12 @@ export default function MockupGenerator() {
                                           }
                                         }}
                                         className={cn(
-                                          "h-10 min-w-[44px] px-3 rounded-lg text-sm font-medium border-2 transition-all",
+                                          "h-11 min-h-[44px] min-w-[44px] px-3 rounded-lg text-sm font-medium border-2 transition-all active:scale-95",
                                           isSelected 
                                             ? "bg-indigo-600 border-indigo-600 text-white" 
                                             : "bg-background border-border text-muted-foreground hover:border-indigo-300"
                                         )}
+                                        data-testid={`size-${size}`}
                                       >
                                         {size}
                                       </button>
@@ -1496,22 +1504,22 @@ export default function MockupGenerator() {
                               </div>
 
                               {/* Colors */}
-                              <div className="bg-card rounded-xl border border-border p-5">
-                                <div className="flex items-center justify-between mb-4">
+                              <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
+                                <div className="flex items-center justify-between mb-3 sm:mb-4">
                                   <label className="text-sm font-bold text-foreground">Colors</label>
                                   {journey !== "AOP" && <Badge variant="secondary" className="text-xs">{selectedColors.length} selected</Badge>}
                                 </div>
                                 {journey === "AOP" ? (
-                                  <div className="flex items-center gap-3 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20">
-                                    <Palette className="h-5 w-5 text-indigo-600" />
-                                    <div className="flex-1">
+                                  <div className="flex items-center gap-3 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 min-h-[60px]">
+                                    <Palette className="h-5 w-5 text-indigo-600 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
                                       <p className="font-medium text-sm">Pattern-Derived Colors</p>
                                       <p className="text-xs text-muted-foreground">Colors extracted from your seamless pattern</p>
                                     </div>
-                                    <CheckCircle2 className="h-5 w-5 text-indigo-600" />
+                                    <CheckCircle2 className="h-5 w-5 text-indigo-600 flex-shrink-0" />
                                   </div>
                                 ) : (
-                                  <div className="flex flex-wrap gap-2">
+                                  <div className="flex flex-wrap gap-2 sm:gap-2">
                                     {[
                                       { name: "White", class: "bg-white border-gray-300" },
                                       { name: "Black", class: "bg-black border-black" },
@@ -1546,10 +1554,11 @@ export default function MockupGenerator() {
                                                   }
                                                 }}
                                                 className={cn(
-                                                  "h-8 w-8 rounded-full border-2 transition-all hover:scale-110",
+                                                  "h-9 w-9 sm:h-8 sm:w-8 rounded-full border-2 transition-all hover:scale-110 active:scale-95",
                                                   color.class,
                                                   isSelected ? "ring-2 ring-indigo-600 ring-offset-2" : "border-transparent"
                                                 )}
+                                                data-testid={`color-${color.name.replace(/\s+/g, '-').toLowerCase()}`}
                                               />
                                             </TooltipTrigger>
                                             <TooltipContent side="bottom" className="text-xs">{color.name}</TooltipContent>
@@ -1564,16 +1573,17 @@ export default function MockupGenerator() {
 
                             {/* Row 3: Model Options (only for wearable products) */}
                             {!isNonWearableCategory(effectiveActiveCategory) && (
-                              <div className="bg-card rounded-xl border border-border p-5">
-                                <div className="flex items-center justify-between mb-4">
+                              <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 sm:mb-4">
                                   <label className="text-sm font-bold text-foreground">Model Options</label>
                                   <div className="flex gap-2">
                                     <button
                                       onClick={() => setUseModel(true)}
                                       className={cn(
-                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                                        "flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] flex-1 sm:flex-none justify-center",
                                         useModel ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                                       )}
+                                      data-testid="button-on-model"
                                     >
                                       <User className="h-4 w-4" />
                                       On Model
@@ -1581,9 +1591,10 @@ export default function MockupGenerator() {
                                     <button
                                       onClick={() => setUseModel(false)}
                                       className={cn(
-                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                                        "flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] flex-1 sm:flex-none justify-center",
                                         !useModel ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                                       )}
+                                      data-testid="button-flat-lay"
                                     >
                                       <Shirt className="h-4 w-4" />
                                       Flat Lay
@@ -1593,7 +1604,7 @@ export default function MockupGenerator() {
 
                                 {useModel && (
                                   <>
-                                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-2">
                                     <div>
                                       <label className="text-xs text-muted-foreground mb-2 block">Sex</label>
                                       <div className="flex gap-2">
@@ -1605,11 +1616,12 @@ export default function MockupGenerator() {
                                               setGenderAutoSelected(false);
                                             }}
                                             className={cn(
-                                              "flex-1 py-2.5 rounded-lg text-sm font-medium border-2 transition-all",
+                                              "flex-1 py-2.5 min-h-[44px] rounded-lg text-sm font-medium border-2 transition-all active:scale-95",
                                               modelDetails.sex === sex
                                                 ? "border-indigo-600 bg-indigo-50 text-indigo-700"
                                                 : "border-border hover:border-indigo-300"
                                             )}
+                                            data-testid={`sex-${sex.toLowerCase()}`}
                                           >
                                             {sex === "MALE" ? "Male" : "Female"}
                                           </button>
@@ -1619,7 +1631,7 @@ export default function MockupGenerator() {
                                     <div>
                                       <label className="text-xs text-muted-foreground mb-2 block">Age Group</label>
                                       <Select value={modelDetails.age} onValueChange={(value: AgeGroup) => setModelDetails({...modelDetails, age: value})}>
-                                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="h-11 min-h-[44px]"><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                           <SelectItem value="TEEN">Teen (13-17)</SelectItem>
                                           <SelectItem value="YOUNG_ADULT">Young Adult (18-25)</SelectItem>
@@ -1630,7 +1642,7 @@ export default function MockupGenerator() {
                                     <div>
                                       <label className="text-xs text-muted-foreground mb-2 block">Ethnicity</label>
                                       <Select value={modelDetails.ethnicity} onValueChange={(value: Ethnicity) => setModelDetails({...modelDetails, ethnicity: value})}>
-                                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="h-11 min-h-[44px]"><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                           <SelectItem value="CAUCASIAN">Caucasian</SelectItem>
                                           <SelectItem value="AFRICAN">African</SelectItem>
@@ -1652,11 +1664,12 @@ export default function MockupGenerator() {
                                             key={size}
                                             onClick={() => setModelDetails({...modelDetails, modelSize: size})}
                                             className={cn(
-                                              "flex-1 py-2.5 rounded-lg text-sm font-medium border-2 transition-all",
+                                              "flex-1 py-2.5 min-h-[44px] rounded-lg text-sm font-medium border-2 transition-all active:scale-95",
                                               modelDetails.modelSize === size
                                                 ? "border-indigo-600 bg-indigo-600 text-white"
                                                 : "border-border hover:border-indigo-300"
                                             )}
+                                            data-testid={`body-size-${size}`}
                                           >
                                             {size}
                                           </button>
@@ -1751,19 +1764,20 @@ export default function MockupGenerator() {
                           </div>
 
                           {/* Footer Navigation */}
-                          <div className="pt-6 border-t border-border flex items-center justify-between shrink-0">
-                            <Button variant="ghost" onClick={handleBack} className="gap-2">
-                              <ChevronLeft className="h-4 w-4" /> Back
+                          <div className="pt-4 sm:pt-6 border-t border-border flex items-center justify-between gap-3 shrink-0">
+                            <Button variant="ghost" onClick={handleBack} className="gap-2 min-h-[44px] h-11 sm:h-10" data-testid="button-back">
+                              <ChevronLeft className="h-4 w-4" /> <span className="hidden sm:inline">Back</span>
                             </Button>
                             <Button
                               onClick={handleNext}
                               disabled={!selectedProductType || selectedSizes.length === 0 || (journey !== "AOP" && selectedColors.length === 0)}
                               className={cn(
-                                "gap-2 px-6",
+                                "gap-2 px-4 sm:px-6 min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                 (selectedProductType && selectedSizes.length > 0 && (journey === "AOP" || selectedColors.length > 0))
                                   ? "bg-indigo-600 hover:bg-indigo-700 text-white" 
                                   : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                               )}
+                              data-testid="button-next"
                             >
                               Next Step <ChevronRight className="h-4 w-4" />
                             </Button>
@@ -1790,12 +1804,12 @@ export default function MockupGenerator() {
                           {seamlessPhase === 'selecting' && (
                             <div className="flex-1 flex flex-col overflow-hidden">
                               {/* Info Banner */}
-                              <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-900/30 rounded-xl p-4 mb-6 shrink-0">
-                                <div className="flex items-start gap-3">
-                                  <Info className="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                              <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-900/30 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 shrink-0">
+                                <div className="flex items-start gap-2 sm:gap-3">
+                                  <Info className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
                                   <div>
-                                    <h3 className="text-base font-bold text-indigo-900 dark:text-indigo-100 mb-1">Pattern Lab</h3>
-                                    <p className="text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed">
+                                    <h3 className="text-sm sm:text-base font-bold text-indigo-900 dark:text-indigo-100 mb-0.5 sm:mb-1">Pattern Lab</h3>
+                                    <p className="text-[11px] sm:text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed">
                                       We analyzed your image and generated several options. The best methods are marked with a <span className="inline-flex items-center"><Star className="h-2.5 w-2.5 mx-0.5 fill-current" /></span>. Select your favorite pattern to continue.
                                     </p>
                                   </div>
@@ -1804,7 +1818,7 @@ export default function MockupGenerator() {
 
                               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                                 {/* Variations Grid */}
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
                                   {seamlessVariations.map((variation) => {
                                     const isSelected = selectedVariationId === variation.id;
                                     const isAi = variation.id === 'ai_enhanced';
@@ -2000,32 +2014,34 @@ export default function MockupGenerator() {
                               </div>
 
                               {/* Footer Navigation */}
-                              <div className="mt-6 pt-6 border-t border-border flex flex-col gap-2 shrink-0">
-                                <div className="flex items-center justify-between">
+                              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border flex flex-col gap-2 shrink-0">
+                                <div className="flex items-center justify-between gap-3">
                                     <Button
                                         variant="ghost"
                                         onClick={handleBack}
-                                        className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
+                                        className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground min-h-[44px] h-11 sm:h-10"
+                                        data-testid="button-back"
                                     >
                                         <ChevronLeft className="h-4 w-4" />
-                                        Back
+                                        <span className="hidden sm:inline">Back</span>
                                     </Button>
                                     <Button
                                         onClick={handleNext}
                                         disabled={!selectedVariationId}
                                         className={cn(
-                                            "gap-2 px-6 transition-all",
+                                            "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                             selectedVariationId
                                                 ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
                                                 : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                         )}
+                                        data-testid="button-next"
                                     >
                                         Next Step
                                         <ChevronRight className="h-4 w-4" />
                                     </Button>
                                 </div>
                                 
-                                <div className="flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
+                                <div className="hidden sm:flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
                                     <span className="flex items-center gap-1">
                                         <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Enter</kbd> 
                                         Next
@@ -2075,7 +2091,7 @@ export default function MockupGenerator() {
 
                             {/* Grid */}
                             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-4">
-                              <div className="grid grid-cols-2 gap-2 md:gap-3 pb-4">
+                              <div className="grid grid-cols-2 gap-2 sm:gap-3 pb-4">
                                 {MOCKUP_ANGLES.map((angle) => {
                                   const isSelected = selectedAngles.includes(angle.id);
                                   return (
@@ -2089,11 +2105,12 @@ export default function MockupGenerator() {
                                         }
                                       }}
                                       className={cn(
-                                        "relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col justify-between cursor-pointer min-h-[100px]",
+                                        "relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col justify-between cursor-pointer min-h-[90px] sm:min-h-[100px] active:scale-[0.98]",
                                         isSelected 
                                           ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-sm" 
                                           : "border-border bg-card hover:border-indigo-300 dark:hover:border-indigo-700"
                                       )}
+                                      data-testid={`angle-${angle.id}`}
                                     >
                                       {/* Top Section */}
                                       <div>
@@ -2174,32 +2191,34 @@ export default function MockupGenerator() {
                           </div>
 
                           {/* Footer Navigation */}
-                          <div className="mt-6 pt-6 border-t border-border flex flex-col gap-2 shrink-0">
-                            <div className="flex items-center justify-between">
+                          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border flex flex-col gap-2 shrink-0">
+                            <div className="flex items-center justify-between gap-3">
                                 <Button
                                     variant="ghost"
                                     onClick={handleBack}
-                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
+                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground min-h-[44px] h-11 sm:h-10"
+                                    data-testid="button-back"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
-                                    Back
+                                    <span className="hidden sm:inline">Back</span>
                                 </Button>
                                 <Button
                                     onClick={handleNext}
                                     disabled={selectedAngles.length === 0}
                                     className={cn(
-                                        "gap-2 px-6 transition-all",
+                                        "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                         selectedAngles.length > 0
                                             ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
                                             : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                     )}
+                                    data-testid="button-next"
                                 >
                                     Next Step
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
                             
-                            <div className="flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
+                            <div className="hidden sm:flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
                                 <span className="flex items-center gap-1">
                                     <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Enter</kbd> 
                                     Next
@@ -2292,32 +2311,34 @@ export default function MockupGenerator() {
                           </div>
 
                           {/* Footer Navigation */}
-                          <div className="mt-auto pt-6 border-t border-border flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
+                          <div className="mt-auto pt-4 sm:pt-6 border-t border-border flex flex-col gap-2">
+                            <div className="flex items-center justify-between gap-3">
                                 <Button
                                     variant="ghost"
                                     onClick={handleBack}
-                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
+                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground min-h-[44px] h-11 sm:h-10"
+                                    data-testid="button-back"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
-                                    Back
+                                    <span className="hidden sm:inline">Back</span>
                                 </Button>
                                 <Button
                                     onClick={handleNext}
                                     disabled={environmentPrompt.length <= 5}
                                     className={cn(
-                                        "gap-2 px-6 transition-all",
+                                        "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                         environmentPrompt.length > 5 
                                             ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
                                             : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                     )}
+                                    data-testid="button-next"
                                 >
                                     Next Step
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
                             
-                            <div className="flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
+                            <div className="hidden sm:flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
                                 <span className="flex items-center gap-1">
                                     <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Enter</kbd> 
                                     Next
@@ -2334,11 +2355,11 @@ export default function MockupGenerator() {
 
                       {currentStep === "style" && (
                         <div>
-                          <div className="mb-8 text-center">
-                            <h2 className="text-2xl font-bold mb-2">Choose Brand Archetype</h2>
-                            <p className="text-muted-foreground">Define the mood and aesthetic of your photoshoot</p>
+                          <div className="mb-4 sm:mb-8 text-center">
+                            <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Choose Brand Archetype</h2>
+                            <p className="text-sm text-muted-foreground">Define the mood and aesthetic of your photoshoot</p>
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             {BRAND_STYLES.map((style) => {
                               const isSelected = selectedStyle === style.id;
                               return (
@@ -2347,31 +2368,31 @@ export default function MockupGenerator() {
                                   onClick={() => setSelectedStyle(style.id)}
                                   data-testid={`style-card-${style.id}`}
                                   className={cn(
-                                    "group relative bg-card rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 hover:shadow-lg",
+                                    "group relative bg-card rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 hover:shadow-lg active:scale-[0.98]",
                                     isSelected 
-                                      ? "border-indigo-600 ring-4 ring-indigo-600/20 shadow-lg" 
+                                      ? "border-indigo-600 ring-2 sm:ring-4 ring-indigo-600/20 shadow-lg" 
                                       : "border-border hover:border-indigo-600/50"
                                   )}
                                 >
-                                  <div className="p-4 flex flex-col">
-                                    <div className="relative w-full h-[120px] rounded-lg overflow-hidden mb-4 bg-muted">
+                                  <div className="p-3 sm:p-4 flex flex-col">
+                                    <div className="relative w-full h-[80px] sm:h-[120px] rounded-lg overflow-hidden mb-2 sm:mb-4 bg-muted">
                                       <img 
                                         src={style.img} 
                                         alt={style.name} 
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                                       />
                                       {isSelected && (
-                                        <div className="absolute top-2 right-2 bg-indigo-600 rounded-full p-1.5 shadow-lg">
-                                          <Check className="h-3.5 w-3.5 text-white" />
+                                        <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-indigo-600 rounded-full p-1 sm:p-1.5 shadow-lg">
+                                          <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
                                         </div>
                                       )}
                                     </div>
                                     
-                                    <div className="space-y-2">
-                                      <h3 className="font-bold text-foreground text-sm">{style.name}</h3>
-                                      <p className="text-muted-foreground text-xs">{style.tagline}</p>
+                                    <div className="space-y-1 sm:space-y-2">
+                                      <h3 className="font-bold text-foreground text-xs sm:text-sm">{style.name}</h3>
+                                      <p className="text-muted-foreground text-[10px] sm:text-xs line-clamp-2">{style.tagline}</p>
                                       
-                                      <div className="flex flex-wrap gap-1 pt-1">
+                                      <div className="flex flex-wrap gap-1 pt-1 hidden sm:flex">
                                         {style.keywords.map((keyword, idx) => (
                                           <Badge 
                                             key={idx}
@@ -2390,32 +2411,34 @@ export default function MockupGenerator() {
                           </div>
 
                           {/* Footer Navigation */}
-                          <div className="mt-8 pt-6 border-t border-border flex flex-col gap-2 shrink-0">
-                            <div className="flex items-center justify-between">
+                          <div className="mt-4 sm:mt-8 pt-4 sm:pt-6 border-t border-border flex flex-col gap-2 shrink-0">
+                            <div className="flex items-center justify-between gap-3">
                                 <Button
                                     variant="ghost"
                                     onClick={handleBack}
-                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground"
+                                    className="gap-2 pl-2 pr-4 text-muted-foreground hover:text-foreground min-h-[44px] h-11 sm:h-10"
+                                    data-testid="button-back"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
-                                    Back
+                                    <span className="hidden sm:inline">Back</span>
                                 </Button>
                                 <Button
                                     onClick={handleNext}
                                     disabled={!selectedStyle}
                                     className={cn(
-                                        "gap-2 px-6 transition-all",
+                                        "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                         selectedStyle
                                             ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
                                             : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                     )}
+                                    data-testid="button-next"
                                 >
                                     Next Step
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
                             
-                            <div className="flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
+                            <div className="hidden sm:flex justify-center gap-2 text-xs text-muted-foreground opacity-60">
                                 <span className="flex items-center gap-1">
                                     <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border font-mono text-[10px]">Enter</kbd> 
                                     Next
@@ -2433,49 +2456,49 @@ export default function MockupGenerator() {
                       {currentStep === "generate" && (
                         <div className="h-full flex flex-col">
                           {!generatedMockups.length && !isGenerating ? (
-                            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-[700px] mx-auto">
-                              <h2 className="text-3xl font-bold mb-2">Ready to Generate Photoshoot</h2>
-                              <p className="text-muted-foreground mb-6">Review your batch configuration before generating</p>
+                            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-[700px] mx-auto px-2 sm:px-0">
+                              <h2 className="text-xl sm:text-3xl font-bold mb-2">Ready to Generate Photoshoot</h2>
+                              <p className="text-sm text-muted-foreground mb-4 sm:mb-6">Review your batch configuration before generating</p>
                               
-                              <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-2xl p-6 w-full mb-6 border border-indigo-200 dark:border-indigo-800" data-testid="batch-summary-card">
-                                <div className="flex items-center justify-center gap-4 mb-4">
-                                  <div className="flex items-center gap-2 bg-card rounded-lg px-4 py-2 border border-border">
-                                    <Palette className="h-4 w-4 text-indigo-600" />
-                                    <span className="text-2xl font-bold text-indigo-600">{journey === "AOP" ? 1 : selectedColors.length}</span>
-                                    <span className="text-sm text-muted-foreground">Colors</span>
+                              <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full mb-4 sm:mb-6 border border-indigo-200 dark:border-indigo-800" data-testid="batch-summary-card">
+                                <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-2 sm:mb-4">
+                                  <div className="flex items-center gap-1.5 sm:gap-2 bg-card rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 border border-border">
+                                    <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-600" />
+                                    <span className="text-lg sm:text-2xl font-bold text-indigo-600">{journey === "AOP" ? 1 : selectedColors.length}</span>
+                                    <span className="text-xs sm:text-sm text-muted-foreground">Colors</span>
                                   </div>
-                                  <span className="text-2xl font-bold text-muted-foreground">×</span>
-                                  <div className="flex items-center gap-2 bg-card rounded-lg px-4 py-2 border border-border">
-                                    <Camera className="h-4 w-4 text-purple-600" />
-                                    <span className="text-2xl font-bold text-purple-600">{selectedAngles.length || 1}</span>
-                                    <span className="text-sm text-muted-foreground">Angles</span>
+                                  <span className="text-lg sm:text-2xl font-bold text-muted-foreground">×</span>
+                                  <div className="flex items-center gap-1.5 sm:gap-2 bg-card rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 border border-border">
+                                    <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600" />
+                                    <span className="text-lg sm:text-2xl font-bold text-purple-600">{selectedAngles.length || 1}</span>
+                                    <span className="text-xs sm:text-sm text-muted-foreground">Angles</span>
                                   </div>
-                                  <span className="text-2xl font-bold text-muted-foreground">=</span>
-                                  <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg px-4 py-2 text-white">
-                                    <Sparkles className="h-4 w-4" />
-                                    <span className="text-2xl font-bold">{Math.max(1, selectedAngles.length * (journey === "AOP" ? 1 : selectedColors.length))}</span>
-                                    <span className="text-sm">Mockups</span>
+                                  <span className="text-lg sm:text-2xl font-bold text-muted-foreground">=</span>
+                                  <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-white">
+                                    <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                    <span className="text-lg sm:text-2xl font-bold">{Math.max(1, selectedAngles.length * (journey === "AOP" ? 1 : selectedColors.length))}</span>
+                                    <span className="text-xs sm:text-sm">Mockups</span>
                                   </div>
                                 </div>
                               </div>
                               
-                              <div className="bg-muted/30 rounded-2xl p-6 w-full mb-6 border border-border">
-                                <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div className="bg-muted/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full mb-4 sm:mb-6 border border-border">
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
                                   <div className="text-left">
-                                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Product</span>
-                                    <p className="font-bold text-foreground">{selectedProductType || "T-Shirt"}</p>
+                                    <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Product</span>
+                                    <p className="font-bold text-foreground text-sm sm:text-base truncate">{selectedProductType || "T-Shirt"}</p>
                                   </div>
                                   <div className="text-left">
-                                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Model</span>
-                                    <p className="font-bold text-foreground">{useModel ? `${modelDetails.sex === "MALE" ? "Male" : "Female"} - ${modelDetails.ethnicity.charAt(0) + modelDetails.ethnicity.slice(1).toLowerCase().replace("_", " ")}` : "Flat Lay"}</p>
+                                    <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Model</span>
+                                    <p className="font-bold text-foreground text-sm sm:text-base truncate">{useModel ? `${modelDetails.sex === "MALE" ? "Male" : "Female"} - ${modelDetails.ethnicity.charAt(0) + modelDetails.ethnicity.slice(1).toLowerCase().replace("_", " ")}` : "Flat Lay"}</p>
                                   </div>
                                   <div className="text-left">
-                                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Style</span>
-                                    <p className="font-bold text-foreground">{BRAND_STYLES.find(s => s.id === selectedStyle)?.name || "Minimal"}</p>
+                                    <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Style</span>
+                                    <p className="font-bold text-foreground text-sm sm:text-base truncate">{BRAND_STYLES.find(s => s.id === selectedStyle)?.name || "Minimal"}</p>
                                   </div>
                                   <div className="text-left">
-                                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Scene</span>
-                                    <p className="font-bold text-foreground truncate">{environmentPrompt?.slice(0, 30) || "Studio"}...</p>
+                                    <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Scene</span>
+                                    <p className="font-bold text-foreground text-sm sm:text-base truncate">{environmentPrompt?.slice(0, 20) || "Studio"}...</p>
                                   </div>
                                 </div>
                                 
@@ -2507,18 +2530,18 @@ export default function MockupGenerator() {
                                 </div>
                               </div>
 
-                              <div className="bg-muted/30 rounded-2xl p-6 w-full mb-6 border border-border">
-                                <div className="flex items-center gap-2 mb-4">
+                              <div className="bg-muted/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full mb-4 sm:mb-6 border border-border">
+                                <div className="flex items-center gap-2 mb-3 sm:mb-4">
                                   <Maximize2 className="h-4 w-4 text-indigo-600" />
                                   <span className="text-sm font-bold text-foreground">Output Quality</span>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 gap-2 sm:gap-3">
                                   {OUTPUT_QUALITY_OPTIONS.map((quality) => (
                                     <button
                                       key={quality.id}
                                       onClick={() => setOutputQuality(quality.id)}
                                       className={cn(
-                                        "relative flex flex-col items-start p-4 rounded-xl border-2 transition-all text-left",
+                                        "relative flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 transition-all text-left min-h-[60px] active:scale-[0.99]",
                                         outputQuality === quality.id
                                           ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20"
                                           : "border-border hover:border-indigo-300"
@@ -2526,18 +2549,20 @@ export default function MockupGenerator() {
                                       data-testid={`quality-option-${quality.id}`}
                                     >
                                       {outputQuality === quality.id && (
-                                        <div className="absolute top-2 right-2">
+                                        <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
                                           <CheckCircle2 className="h-5 w-5 text-indigo-600" />
                                         </div>
                                       )}
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-sm font-bold text-foreground">{quality.name}</span>
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                          {quality.resolution}
-                                        </Badge>
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+                                          <span className="text-sm font-bold text-foreground">{quality.name}</span>
+                                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                            {quality.resolution}
+                                          </Badge>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">{quality.bestFor}</p>
                                       </div>
-                                      <p className="text-xs text-muted-foreground mb-2">{quality.bestFor}</p>
-                                      <div className="flex items-center gap-1 mt-auto">
+                                      <div className="flex items-center gap-1">
                                         <Sparkles className="h-3 w-3 text-amber-500" />
                                         <span className="text-xs font-medium text-amber-600">{quality.credits} {quality.credits === 1 ? 'credit' : 'credits'}/image</span>
                                       </div>
@@ -2554,7 +2579,8 @@ export default function MockupGenerator() {
                                   variant="outline"
                                   size="lg" 
                                   onClick={handleBack}
-                                  className="flex-1"
+                                  className="flex-1 min-h-[48px] h-12 sm:h-auto"
+                                  data-testid="button-back"
                                 >
                                   <ChevronLeft className="mr-2 h-4 w-4" />
                                   Back
@@ -2562,10 +2588,10 @@ export default function MockupGenerator() {
                                 <Button 
                                   size="lg" 
                                   onClick={handleGenerate}
-                                  className="flex-[2] h-14 text-lg rounded-[12px] bg-gradient-to-r from-[#7C3AED] to-[#9333EA] hover:brightness-110 shadow-lg shadow-purple-600/20 transition-all hover:-translate-y-[1px]"
+                                  className="flex-[2] h-12 sm:h-14 text-base sm:text-lg rounded-[12px] bg-gradient-to-r from-[#7C3AED] to-[#9333EA] hover:brightness-110 shadow-lg shadow-purple-600/20 transition-all hover:-translate-y-[1px] min-h-[48px]"
                                   data-testid="button-generate-all"
                                 >
-                                  <Wand2 className="mr-2 h-5 w-5" />
+                                  <Wand2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                                   Generate All ({Math.max(1, selectedAngles.length * (journey === "AOP" ? 1 : selectedColors.length))} Mockups)
                                 </Button>
                               </div>
@@ -2877,8 +2903,8 @@ export default function MockupGenerator() {
                                 </div>
                               )}
 
-                              <div className="flex-1 overflow-y-auto min-h-0 -mx-4 px-4 md:mx-0 md:px-0">
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pb-20">
+                              <div className="flex-1 overflow-y-auto min-h-0 -mx-2 px-2 sm:-mx-4 sm:px-4 md:mx-0 md:px-0">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 pb-24 sm:pb-20">
                                   {generatedMockups.map((mockup, i) => {
                                     const angleName = mockup.angle === 'front' ? 'Front View' : 
                                                      mockup.angle === 'three-quarter' ? 'Three-Quarter View' :
@@ -2890,15 +2916,16 @@ export default function MockupGenerator() {
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ duration: 0.3 }}
-                                        className="group relative aspect-[3/4] rounded-xl overflow-hidden border border-border cursor-pointer"
+                                        className="group relative aspect-[3/4] rounded-xl overflow-hidden border border-border cursor-pointer active:scale-[0.98]"
+                                        data-testid={`mockup-card-${i}`}
                                       >
                                         <img src={mockup.src} alt={`Mockup ${i + 1}`} className="w-full h-full object-cover" />
                                         
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-4">
-                                          <div className="flex items-center justify-end gap-2">
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3 sm:p-4">
+                                          <div className="flex items-center justify-between sm:justify-end gap-2">
                                             <Button 
                                               size="icon" 
-                                              className="h-8 w-8 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
+                                              className="h-10 w-10 sm:h-8 sm:w-8 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg min-h-[44px] sm:min-h-0"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 const styleName = BRAND_STYLES.find(s => s.id === selectedStyle)?.name || "Minimal";
@@ -2911,18 +2938,20 @@ export default function MockupGenerator() {
                                                   index: i
                                                 });
                                               }}
+                                              data-testid={`button-expand-mockup-${i}`}
                                             >
-                                              <Maximize className="h-3.5 w-3.5" />
+                                              <Maximize className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                                             </Button>
                                             <Button 
                                               size="sm" 
-                                              className="h-8 px-3 text-xs bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
+                                              className="h-10 sm:h-8 px-3 sm:px-3 text-xs bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg min-h-[44px] sm:min-h-0"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 downloadImage(mockup.src, `mockup_${mockup.size}_${mockup.color.replace(/\s+/g, '-')}_${mockup.angle}_${Date.now()}_${i}.png`);
                                               }}
+                                              data-testid={`button-download-mockup-${i}`}
                                             >
-                                              <Download className="h-3.5 w-3.5 mr-1.5" />
+                                              <Download className="h-4 w-4 sm:h-3.5 sm:w-3.5 mr-1.5" />
                                               Download
                                             </Button>
                                           </div>
@@ -2963,6 +2992,39 @@ export default function MockupGenerator() {
                                   ))}
                                 </div>
                               </div>
+                              
+                              {/* Sticky Bottom Action Bar - Mobile Only */}
+                              <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border p-3 z-40 safe-area-pb">
+                                <div className="flex gap-2">
+                                  <Button 
+                                    variant="outline"
+                                    onClick={() => setJourney(null)}
+                                    disabled={isGenerating}
+                                    className="flex-1 h-12 min-h-[48px]"
+                                    data-testid="button-start-over-mobile"
+                                  >
+                                    Start Over
+                                  </Button>
+                                  <Button 
+                                    className="flex-[2] h-12 min-h-[48px] bg-indigo-600 hover:bg-indigo-700 text-white"
+                                    onClick={downloadAllAsZip}
+                                    disabled={isGenerating || generatedMockups.length === 0 || isDownloadingZip}
+                                    data-testid="button-download-all-mobile"
+                                  >
+                                    {isDownloadingZip ? (
+                                      <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating ZIP...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Archive className="mr-2 h-4 w-4" />
+                                        Download All ({generatedMockups.length})
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -2998,50 +3060,55 @@ export default function MockupGenerator() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex items-center justify-center p-6"
+            className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-6"
             onClick={() => setSelectedMockupDetails(null)}
             data-testid="modal-mockup-details"
           >
             <div 
-              className="w-full max-w-7xl h-[90vh] md:h-[85vh] bg-card rounded-2xl overflow-hidden flex flex-col md:flex-row border border-border shadow-2xl"
+              className="w-full max-w-7xl h-[95vh] sm:h-[90vh] md:h-[85vh] bg-card rounded-xl sm:rounded-2xl overflow-hidden flex flex-col md:flex-row border border-border shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
               {/* Left: Image */}
-              <div className="w-full h-[40vh] md:h-auto md:flex-1 bg-muted/20 flex items-center justify-center p-4 md:p-8 relative group bg-checkerboard">
+              <div className="w-full h-[35vh] sm:h-[40vh] md:h-auto md:flex-1 bg-muted/20 flex items-center justify-center p-2 sm:p-4 md:p-8 relative group bg-checkerboard">
                 <img 
                   src={selectedMockupDetails.src} 
                   alt={`Mockup ${selectedMockupDetails.index + 1}`} 
                   className="max-w-full max-h-full object-contain shadow-2xl rounded-lg" 
                   data-testid="img-mockup-fullsize"
                 />
-                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <Button size="icon" className="rounded-full bg-black/50 text-white border-0 hover:bg-black/70">
-                     <Maximize2 className="h-4 w-4" />
+                <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2">
+                   <Button 
+                     size="icon" 
+                     className="rounded-full bg-black/50 text-white border-0 hover:bg-black/70 h-10 w-10 sm:h-9 sm:w-9 min-h-[44px] sm:min-h-0"
+                     onClick={() => setSelectedMockupDetails(null)}
+                     data-testid="button-close-modal-image"
+                   >
+                     <X className="h-5 w-5 sm:h-4 sm:w-4" />
                    </Button>
                 </div>
               </div>
 
               {/* Right: Details */}
-              <div className="w-full md:w-[400px] bg-card border-t md:border-t-0 md:border-l border-border flex flex-col h-[50vh] md:h-auto">
-                <div className="p-4 md:p-6 border-b border-border flex justify-between items-center shrink-0">
-                  <h3 className="font-bold text-foreground">Mockup Details</h3>
+              <div className="w-full md:w-[400px] bg-card border-t md:border-t-0 md:border-l border-border flex flex-col flex-1 md:flex-initial md:h-auto">
+                <div className="p-3 sm:p-4 md:p-6 border-b border-border flex justify-between items-center shrink-0">
+                  <h3 className="font-bold text-foreground text-sm sm:text-base">Mockup Details</h3>
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setSelectedMockupDetails(null)} 
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground h-10 w-10 sm:h-9 sm:w-9 min-h-[44px] sm:min-h-0"
                     data-testid="button-close-modal"
                   >
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 md:space-y-8">
                   {/* Actions */}
                   <div className="grid grid-cols-3 gap-2">
                     <Button 
                       variant="ghost" 
-                      className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                      className="flex flex-col h-14 sm:h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border min-h-[52px] active:scale-[0.98]"
                       onClick={() => downloadImage(selectedMockupDetails.src, `mockup_${selectedMockupDetails.index + 1}_${selectedMockupDetails.color}_${selectedMockupDetails.angle.replace(/\s+/g, '_')}.png`)}
                       data-testid="button-download-mockup"
                     >
@@ -3051,7 +3118,7 @@ export default function MockupGenerator() {
                     
                     <Button 
                       variant="ghost" 
-                      className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                      className="flex flex-col h-14 sm:h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border min-h-[52px] active:scale-[0.98]"
                       onClick={() => toast({ title: "Copied to clipboard" })}
                     >
                       <Copy className="h-5 w-5" />
@@ -3060,7 +3127,7 @@ export default function MockupGenerator() {
 
                     <Button 
                       variant="ghost" 
-                      className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                      className="flex flex-col h-14 sm:h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border min-h-[52px] active:scale-[0.98]"
                     >
                       <Star className="h-5 w-5" />
                       <span className="text-[10px]">Like</span>
