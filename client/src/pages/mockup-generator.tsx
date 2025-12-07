@@ -407,9 +407,109 @@ const PRODUCT_SILHOUETTES: Record<string, { svg: string; designArea: { top: stri
     svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20 5 L35 0 L50 8 L65 0 L80 5 L95 25 L75 35 L75 115 L25 115 L25 35 L5 25 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M42 0 L50 15 L58 0" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/></svg>`,
     designArea: { top: "30%", left: "28%", width: "44%", height: "40%" }
   },
+  "3/4 sleeve shirts": {
+    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20 5 L35 0 L50 5 L65 0 L80 5 L92 20 L78 28 L78 115 L22 115 L22 28 L8 20 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "30%", left: "28%", width: "44%", height: "40%" }
+  },
+  "Long sleeve shirts": {
+    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20 5 L35 0 L50 5 L65 0 L80 5 L100 45 L90 50 L80 35 L80 115 L20 115 L20 35 L10 50 L0 45 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "30%", left: "28%", width: "44%", height: "40%" }
+  },
+  "Embroidered shirts": {
+    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20 5 L35 0 L50 5 L65 0 L80 5 L95 25 L75 35 L75 115 L25 115 L25 35 L5 25 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><circle cx="35" cy="35" r="8" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.4"/></svg>`,
+    designArea: { top: "30%", left: "28%", width: "44%", height: "40%" }
+  },
+  "Jackets & vests": {
+    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 10 L35 0 L50 8 L65 0 L85 10 L100 50 L85 55 L85 115 L15 115 L15 55 L0 50 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M50 8 L50 115" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.3"/><path d="M35 25 L35 35" stroke="currentColor" stroke-width="2" opacity="0.3"/><path d="M65 25 L65 35" stroke="currentColor" stroke-width="2" opacity="0.3"/></svg>`,
+    designArea: { top: "25%", left: "28%", width: "44%", height: "40%" }
+  },
+  "Jackets": {
+    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 10 L35 0 L50 8 L65 0 L85 10 L100 50 L85 55 L85 115 L15 115 L15 55 L0 50 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M50 8 L50 115" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.3"/></svg>`,
+    designArea: { top: "25%", left: "28%", width: "44%", height: "40%" }
+  },
+  "Knitwear": {
+    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 15 L35 5 L50 10 L65 5 L85 15 L95 40 L80 45 L80 115 L20 115 L20 45 L5 40 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M25 30 L75 30 M25 40 L75 40 M25 50 L75 50" stroke="currentColor" stroke-width="0.5" opacity="0.3"/></svg>`,
+    designArea: { top: "25%", left: "28%", width: "44%", height: "38%" }
+  },
+  "Crop tops": {
+    svg: `<svg viewBox="0 0 100 90" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M25 0 L35 0 L35 12 L65 12 L65 0 L75 0 L80 25 L80 85 L20 85 L20 25 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "25%", left: "28%", width: "44%", height: "45%" }
+  },
+  "Dresses": {
+    svg: `<svg viewBox="0 0 100 140" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M30 0 L40 0 L40 10 L60 10 L60 0 L70 0 L75 20 L70 40 L85 135 L15 135 L30 40 L25 20 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "15%", left: "28%", width: "44%", height: "50%" }
+  },
+  "All-over shirts": {
+    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20 5 L35 0 L50 5 L65 0 L80 5 L95 25 L75 35 L75 115 L25 115 L25 35 L5 25 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M30 45 L40 45 M60 45 L70 45 M30 65 L40 65 M60 65 L70 65 M45 55 L55 55" stroke="currentColor" stroke-width="1" opacity="0.3"/></svg>`,
+    designArea: { top: "30%", left: "28%", width: "44%", height: "40%" }
+  },
+  "Hats": {
+    svg: `<svg viewBox="0 0 100 80" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 55 Q10 25 50 25 Q90 25 90 55 L95 60 L95 70 L5 70 L5 60 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M25 25 Q25 10 50 10 Q75 10 75 25" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "35%", left: "25%", width: "50%", height: "35%" }
+  },
+  "Leggings": {
+    svg: `<svg viewBox="0 0 80 140" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 0 L70 0 L70 20 Q55 25 55 40 L55 135 L45 135 L45 40 Q45 30 40 25 Q35 30 35 40 L35 135 L25 135 L25 40 Q25 25 10 20 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "5%", left: "20%", width: "60%", height: "25%" }
+  },
+  "Baby bodysuits": {
+    svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M25 5 L35 0 L50 5 L65 0 L75 5 L90 20 L75 28 L75 60 L70 75 L60 75 L55 60 L45 60 L40 75 L30 75 L25 60 L25 28 L10 20 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "30%", left: "30%", width: "40%", height: "35%" }
+  },
   "Tote bags": {
     svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 25 L85 25 L85 115 L15 115 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M30 25 Q30 5 50 5 Q70 5 70 25" stroke="currentColor" stroke-width="3" fill="none"/></svg>`,
     designArea: { top: "30%", left: "20%", width: "60%", height: "55%" }
+  },
+  "AOP Tote Bag": {
+    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 25 L85 25 L85 115 L15 115 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M30 25 Q30 5 50 5 Q70 5 70 25" stroke="currentColor" stroke-width="3" fill="none"/></svg>`,
+    designArea: { top: "30%", left: "20%", width: "60%", height: "55%" }
+  },
+  "Duffle bags": {
+    svg: `<svg viewBox="0 0 120 80" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><ellipse cx="60" cy="45" rx="55" ry="30" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M30 20 Q60 5 90 20" stroke="currentColor" stroke-width="3" fill="none"/></svg>`,
+    designArea: { top: "25%", left: "20%", width: "60%", height: "50%" }
+  },
+  "Drawstring bags": {
+    svg: `<svg viewBox="0 0 80 110" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20 L70 20 L75 105 L5 105 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M20 20 Q20 5 40 5 Q60 5 60 20" stroke="currentColor" stroke-width="2" fill="none"/><path d="M15 25 L65 25" stroke="currentColor" stroke-width="1" opacity="0.3"/></svg>`,
+    designArea: { top: "25%", left: "18%", width: "64%", height: "55%" }
+  },
+  "Backpacks": {
+    svg: `<svg viewBox="0 0 90 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 25 L75 25 L80 115 L10 115 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M25 25 Q25 10 45 10 Q65 10 65 25" stroke="currentColor" stroke-width="2" fill="none"/><rect x="25" y="60" width="40" height="25" rx="3" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.3"/></svg>`,
+    designArea: { top: "30%", left: "20%", width: "60%", height: "45%" }
+  },
+  "Handbags": {
+    svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 35 L85 35 L80 95 L20 95 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M30 35 Q30 10 50 10 Q70 10 70 35" stroke="currentColor" stroke-width="3" fill="none"/><path d="M40 55 L60 55" stroke="currentColor" stroke-width="2" opacity="0.3"/></svg>`,
+    designArea: { top: "40%", left: "22%", width: "56%", height: "45%" }
+  },
+  "Flip flops": {
+    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><ellipse cx="30" cy="60" rx="22" ry="45" stroke="currentColor" stroke-width="1" fill="currentColor"/><ellipse cx="70" cy="60" rx="22" ry="45" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M30 25 L30 50 M25 45 L35 45" stroke="currentColor" stroke-width="2" opacity="0.3"/><path d="M70 25 L70 50 M65 45 L75 45" stroke="currentColor" stroke-width="2" opacity="0.3"/></svg>`,
+    designArea: { top: "20%", left: "15%", width: "70%", height: "50%" }
+  },
+  "Shoes": {
+    svg: `<svg viewBox="0 0 120 70" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 35 Q10 15 40 15 L80 15 Q110 15 115 35 L115 55 L10 55 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M40 25 L80 25" stroke="currentColor" stroke-width="1" opacity="0.3"/></svg>`,
+    designArea: { top: "20%", left: "25%", width: "50%", height: "50%" }
+  },
+  "Socks": {
+    svg: `<svg viewBox="0 0 60 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 0 L50 0 L50 70 Q50 95 35 100 L20 105 Q5 105 5 90 L5 80 Q5 70 15 65 L15 0" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M10 20 L50 20" stroke="currentColor" stroke-width="1" opacity="0.3"/></svg>`,
+    designArea: { top: "25%", left: "20%", width: "60%", height: "35%" }
+  },
+  "Phone cases": {
+    svg: `<svg viewBox="0 0 60 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="50" height="110" rx="8" stroke="currentColor" stroke-width="1" fill="currentColor"/><rect x="20" y="10" width="20" height="5" rx="2" fill="currentColor" opacity="0.3"/></svg>`,
+    designArea: { top: "15%", left: "15%", width: "70%", height: "70%" }
+  },
+  "Laptop cases": {
+    svg: `<svg viewBox="0 0 130 90" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="120" height="80" rx="5" stroke="currentColor" stroke-width="1" fill="currentColor"/><rect x="15" y="15" width="100" height="60" rx="2" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3"/></svg>`,
+    designArea: { top: "15%", left: "15%", width: "70%", height: "70%" }
+  },
+  "Mouse pads": {
+    svg: `<svg viewBox="0 0 120 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="10" width="110" height="80" rx="5" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "12%", left: "10%", width: "80%", height: "76%" }
+  },
+  "Face masks": {
+    svg: `<svg viewBox="0 0 100 70" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 25 Q10 10 50 10 Q90 10 90 25 L90 50 Q90 65 50 65 Q10 65 10 50 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M5 30 L10 30 M90 30 L95 30" stroke="currentColor" stroke-width="2" opacity="0.5"/><path d="M25 35 L75 35 M25 45 L75 45" stroke="currentColor" stroke-width="0.5" opacity="0.3"/></svg>`,
+    designArea: { top: "20%", left: "20%", width: "60%", height: "55%" }
+  },
+  "Wall art": {
+    svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="2" stroke="currentColor" stroke-width="1" fill="currentColor"/><rect x="15" y="15" width="70" height="70" rx="1" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3"/></svg>`,
+    designArea: { top: "15%", left: "15%", width: "70%", height: "70%" }
   },
   "Mugs": {
     svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 20 L70 20 L70 85 Q70 95 50 95 L35 95 Q15 95 15 85 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M70 35 Q90 35 90 55 Q90 75 70 75" stroke="currentColor" stroke-width="3" fill="none"/></svg>`,
@@ -419,17 +519,69 @@ const PRODUCT_SILHOUETTES: Record<string, { svg: string; designArea: { top: stri
     svg: `<svg viewBox="0 0 100 130" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="110" rx="2" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
     designArea: { top: "12%", left: "15%", width: "70%", height: "76%" }
   },
-  "Phone cases": {
-    svg: `<svg viewBox="0 0 60 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="50" height="110" rx="8" stroke="currentColor" stroke-width="1" fill="currentColor"/><rect x="20" y="10" width="20" height="5" rx="2" fill="currentColor" opacity="0.3"/></svg>`,
-    designArea: { top: "15%", left: "15%", width: "70%", height: "70%" }
+  "Framed posters": {
+    svg: `<svg viewBox="0 0 110 140" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="100" height="130" rx="2" stroke="currentColor" stroke-width="3" fill="none"/><rect x="12" y="12" width="86" height="116" rx="1" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "12%", left: "14%", width: "72%", height: "76%" }
   },
   "Blankets": {
     svg: `<svg viewBox="0 0 120 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 10 L110 10 L110 90 L10 90 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M10 90 Q15 95 20 90 Q25 85 30 90 Q35 95 40 90 Q45 85 50 90 Q55 95 60 90 Q65 85 70 90 Q75 95 80 90 Q85 85 90 90 Q95 95 100 90 Q105 85 110 90" stroke="currentColor" stroke-width="1" fill="none" opacity="0.3"/></svg>`,
     designArea: { top: "10%", left: "10%", width: "80%", height: "75%" }
   },
+  "AOP Fleece Blanket": {
+    svg: `<svg viewBox="0 0 120 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 10 L110 10 L110 90 L10 90 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M10 90 Q15 95 20 90 Q25 85 30 90 Q35 95 40 90 Q45 85 50 90 Q55 95 60 90 Q65 85 70 90 Q75 95 80 90 Q85 85 90 90 Q95 95 100 90 Q105 85 110 90" stroke="currentColor" stroke-width="1" fill="none" opacity="0.3"/></svg>`,
+    designArea: { top: "10%", left: "10%", width: "80%", height: "75%" }
+  },
+  "AOP Beach Towel": {
+    svg: `<svg viewBox="0 0 80 140" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="70" height="130" rx="2" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M10 130 L70 130" stroke="currentColor" stroke-width="1" opacity="0.3"/></svg>`,
+    designArea: { top: "8%", left: "12%", width: "76%", height: "84%" }
+  },
+  "Pillow cases": {
+    svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="5" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "15%", left: "15%", width: "70%", height: "70%" }
+  },
+  "AOP Square Pillow": {
+    svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="5" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "15%", left: "15%", width: "70%", height: "70%" }
+  },
+  "Magnets": {
+    svg: `<svg viewBox="0 0 80 80" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="60" height="60" rx="3" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "15%", left: "15%", width: "70%", height: "70%" }
+  },
+  "Tableware": {
+    svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="1" fill="currentColor"/><circle cx="50" cy="50" r="30" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.3"/></svg>`,
+    designArea: { top: "20%", left: "20%", width: "60%", height: "60%" }
+  },
+  "Water bottles": {
+    svg: `<svg viewBox="0 0 50 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15 20 L35 20 L35 15 Q35 5 25 5 Q15 5 15 15 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M10 25 L40 25 L42 115 L8 115 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "25%", left: "18%", width: "64%", height: "55%" }
+  },
+  "Tumblers": {
+    svg: `<svg viewBox="0 0 60 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 10 L50 10 L48 110 L12 110 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><ellipse cx="30" cy="10" rx="20" ry="5" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M15 25 L45 25" stroke="currentColor" stroke-width="1" opacity="0.3"/></svg>`,
+    designArea: { top: "20%", left: "18%", width: "64%", height: "55%" }
+  },
+  "Coasters": {
+    svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "18%", left: "18%", width: "64%", height: "64%" }
+  },
+  "Postcards": {
+    svg: `<svg viewBox="0 0 120 80" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="110" height="70" rx="2" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M60 10 L60 70" stroke="currentColor" stroke-width="0.5" opacity="0.3"/></svg>`,
+    designArea: { top: "12%", left: "8%", width: "42%", height: "76%" }
+  },
+  "Notebooks": {
+    svg: `<svg viewBox="0 0 80 110" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="5" width="65" height="100" rx="2" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M5 15 L10 15 M5 30 L10 30 M5 45 L10 45 M5 60 L10 60 M5 75 L10 75 M5 90 L10 90" stroke="currentColor" stroke-width="2" opacity="0.4"/></svg>`,
+    designArea: { top: "10%", left: "18%", width: "70%", height: "80%" }
+  },
+  "Stickers": {
+    svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M75 75 Q85 75 85 65" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/></svg>`,
+    designArea: { top: "18%", left: "18%", width: "64%", height: "64%" }
+  },
+  "Aprons": {
+    svg: `<svg viewBox="0 0 100 130" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M25 10 L75 10 L80 35 L80 125 L20 125 L20 35 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/><path d="M25 10 Q10 15 10 25 M75 10 Q90 15 90 25" stroke="currentColor" stroke-width="2" fill="none"/><path d="M20 55 L5 55 M80 55 L95 55" stroke="currentColor" stroke-width="2" fill="none"/><rect x="35" y="75" width="30" height="25" rx="2" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.3"/></svg>`,
+    designArea: { top: "15%", left: "28%", width: "44%", height: "40%" }
+  },
   "default": {
-    svg: `<svg viewBox="0 0 100 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20 5 L35 0 L50 5 L65 0 L80 5 L95 25 L75 35 L75 115 L25 115 L25 35 L5 25 Z" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
-    designArea: { top: "30%", left: "28%", width: "44%", height: "40%" }
+    svg: `<svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="15" width="70" height="70" rx="5" stroke="currentColor" stroke-width="1" fill="currentColor"/></svg>`,
+    designArea: { top: "20%", left: "20%", width: "60%", height: "60%" }
   }
 };
 
