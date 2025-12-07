@@ -256,5 +256,42 @@ All products include:
 
 **Next Steps**
 - Ensure all image creation flows populate generationType field for accurate tracking
-- Integrate payment system (Stripe) for real billing data
 - Add /help page or redirect
+- Create Stripe products/prices in Stripe Dashboard for subscriptions and credit packages
+
+## December 7, 2024 - Stripe Payment Integration
+
+**Stripe Integration Files**
+- `server/stripeClient.ts` - Credential fetching via Replit connectors, Stripe client initialization, StripeSync setup
+- `server/webhookHandlers.ts` - Webhook payload processing using stripe-replit-sync
+- `server/stripeService.ts` - Business logic for customer creation, checkout sessions, portal sessions, data queries from stripe schema tables
+
+**Server Updates**
+- `server/index.ts` - Stripe initialization with schema migration, managed webhook setup, sync backfill
+- Webhook route registered before express.json() middleware to preserve raw body for signature verification
+
+**New Stripe API Endpoints**
+- `GET /api/stripe/config` - Returns publishable key for frontend
+- `GET /api/stripe/products` - Lists products with prices from synced Stripe data
+- `POST /api/stripe/create-checkout-session` - Creates Stripe checkout session with customer creation/retrieval
+- `POST /api/stripe/create-portal-session` - Opens Stripe customer portal for subscription management
+- `GET /api/stripe/subscription-status` - Queries active subscriptions directly from Stripe API
+
+**Schema Updates**
+- Added `stripeCustomerId` and `stripeSubscriptionId` fields to users table
+
+**Storage Updates**
+- Added `updateStripeCustomerId(userId, stripeCustomerId)` method
+- Added `updateStripeSubscriptionId(userId, stripeSubscriptionId)` method
+
+**Frontend (billing.tsx)**
+- Connected to real Stripe API endpoints for products, checkout, portal, and subscription status
+- Displays actual subscription data when available
+- Handles checkout success/canceled URL parameters
+- Loading states and error handling with toast notifications
+
+**Security Measures**
+- Price ID validation (must start with 'price_')
+- Mode validation (only 'subscription' or 'payment' allowed)
+- Customer created lazily on first checkout
+- Subscription status queries Stripe directly to ensure accuracy

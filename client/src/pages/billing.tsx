@@ -1,24 +1,67 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Download, 
   ChevronRight, 
   Check,
   CreditCard,
-  X
+  X,
+  Loader2,
+  ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/sidebar";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { userApi } from "@/lib/api";
+import { useLocation } from "wouter";
+
+interface StripeProduct {
+  product_id: string;
+  product_name: string;
+  product_description: string | null;
+  product_active: boolean;
+  product_metadata: Record<string, string> | null;
+  price_id: string;
+  unit_amount: number | null;
+  currency: string;
+  recurring: { interval: string } | null;
+  price_active: boolean;
+  price_metadata: Record<string, string> | null;
+}
+
+interface SubscriptionStatus {
+  hasSubscription: boolean;
+  subscription: {
+    id: string;
+    status: string;
+    current_period_end: number;
+  } | null;
+  plan: string;
+}
 
 export default function Billing() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [activeModal, setActiveModal] = useState<"plan" | "credits" | "payment" | "cancel" | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState("Business");
+  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const [selectedCreditPackage, setSelectedCreditPackage] = useState("1000");
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const isSuccess = searchParams.get('success') === 'true';
+  const isCanceled = searchParams.get('canceled') === 'true';
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast({ title: "Payment successful!", description: "Your subscription is now active." });
+      window.history.replaceState({}, '', '/billing');
+    }
+    if (isCanceled) {
+      toast({ title: "Payment canceled", description: "No charges were made.", variant: "destructive" });
+      window.history.replaceState({}, '', '/billing');
+    }
+  }, [isSuccess, isCanceled, toast]);
 
   const { data: stats } = useQuery({
     queryKey: ["user", "stats"],
@@ -26,16 +69,84 @@ export default function Billing() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const currentPlan = {
-    name: "Free",
-    price: 0,
-    credits: 100,
-    renewalDate: "Demo Mode",
-    status: "Demo"
+  const { data: subscriptionData, isLoading: subLoading } = useQuery<SubscriptionStatus>({
+    queryKey: ["stripe", "subscription"],
+    queryFn: async () => {
+      const res = await fetch("/api/stripe/subscription-status", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to get subscription status");
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+
+  const { data: productsData, isLoading: productsLoading } = useQuery<{ products: StripeProduct[] }>({
+    queryKey: ["stripe", "products"],
+    queryFn: async () => {
+      const res = await fetch("/api/stripe/products", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to get products");
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const checkoutMutation = useMutation({
+    mutationFn: async ({ priceId, mode }: { priceId: string; mode: 'subscription' | 'payment' }) => {
+      const res = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ priceId, mode }),
+      });
+      if (!res.ok) throw new Error("Failed to create checkout session");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to start checkout. Please try again.", variant: "destructive" });
+    },
+  });
+
+  const portalMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/stripe/create-portal-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to create portal session");
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const currentPlan = subscriptionData?.plan || "free";
+  const hasSubscription = subscriptionData?.hasSubscription || false;
+  const subscription = subscriptionData?.subscription;
+
+  const planDetails = {
+    free: { name: "Free", price: 0, credits: 100 },
+    pro: { name: "Pro", price: 29, credits: 2000 },
+    business: { name: "Business", price: 79, credits: 10000 },
   };
 
+  const activePlan = planDetails[currentPlan as keyof typeof planDetails] || planDetails.free;
+
   const creditUsage = {
-    total: currentPlan.credits,
+    total: activePlan.credits,
     used: stats?.total ?? 0,
     breakdown: {
       images: stats?.images ?? 0,
@@ -44,11 +155,31 @@ export default function Billing() {
     }
   };
 
-  const paymentMethod: { last4: string; expiry: string } | null = null;
+  const products = productsData?.products || [];
+  
+  const subscriptionProducts = products.filter(p => p.recurring);
+  const oneTimeProducts = products.filter(p => !p.recurring);
 
-  const invoices: { id: number; desc: string; date: string; amount: string }[] = [];
+  const getRenewalDate = () => {
+    if (subscription?.current_period_end) {
+      return new Date(subscription.current_period_end * 1000).toLocaleDateString();
+    }
+    return hasSubscription ? "Active" : "N/A";
+  };
 
   const handleCloseModal = () => setActiveModal(null);
+
+  const handleSubscribe = (priceId: string) => {
+    checkoutMutation.mutate({ priceId, mode: 'subscription' });
+  };
+
+  const handleBuyCredits = (priceId: string) => {
+    checkoutMutation.mutate({ priceId, mode: 'payment' });
+  };
+
+  const handleManageSubscription = () => {
+    portalMutation.mutate();
+  };
 
   return (
     <div className="h-screen bg-background flex font-sans text-foreground overflow-hidden">
@@ -78,31 +209,34 @@ export default function Billing() {
                 <div>
                   <div className="flex items-center gap-2.5 mb-1">
                     <span className="text-2xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">
-                      {currentPlan.name}
+                      {subLoading ? "Loading..." : activePlan.name}
                     </span>
                     <span className="h-1 w-1 rounded-full bg-[#52525B]" />
-                    <span className="text-sm text-[#52525B]">{currentPlan.status}</span>
+                    <span className="text-sm text-[#52525B]">
+                      {subscription?.status === 'active' ? 'Active' : hasSubscription ? subscription?.status : 'Free'}
+                    </span>
                   </div>
                   <p className="text-sm text-[#71717A] mt-1">
-                    {currentPlan.credits.toLocaleString()} credits per month
+                    {activePlan.credits.toLocaleString()} credits per month
                   </p>
                   <p className="text-[13px] text-[#52525B] mt-3">
-                    Renews {currentPlan.renewalDate}
+                    {hasSubscription ? `Renews ${getRenewalDate()}` : 'No active subscription'}
                   </p>
                 </div>
                 
                 <div className="text-right">
                   <div className="flex items-baseline justify-end gap-1">
                     <span className="text-[28px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">
-                      ${currentPlan.price}
+                      ${activePlan.price}
                     </span>
                     <span className="text-base text-[#52525B]">/mo</span>
                   </div>
                   <button 
                     onClick={() => setActiveModal("plan")}
                     className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] mt-2 underline decoration-transparent hover:decoration-current transition-all"
+                    data-testid="button-change-plan"
                   >
-                    Change plan
+                    {hasSubscription ? 'Manage plan' : 'Upgrade plan'}
                   </button>
                 </div>
               </div>
@@ -127,6 +261,7 @@ export default function Billing() {
                   <button 
                     onClick={() => setActiveModal("credits")}
                     className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all"
+                    data-testid="button-buy-credits"
                   >
                     Buy credits
                   </button>
@@ -135,7 +270,7 @@ export default function Billing() {
                 <div className="h-1 w-full bg-[#E5E5E5] dark:bg-[#1A1A1A] rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-primary rounded-full transition-all duration-500 ease-out" 
-                    style={{ width: `${(creditUsage.used / creditUsage.total) * 100}%` }}
+                    style={{ width: `${Math.min((creditUsage.used / creditUsage.total) * 100, 100)}%` }}
                   />
                 </div>
 
@@ -160,28 +295,35 @@ export default function Billing() {
               </h2>
               
               <div className="flex justify-between items-center pb-6 border-b border-[#F0F0F0] dark:border-[#1A1A1A]">
-                {paymentMethod ? (
+                {hasSubscription ? (
                   <>
                     <div>
                       <div className="text-base text-[#18181B] dark:text-[#FAFAFA] flex items-center gap-2">
-                        <span>•••• {paymentMethod.last4}</span>
+                        <CreditCard className="h-4 w-4" />
+                        <span>Managed via Stripe</span>
                       </div>
                       <p className="text-[13px] text-[#52525B] mt-0.5">
-                        Expires {paymentMethod.expiry}
+                        Click update to manage payment methods
                       </p>
                     </div>
                     
                     <button 
-                      onClick={() => setActiveModal("payment")}
-                      className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all"
+                      onClick={handleManageSubscription}
+                      disabled={portalMutation.isPending}
+                      className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all flex items-center gap-1"
+                      data-testid="button-update-payment"
                     >
-                      Update
+                      {portalMutation.isPending ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <>Update <ExternalLink className="h-3 w-3" /></>
+                      )}
                     </button>
                   </>
                 ) : (
                   <div className="text-[#71717A]">
                     <p className="text-sm">No payment method on file</p>
-                    <p className="text-xs mt-1">Currently using free plan</p>
+                    <p className="text-xs mt-1">Subscribe to a plan to add payment method</p>
                   </div>
                 )}
               </div>
@@ -193,33 +335,22 @@ export default function Billing() {
                 <h2 className="text-[11px] font-bold text-[#52525B] uppercase tracking-[1px]">
                   History
                 </h2>
-                <button className="text-xs text-[#52525B] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all">
-                  Download all
-                </button>
+                {hasSubscription && (
+                  <button 
+                    onClick={handleManageSubscription}
+                    disabled={portalMutation.isPending}
+                    className="text-xs text-[#52525B] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all flex items-center gap-1"
+                  >
+                    View invoices <ExternalLink className="h-3 w-3" />
+                  </button>
+                )}
               </div>
 
               <div className="space-y-0">
-                {invoices.length > 0 ? (
-                  invoices.map((invoice) => (
-                    <div key={invoice.id} className="flex justify-between items-center py-3 group">
-                      <div className="flex items-center">
-                        <span className="text-[14px] text-[#A1A1AA] group-hover:text-[#18181B] dark:group-hover:text-[#FAFAFA] transition-colors">
-                          {invoice.desc}
-                        </span>
-                        <span className="text-[13px] text-[#52525B] ml-4">
-                          {invoice.date}
-                        </span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-[14px] text-[#A1A1AA] group-hover:text-[#18181B] dark:group-hover:text-[#FAFAFA] transition-colors">
-                          {invoice.amount}
-                        </span>
-                        <button className="ml-4 text-[#52525B] hover:text-[#18181B] dark:hover:text-[#FAFAFA] transition-colors p-1">
-                          <Download className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                {hasSubscription ? (
+                  <p className="text-sm text-[#71717A] py-3">
+                    View and download invoices in the Stripe customer portal
+                  </p>
                 ) : (
                   <p className="text-sm text-[#71717A] py-3">No billing history yet</p>
                 )}
@@ -227,19 +358,23 @@ export default function Billing() {
             </div>
 
             {/* SECTION 5: DANGER ZONE */}
-            <div className="mt-16 pt-6 border-t border-[#F0F0F0] dark:border-[#1A1A1A]">
-              <div className="flex justify-between items-center">
-                <span className="text-[14px] text-[#71717A]">
-                  Cancel subscription
-                </span>
-                <button 
-                  onClick={() => setActiveModal("cancel")}
-                  className="text-[13px] text-[#DC2626] underline decoration-transparent hover:decoration-current transition-all"
-                >
-                  Cancel
-                </button>
+            {hasSubscription && (
+              <div className="mt-16 pt-6 border-t border-[#F0F0F0] dark:border-[#1A1A1A]">
+                <div className="flex justify-between items-center">
+                  <span className="text-[14px] text-[#71717A]">
+                    Cancel subscription
+                  </span>
+                  <button 
+                    onClick={handleManageSubscription}
+                    disabled={portalMutation.isPending}
+                    className="text-[13px] text-[#DC2626] underline decoration-transparent hover:decoration-current transition-all"
+                    data-testid="button-cancel-subscription"
+                  >
+                    Manage in Stripe
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
         </div>
@@ -262,8 +397,8 @@ export default function Billing() {
                 exit={{ opacity: 0, y: 10 }}
                 className={cn(
                   "relative w-full bg-white dark:bg-[#111111] border border-[#E5E5E5] dark:border-[#1A1A1A] rounded-xl p-8 shadow-2xl",
-                  activeModal === "plan" && "max-w-[400px]",
-                  activeModal === "credits" && "max-w-[360px]",
+                  activeModal === "plan" && "max-w-[440px]",
+                  activeModal === "credits" && "max-w-[400px]",
                   activeModal === "payment" && "max-w-[380px]",
                   activeModal === "cancel" && "max-w-[400px]"
                 )}
@@ -271,42 +406,54 @@ export default function Billing() {
                 {/* Change Plan Modal */}
                 {activeModal === "plan" && (
                   <>
-                    <h3 className="text-xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Change plan</h3>
+                    <h3 className="text-xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">
+                      {hasSubscription ? 'Manage plan' : 'Choose a plan'}
+                    </h3>
                     
-                    <div className="mt-6 space-y-0">
-                      {[
-                        { name: "Free", credits: "100 credits", price: "$0" },
-                        { name: "Pro", credits: "2,000 credits", price: "$29", disabled: true },
-                        { name: "Business", credits: "10,000 credits", price: "$79" }
-                      ].map((plan) => (
-                        <div 
-                          key={plan.name}
-                          onClick={() => !plan.disabled && setSelectedPlan(plan.name)}
-                          className={cn(
-                            "flex justify-between items-center py-4 border-b border-[#E5E5E5] dark:border-[#1A1A1A] cursor-pointer group transition-colors",
-                            plan.disabled && "opacity-50 cursor-default"
-                          )}
-                        >
-                          <div>
-                            <div className="text-[15px] text-[#18181B] dark:text-[#FAFAFA] font-medium">{plan.name}</div>
-                            <div className="text-[13px] text-[#52525B]">{plan.credits}</div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-[15px] text-[#18181B] dark:text-[#FAFAFA]">{plan.price}</div>
-                            <div className={cn(
-                              "h-4 w-4 rounded-full border flex items-center justify-center",
-                              selectedPlan === plan.name && !plan.disabled
-                                ? "border-[#18181B] dark:border-[#FAFAFA]" 
-                                : "border-[#D4D4D8] dark:border-[#3F3F46]"
-                            )}>
-                              {selectedPlan === plan.name && !plan.disabled && (
-                                <div className="h-2 w-2 rounded-full bg-[#18181B] dark:bg-[#FAFAFA]" />
-                              )}
+                    {productsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#52525B]" />
+                      </div>
+                    ) : subscriptionProducts.length > 0 ? (
+                      <div className="mt-6 space-y-0">
+                        {subscriptionProducts.map((product) => (
+                          <div 
+                            key={product.price_id}
+                            onClick={() => setSelectedPriceId(product.price_id)}
+                            className="flex justify-between items-center py-4 border-b border-[#E5E5E5] dark:border-[#1A1A1A] cursor-pointer group transition-colors"
+                          >
+                            <div>
+                              <div className="text-[15px] text-[#18181B] dark:text-[#FAFAFA] font-medium">
+                                {product.product_name}
+                              </div>
+                              <div className="text-[13px] text-[#52525B]">
+                                {product.product_description || 'Premium features'}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="text-[15px] text-[#18181B] dark:text-[#FAFAFA]">
+                                ${((product.unit_amount || 0) / 100).toFixed(2)}/{product.recurring?.interval || 'mo'}
+                              </div>
+                              <div className={cn(
+                                "h-4 w-4 rounded-full border flex items-center justify-center",
+                                selectedPriceId === product.price_id
+                                  ? "border-[#18181B] dark:border-[#FAFAFA]" 
+                                  : "border-[#D4D4D8] dark:border-[#3F3F46]"
+                              )}>
+                                {selectedPriceId === product.price_id && (
+                                  <div className="h-2 w-2 rounded-full bg-[#18181B] dark:bg-[#FAFAFA]" />
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mt-6 py-8 text-center">
+                        <p className="text-[#71717A]">No subscription plans available yet.</p>
+                        <p className="text-sm text-[#52525B] mt-2">Plans will appear here once configured in Stripe.</p>
+                      </div>
+                    )}
 
                     <div className="flex gap-3 mt-8">
                       <button 
@@ -315,16 +462,37 @@ export default function Billing() {
                       >
                         Cancel
                       </button>
-                      <button 
-                        onClick={() => {
-                          toast({ title: "Plan updated", description: `Switched to ${selectedPlan} plan.` });
-                          handleCloseModal();
-                        }}
-                        className="flex-1 bg-[#18181B] dark:bg-[#FAFAFA] text-white dark:text-[#18181B] rounded-lg px-5 py-3 text-[14px] font-medium hover:opacity-90 transition-opacity"
-                      >
-                        Confirm
-                      </button>
+                      {subscriptionProducts.length > 0 && (
+                        <button 
+                          onClick={() => {
+                            if (selectedPriceId) {
+                              handleSubscribe(selectedPriceId);
+                            }
+                          }}
+                          disabled={!selectedPriceId || checkoutMutation.isPending}
+                          className="flex-1 bg-[#18181B] dark:bg-[#FAFAFA] text-white dark:text-[#18181B] rounded-lg px-5 py-3 text-[14px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                          {checkoutMutation.isPending ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            'Subscribe'
+                          )}
+                        </button>
+                      )}
                     </div>
+
+                    {hasSubscription && (
+                      <button 
+                        onClick={handleManageSubscription}
+                        disabled={portalMutation.isPending}
+                        className="w-full mt-4 text-[13px] text-[#52525B] hover:text-[#18181B] dark:hover:text-[#FAFAFA] transition-colors flex items-center justify-center gap-1"
+                      >
+                        Or manage existing subscription in Stripe <ExternalLink className="h-3 w-3" />
+                      </button>
+                    )}
                   </>
                 )}
 
@@ -333,130 +501,66 @@ export default function Billing() {
                   <>
                     <h3 className="text-xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Buy credits</h3>
                     
-                    <div className="mt-4 space-y-0">
-                      {[
-                        { id: "500", label: "500 credits", price: 19 },
-                        { id: "1000", label: "1,000 credits", price: 35 },
-                        { id: "2500", label: "2,500 credits", price: 79 }
-                      ].map((pkg) => (
-                        <div 
-                          key={pkg.id}
-                          onClick={() => setSelectedCreditPackage(pkg.id)}
-                          className="flex justify-between items-center py-3.5 border-b border-[#E5E5E5] dark:border-[#1A1A1A] cursor-pointer group"
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className={cn(
-                              "text-[14px] transition-colors",
-                              selectedCreditPackage === pkg.id ? "text-[#18181B] dark:text-[#FAFAFA]" : "text-[#71717A] group-hover:text-[#18181B] dark:group-hover:text-[#FAFAFA]"
-                            )}>
-                              {pkg.label} — ${pkg.price}
-                            </span>
+                    {productsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#52525B]" />
+                      </div>
+                    ) : oneTimeProducts.length > 0 ? (
+                      <div className="mt-4 space-y-0">
+                        {oneTimeProducts.map((product) => (
+                          <div 
+                            key={product.price_id}
+                            onClick={() => setSelectedPriceId(product.price_id)}
+                            className="flex justify-between items-center py-3.5 border-b border-[#E5E5E5] dark:border-[#1A1A1A] cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className={cn(
+                                "text-[14px] transition-colors",
+                                selectedPriceId === product.price_id ? "text-[#18181B] dark:text-[#FAFAFA]" : "text-[#71717A] group-hover:text-[#18181B] dark:group-hover:text-[#FAFAFA]"
+                              )}>
+                                {product.product_name} — ${((product.unit_amount || 0) / 100).toFixed(2)}
+                              </span>
+                            </div>
+                            {selectedPriceId === product.price_id && (
+                              <Check className="h-4 w-4 text-[#18181B] dark:text-[#FAFAFA]" />
+                            )}
                           </div>
-                          {selectedCreditPackage === pkg.id && (
-                            <Check className="h-4 w-4 text-[#18181B] dark:text-[#FAFAFA]" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-5 flex justify-between items-baseline">
-                      <span className="text-base font-semibold text-[#18181B] dark:text-[#FAFAFA]">Total: $35</span>
-                    </div>
-
-                    <button 
-                      onClick={() => {
-                        toast({ title: "Credits purchased", description: "1,000 credits added to your account." });
-                        handleCloseModal();
-                      }}
-                      className="w-full mt-4 bg-[#18181B] dark:bg-[#FAFAFA] text-white dark:text-[#18181B] rounded-lg px-4 py-3.5 text-[14px] font-medium hover:opacity-90 transition-opacity"
-                    >
-                      Purchase
-                    </button>
-                  </>
-                )}
-
-                {/* Update Payment Modal */}
-                {activeModal === "payment" && (
-                  <>
-                    <h3 className="text-xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Update payment</h3>
-                    
-                    <div className="mt-6 space-y-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-[#52525B] uppercase tracking-[1px]">Card number</label>
-                        <input 
-                          type="text" 
-                          placeholder="•••• •••• •••• ••••" 
-                          className="w-full bg-transparent border-b border-[#E5E5E5] dark:border-[#2A2A30] py-3 text-[14px] text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-primary transition-colors placeholder:text-[#52525B]"
-                        />
+                        ))}
                       </div>
-                      
-                      <div className="flex gap-4">
-                        <div className="flex-1 space-y-1.5">
-                          <label className="text-[11px] font-bold text-[#52525B] uppercase tracking-[1px]">Expiry</label>
-                          <input 
-                            type="text" 
-                            placeholder="MM / YY" 
-                            className="w-full bg-transparent border-b border-[#E5E5E5] dark:border-[#2A2A30] py-3 text-[14px] text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-primary transition-colors placeholder:text-[#52525B]"
-                          />
-                        </div>
-                        <div className="flex-1 space-y-1.5">
-                          <label className="text-[11px] font-bold text-[#52525B] uppercase tracking-[1px]">CVC</label>
-                          <input 
-                            type="text" 
-                            placeholder="123" 
-                            className="w-full bg-transparent border-b border-[#E5E5E5] dark:border-[#2A2A30] py-3 text-[14px] text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-primary transition-colors placeholder:text-[#52525B]"
-                          />
-                        </div>
+                    ) : (
+                      <div className="mt-4 py-8 text-center">
+                        <p className="text-[#71717A]">No credit packages available yet.</p>
+                        <p className="text-sm text-[#52525B] mt-2">Credit packages will appear here once configured in Stripe.</p>
                       </div>
+                    )}
 
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-[#52525B] uppercase tracking-[1px]">Name on card</label>
-                        <input 
-                          type="text" 
-                          placeholder="John Doe" 
-                          className="w-full bg-transparent border-b border-[#E5E5E5] dark:border-[#2A2A30] py-3 text-[14px] text-[#18181B] dark:text-[#FAFAFA] focus:outline-none focus:border-primary transition-colors placeholder:text-[#52525B]"
-                        />
-                      </div>
-                    </div>
-
-                    <button 
-                      onClick={() => {
-                        toast({ title: "Payment updated", description: "Your payment method has been updated." });
-                        handleCloseModal();
-                      }}
-                      className="w-full mt-8 bg-[#18181B] dark:bg-[#FAFAFA] text-white dark:text-[#18181B] rounded-lg px-4 py-3.5 text-[14px] font-medium hover:opacity-90 transition-opacity"
-                    >
-                      Save
-                    </button>
-                  </>
-                )}
-
-                {/* Cancel Subscription Modal */}
-                {activeModal === "cancel" && (
-                  <>
-                    <h3 className="text-xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Cancel subscription</h3>
-                    
-                    <p className="mt-4 text-[14px] text-[#71717A] leading-[1.6]">
-                      Your Pro plan will remain active until Jan 15, 2025. After that, you'll be downgraded to Free.
-                    </p>
-
-                    <div className="flex gap-3 mt-8">
+                    {oneTimeProducts.length > 0 && (
                       <button 
                         onClick={() => {
-                          toast({ title: "Subscription cancelled", description: "We're sorry to see you go.", variant: "destructive" });
-                          handleCloseModal();
+                          if (selectedPriceId) {
+                            handleBuyCredits(selectedPriceId);
+                          }
                         }}
-                        className="px-5 py-3 text-[14px] text-[#DC2626] hover:opacity-80 transition-opacity"
+                        disabled={!selectedPriceId || checkoutMutation.isPending}
+                        className="w-full mt-6 bg-[#18181B] dark:bg-[#FAFAFA] text-white dark:text-[#18181B] rounded-lg px-4 py-3.5 text-[14px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
                       >
-                        Cancel anyway
+                        {checkoutMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          'Purchase'
+                        )}
                       </button>
-                      <button 
-                        onClick={handleCloseModal}
-                        className="flex-1 bg-[#18181B] dark:bg-[#FAFAFA] text-white dark:text-[#18181B] rounded-lg px-5 py-3 text-[14px] font-medium hover:opacity-90 transition-opacity"
-                      >
-                        Keep subscription
-                      </button>
-                    </div>
+                    )}
+
+                    <button 
+                      onClick={handleCloseModal}
+                      className="w-full mt-3 text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] transition-colors"
+                    >
+                      Cancel
+                    </button>
                   </>
                 )}
 
