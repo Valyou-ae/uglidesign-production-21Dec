@@ -608,12 +608,18 @@ export async function registerRoutes(
         journey = "DTG",
         patternScale,
         isSeamlessPattern,
-        outputQuality = "high",
+        outputQuality: rawOutputQuality = "high",
+        modelCustomization,
       } = req.body;
 
       if (!designImage || typeof designImage !== "string") {
         return res.status(400).json({ message: "Design image is required" });
       }
+
+      const validOutputQualities = ['standard', 'high', 'ultra'] as const;
+      const outputQuality = validOutputQualities.includes(rawOutputQuality) 
+        ? rawOutputQuality as 'standard' | 'high' | 'ultra'
+        : 'high';
 
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
@@ -794,6 +800,8 @@ export async function registerRoutes(
               progress: 10 + Math.round((sizeIndex / totalSizes) * 10)
             });
 
+            const mergedCustomization = modelDetails?.customization || modelCustomization;
+            
             const batch = await eliteGenerator.generateMockupBatch({
               journey: isAopJourney ? "AOP" : "DTG",
               designImage: base64Data,
@@ -803,7 +811,7 @@ export async function registerRoutes(
               angles: angles as any[],
               modelDetails: {
                 ...sizeModelDetails,
-                customization: modelDetails.customization
+                customization: mergedCustomization
               } as any,
               brandStyle: mappedStyle as any,
               lightingPreset: 'three-point-classic',
@@ -811,29 +819,49 @@ export async function registerRoutes(
               environmentPrompt: scene,
               existingPersonaLock: sharedPersonaLock,
               patternScale: isAopJourney ? patternScale : undefined,
-              outputQuality: outputQuality as any
+              outputQuality: outputQuality
             }, (completed, total, job) => {
               const completedOverall = (sizeIndex * jobsPerSize) + completed;
               const progress = 10 + Math.round((completedOverall / totalJobs) * 85);
               
+              const batchJob = {
+                id: job.id,
+                color: job.color.name,
+                angle: job.angle,
+                size: currentSize,
+                status: job.status as 'pending' | 'processing' | 'completed' | 'failed',
+                retryCount: job.retryCount || 0,
+                imageData: job.result?.imageData,
+                mimeType: job.result?.mimeType,
+                error: job.error
+              };
+
               if (job.status === 'completed' && job.result) {
                 totalGeneratedCount++;
+                sendEvent("job_update", batchJob);
                 sendEvent("image", {
                   jobId: job.id,
                   angle: job.angle,
                   color: job.color.name,
                   size: currentSize,
+                  status: 'completed',
                   imageData: job.result.imageData,
-                  mimeType: job.result.mimeType
+                  mimeType: job.result.mimeType,
+                  retryCount: job.retryCount || 0
                 });
               } else if (job.status === 'failed') {
+                sendEvent("job_update", batchJob);
                 sendEvent("image_error", {
                   jobId: job.id,
                   angle: job.angle,
                   color: job.color.name,
                   size: currentSize,
-                  error: job.error || "Generation failed"
+                  status: 'failed',
+                  error: job.error || "Generation failed",
+                  retryCount: job.retryCount || 0
                 });
+              } else if (job.status === 'processing') {
+                sendEvent("job_update", { ...batchJob, status: 'processing' });
               }
 
               sendEvent("status", {

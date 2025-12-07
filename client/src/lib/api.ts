@@ -328,6 +328,7 @@ export interface MockupEventData {
   color?: string;
   size?: string;
   jobId?: string;
+  id?: string;
   error?: string;
   success?: boolean;
   totalGenerated?: number;
@@ -336,6 +337,8 @@ export interface MockupEventData {
   details?: string;
   timestamp?: number;
   type?: string;
+  status?: 'pending' | 'processing' | 'completed' | 'failed';
+  retryCount?: number;
 }
 
 export type MockupEventType = 
@@ -344,6 +347,7 @@ export type MockupEventType =
   | "prompt" 
   | "image" 
   | "image_error" 
+  | "job_update"
   | "persona_lock"
   | "persona_lock_failed"
   | "batch_complete"

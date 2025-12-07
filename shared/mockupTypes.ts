@@ -177,6 +177,8 @@ export interface Product {
   genderTarget: GenderTarget;
   sizeChart?: SizeChartEntry[];
   printSpec?: PrintSpecification;
+  silhouettePath?: string;
+  thumbnailSvg?: string;
 }
 
 export interface ProductColor {
