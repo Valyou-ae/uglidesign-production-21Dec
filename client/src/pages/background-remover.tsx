@@ -396,6 +396,21 @@ export default function BackgroundRemover() {
     setShowBatchOriginal({});
   };
 
+  const convertToBase64 = async (imageUrl: string): Promise<string> => {
+    if (imageUrl.startsWith('data:')) {
+      return imageUrl;
+    }
+    
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
   const processImage = async () => {
     if (!selectedImage || state === "processing") return;
     
@@ -411,12 +426,15 @@ export default function BackgroundRemover() {
     };
 
     try {
+      setProcessingStage("Preparing image...");
+      const base64Image = await convertToBase64(selectedImage);
+      
       setProcessingStage("Detecting subject...");
       
       await new Promise(resolve => setTimeout(resolve, 500));
       setProcessingStage("Generating mask...");
       
-      const response = await backgroundRemovalApi.removeBackground(selectedImage, options);
+      const response = await backgroundRemovalApi.removeBackground(base64Image, options);
       
       if (response.success && response.result?.imageData) {
         setProcessedImage(`data:${response.result.mimeType};base64,${response.result.imageData}`);
@@ -459,9 +477,12 @@ export default function BackgroundRemover() {
       quality
     };
 
-    const images = batchImages.map(img => img.originalImage);
-
     try {
+      setProcessingStage("Converting images...");
+      const images = await Promise.all(
+        batchImages.map(img => convertToBase64(img.originalImage))
+      );
+
       await backgroundRemovalApi.removeBatchWithProgress(
         images,
         options,
