@@ -262,9 +262,9 @@ export default function AdminContacts() {
 
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <CardTitle>All Contacts</CardTitle>
-              <div className="relative w-64">
+              <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search contacts..."
@@ -289,72 +289,74 @@ export default function AdminContacts() {
                 ))}
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredContacts?.length === 0 ? (
+              <div className="overflow-x-auto">
+                <Table className="min-w-[700px]">
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No contacts found
-                      </TableCell>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ) : (
-                    filteredContacts?.map((contact) => (
-                      <TableRow key={contact.id} data-testid={`row-contact-${contact.id}`}>
-                        <TableCell className="font-medium">{contact.name || "—"}</TableCell>
-                        <TableCell>{contact.email || "—"}</TableCell>
-                        <TableCell>{contact.company || "—"}</TableCell>
-                        <TableCell>{contact.phone || "—"}</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={
-                              contact.status === "customer" ? "default" : 
-                              contact.status === "prospect" ? "secondary" : "outline"
-                            }
-                          >
-                            {contact.status || "lead"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" data-testid={`button-contact-actions-${contact.id}`}>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleOpenEditDialog(contact)}
-                                data-testid={`button-edit-contact-${contact.id}`}
-                              >
-                                <Pencil className="h-4 w-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => setDeleteContact(contact)}
-                                className="text-destructive focus:text-destructive"
-                                data-testid={`button-delete-contact-${contact.id}`}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredContacts?.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                          No contacts found
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : (
+                      filteredContacts?.map((contact) => (
+                        <TableRow key={contact.id} data-testid={`row-contact-${contact.id}`}>
+                          <TableCell className="font-medium">{contact.name || "—"}</TableCell>
+                          <TableCell>{contact.email || "—"}</TableCell>
+                          <TableCell>{contact.company || "—"}</TableCell>
+                          <TableCell>{contact.phone || "—"}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={
+                                contact.status === "customer" ? "default" : 
+                                contact.status === "prospect" ? "secondary" : "outline"
+                              }
+                            >
+                              {contact.status || "lead"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" data-testid={`button-contact-actions-${contact.id}`}>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleOpenEditDialog(contact)}
+                                  data-testid={`button-edit-contact-${contact.id}`}
+                                >
+                                  <Pencil className="h-4 w-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => setDeleteContact(contact)}
+                                  className="text-destructive focus:text-destructive"
+                                  data-testid={`button-delete-contact-${contact.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
