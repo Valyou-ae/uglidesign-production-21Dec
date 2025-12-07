@@ -15,6 +15,7 @@ export interface IStorage {
   getImagesByUserId(userId: string): Promise<GeneratedImage[]>;
   toggleImageFavorite(imageId: string, userId: string): Promise<GeneratedImage | undefined>;
   deleteImage(imageId: string, userId: string): Promise<boolean>;
+  getUserStats(userId: string): Promise<{ images: number; mockups: number; bgRemoved: number; total: number }>;
   
   // Affiliate operations
   getUserByAffiliateCode(code: string): Promise<User | undefined>;
@@ -110,6 +111,14 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return result.length > 0;
+  }
+
+  async getUserStats(userId: string): Promise<{ images: number; mockups: number; bgRemoved: number; total: number }> {
+    const allImages = await this.getImagesByUserId(userId);
+    const images = allImages.filter(img => !img.generationType || img.generationType === 'image').length;
+    const mockups = allImages.filter(img => img.generationType === 'mockup').length;
+    const bgRemoved = allImages.filter(img => img.generationType === 'bg-removed').length;
+    return { images, mockups, bgRemoved, total: allImages.length };
   }
 
   // Affiliate operations

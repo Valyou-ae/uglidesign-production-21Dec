@@ -262,9 +262,9 @@ export default function Login() {
 
         {/* Footer Links */}
         <div className="absolute bottom-6 w-full text-center text-xs text-muted-foreground flex gap-6 justify-center">
-          <a href="#" className="hover:text-foreground">Privacy Policy</a>
-          <a href="#" className="hover:text-foreground">Terms of Service</a>
-          <a href="#" className="hover:text-foreground">Help Center</a>
+          <Link href="/help" className="hover:text-foreground">Privacy Policy</Link>
+          <Link href="/help" className="hover:text-foreground">Terms of Service</Link>
+          <Link href="/help" className="hover:text-foreground">Help Center</Link>
         </div>
       </div>
     </div>

@@ -19,6 +19,23 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { userApi } from "@/lib/api";
+import { useImages } from "@/hooks/use-images";
+
+function formatTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 // Assets
 import project1 from "@assets/generated_images/abstract_creative_digital_art_of_a_beach_sunset_with_geometric_overlays.png";
@@ -192,15 +209,23 @@ function ProjectCard({ image, title, time, type, delay, prompt, journey, restore
 export function BentoGrid() {
   const [suggestions, setSuggestions] = useState(SUGGESTIONS_POOL.slice(0, 3));
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const { data: stats } = useQuery({
+    queryKey: ["user", "stats"],
+    queryFn: userApi.getStats,
+    staleTime: 1000 * 60 * 5,
+  });
+  
+  const { images: dbImages } = useImages();
+  
+  const timeSaved = stats ? Math.round((stats.total * 3) / 60 * 10) / 10 : 0;
 
   const handleRefreshSuggestions = () => {
     setIsRefreshing(true);
     
-    // Shuffle and pick 3 random suggestions
     const shuffled = [...SUGGESTIONS_POOL].sort(() => 0.5 - Math.random());
     setSuggestions(shuffled.slice(0, 3));
 
-    // Add a small delay for the animation
     setTimeout(() => setIsRefreshing(false), 500);
   };
 
@@ -253,33 +278,33 @@ export function BentoGrid() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard 
             icon={ImageIcon} 
-            value="247" 
+            value={stats?.images ?? 0} 
             label="Images Created" 
-            trend="↑ 12%" 
+            trend={stats?.images ? "↑ Active" : "—"} 
             colorClass="bg-[#B94E30]/10 text-[#B94E30] dark:bg-[#B94E30]/20 dark:text-[#D4674A]"
             delay={0.4}
           />
           <StatCard 
             icon={Shirt} 
-            value="89" 
+            value={stats?.mockups ?? 0} 
             label="Mockups Gen" 
-            trend="↑ 8%" 
+            trend={stats?.mockups ? "↑ Active" : "—"} 
             colorClass="bg-[#664D3F]/10 text-[#664D3F] dark:bg-[#664D3F]/20 dark:text-[#8B6B5A]"
             delay={0.5}
           />
           <StatCard 
             icon={Scissors} 
-            value="156" 
+            value={stats?.bgRemoved ?? 0} 
             label="BG Removed" 
-            trend="↑ 23%" 
+            trend={stats?.bgRemoved ? "↑ Active" : "—"} 
             colorClass="bg-[#E3B436]/10 text-[#B99A2C] dark:bg-[#E3B436]/20 dark:text-[#E3B436]"
             delay={0.6}
           />
           <StatCard 
             icon={Clock} 
-            value="12.5h" 
+            value={`${timeSaved}h`} 
             label="Time Saved" 
-            trend="↑ 15%" 
+            trend={timeSaved > 0 ? "↑ Growing" : "—"} 
             colorClass="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
             delay={0.7}
           />
@@ -328,13 +353,35 @@ export function BentoGrid() {
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <ProjectCard image={project1} title="Beach Sunset" time="2h ago" type="image" delay={0.5} prompt="Abstract creative digital art of a beach sunset with geometric overlays" />
-          <ProjectCard image={project2} title="Tech Logo" time="4h ago" type="mockup" delay={0.6} journey="DTG" />
-          <ProjectCard image={project3} title="Neon City" time="Yesterday" type="bg" delay={0.7} restoreImage={project3} />
-          <ProjectCard image={suggestionImg} title="Vintage Photo" time="Yesterday" type="image" delay={0.8} prompt="Vintage polaroid photo effect with warm tones" />
-          {/* Reuse images for demo */}
-          <ProjectCard image={project3} title="Cyberpunk Char" time="2 days ago" type="image" delay={0.9} prompt="Cyberpunk character concept art" />
-          <ProjectCard image={project1} title="Abstract Wave" time="3 days ago" type="bg" delay={1.0} restoreImage={project1} />
+          {dbImages && dbImages.length > 0 ? (
+            dbImages.slice(0, 6).map((img: any, index: number) => {
+              const timeAgo = formatTimeAgo(new Date(img.createdAt));
+              const type = img.generationType || 'image';
+              return (
+                <ProjectCard 
+                  key={img.id}
+                  image={img.imageUrl} 
+                  title={img.prompt?.slice(0, 20) || "Creation"} 
+                  time={timeAgo} 
+                  type={type} 
+                  delay={0.5 + index * 0.1} 
+                  prompt={img.prompt}
+                  journey={type === 'mockup' ? 'DTG' : undefined}
+                  restoreImage={type === 'bg' ? img.imageUrl : undefined}
+                />
+              );
+            })
+          ) : (
+            <div className="col-span-full text-center py-8">
+              <p className="text-muted-foreground">No creations yet. Start generating to see your work here!</p>
+              <Link href="/image-gen">
+                <Button variant="outline" className="mt-4">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Create Your First Image
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 

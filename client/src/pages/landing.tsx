@@ -505,8 +505,8 @@ function Footer() {
             <a href="#features" className="text-muted-foreground hover:text-foreground">Features</a>
             <a href="#pricing" className="text-muted-foreground hover:text-foreground">Pricing</a>
             <Link href="/help" className="text-muted-foreground hover:text-foreground">Support</Link>
-            <a href="#" className="text-muted-foreground hover:text-foreground">Privacy</a>
-            <a href="#" className="text-muted-foreground hover:text-foreground">Terms</a>
+            <Link href="/help" className="text-muted-foreground hover:text-foreground">Privacy</Link>
+            <Link href="/help" className="text-muted-foreground hover:text-foreground">Terms</Link>
           </nav>
           
           <p className="text-sm text-muted-foreground">

@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/sidebar";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { userApi } from "@/lib/api";
 
 export default function Billing() {
   const { toast } = useToast();
@@ -18,38 +20,33 @@ export default function Billing() {
   const [selectedPlan, setSelectedPlan] = useState("Business");
   const [selectedCreditPackage, setSelectedCreditPackage] = useState("1000");
 
-  // Mock Data
+  const { data: stats } = useQuery({
+    queryKey: ["user", "stats"],
+    queryFn: userApi.getStats,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const currentPlan = {
-    name: "Pro",
-    price: 29,
-    credits: 2000,
-    renewalDate: "Jan 15, 2025",
-    status: "Active"
+    name: "Free",
+    price: 0,
+    credits: 100,
+    renewalDate: "Demo Mode",
+    status: "Demo"
   };
 
   const creditUsage = {
-    total: 2000,
-    used: 1523,
+    total: currentPlan.credits,
+    used: stats?.total ?? 0,
     breakdown: {
-      images: 823,
-      mockups: 456,
-      bg: 244
+      images: stats?.images ?? 0,
+      mockups: stats?.mockups ?? 0,
+      bg: stats?.bgRemoved ?? 0
     }
   };
 
-  const paymentMethod = {
-    last4: "4242",
-    expiry: "12/26",
-    brand: "Visa"
-  };
+  const paymentMethod = null;
 
-  const invoices = [
-    { id: 1, desc: "Pro Plan - Monthly", date: "Dec 15", amount: "$29.00" },
-    { id: 2, desc: "Pro Plan - Monthly", date: "Nov 15", amount: "$29.00" },
-    { id: 3, desc: "500 Credits", date: "Nov 02", amount: "$19.00" },
-    { id: 4, desc: "Pro Plan - Monthly", date: "Oct 15", amount: "$29.00" },
-    { id: 5, desc: "Pro Plan - Monthly", date: "Sep 15", amount: "$29.00" },
-  ];
+  const invoices: { id: number; desc: string; date: string; amount: string }[] = [];
 
   const handleCloseModal = () => setActiveModal(null);
 
@@ -163,21 +160,30 @@ export default function Billing() {
               </h2>
               
               <div className="flex justify-between items-center pb-6 border-b border-[#F0F0F0] dark:border-[#1A1A1A]">
-                <div>
-                  <div className="text-base text-[#18181B] dark:text-[#FAFAFA] flex items-center gap-2">
-                    <span>•••• {paymentMethod.last4}</span>
+                {paymentMethod ? (
+                  <>
+                    <div>
+                      <div className="text-base text-[#18181B] dark:text-[#FAFAFA] flex items-center gap-2">
+                        <span>•••• {paymentMethod.last4}</span>
+                      </div>
+                      <p className="text-[13px] text-[#52525B] mt-0.5">
+                        Expires {paymentMethod.expiry}
+                      </p>
+                    </div>
+                    
+                    <button 
+                      onClick={() => setActiveModal("payment")}
+                      className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all"
+                    >
+                      Update
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-[#71717A]">
+                    <p className="text-sm">No payment method on file</p>
+                    <p className="text-xs mt-1">Currently using free plan</p>
                   </div>
-                  <p className="text-[13px] text-[#52525B] mt-0.5">
-                    Expires {paymentMethod.expiry}
-                  </p>
-                </div>
-                
-                <button 
-                  onClick={() => setActiveModal("payment")}
-                  className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all"
-                >
-                  Update
-                </button>
+                )}
               </div>
             </div>
 
@@ -193,31 +199,31 @@ export default function Billing() {
               </div>
 
               <div className="space-y-0">
-                {invoices.map((invoice) => (
-                  <div key={invoice.id} className="flex justify-between items-center py-3 group">
-                    <div className="flex items-center">
-                      <span className="text-[14px] text-[#A1A1AA] group-hover:text-[#18181B] dark:group-hover:text-[#FAFAFA] transition-colors">
-                        {invoice.desc}
-                      </span>
-                      <span className="text-[13px] text-[#52525B] ml-4">
-                        {invoice.date}
-                      </span>
+                {invoices.length > 0 ? (
+                  invoices.map((invoice) => (
+                    <div key={invoice.id} className="flex justify-between items-center py-3 group">
+                      <div className="flex items-center">
+                        <span className="text-[14px] text-[#A1A1AA] group-hover:text-[#18181B] dark:group-hover:text-[#FAFAFA] transition-colors">
+                          {invoice.desc}
+                        </span>
+                        <span className="text-[13px] text-[#52525B] ml-4">
+                          {invoice.date}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-[14px] text-[#A1A1AA] group-hover:text-[#18181B] dark:group-hover:text-[#FAFAFA] transition-colors">
+                          {invoice.amount}
+                        </span>
+                        <button className="ml-4 text-[#52525B] hover:text-[#18181B] dark:hover:text-[#FAFAFA] transition-colors p-1">
+                          <Download className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <span className="text-[14px] text-[#A1A1AA] group-hover:text-[#18181B] dark:group-hover:text-[#FAFAFA] transition-colors">
-                        {invoice.amount}
-                      </span>
-                      <button className="ml-4 text-[#52525B] hover:text-[#18181B] dark:hover:text-[#FAFAFA] transition-colors p-1">
-                        <Download className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-[#71717A] py-3">No billing history yet</p>
+                )}
               </div>
-              
-              <button className="text-[13px] text-[#52525B] hover:text-[#18181B] dark:hover:text-[#FAFAFA] mt-4 underline decoration-transparent hover:decoration-current transition-all">
-                View all invoices
-              </button>
             </div>
 
             {/* SECTION 5: DANGER ZONE */}

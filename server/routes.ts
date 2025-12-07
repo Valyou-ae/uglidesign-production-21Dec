@@ -204,6 +204,17 @@ export async function registerRoutes(
     }
   });
 
+  // ============== USER STATS ROUTES ==============
+
+  app.get("/api/user/stats", requireAuth, async (req, res) => {
+    try {
+      const stats = await storage.getUserStats(req.session.userId!);
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
   // ============== IMAGE ROUTES ==============
 
   app.post("/api/images", requireAuth, async (req, res) => {

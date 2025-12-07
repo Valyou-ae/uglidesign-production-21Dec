@@ -60,6 +60,9 @@ export const userApi = {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
+
+  getStats: () =>
+    fetchApi<{ images: number; mockups: number; bgRemoved: number; total: number }>("/user/stats"),
 };
 
 // Images API
@@ -69,6 +72,7 @@ export const imagesApi = {
     prompt: string;
     style?: string;
     aspectRatio?: string;
+    generationType?: string;
   }) =>
     fetchApi<{ image: any }>("/images", {
       method: "POST",

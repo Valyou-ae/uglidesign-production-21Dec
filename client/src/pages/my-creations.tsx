@@ -57,17 +57,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useImages } from "@/hooks/use-images";
 
-// Mock Data for My Creations (fallback when no DB images exist)
-const MOCK_ITEMS = [
-  { id: "mock-1", name: "Golden Hour Portrait", type: "image", date: "Dec 15, 2024", time: "2:30 PM", size: "2.4 MB", dimensions: "1024×1024", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop", tags: ["Cinematic", "Premium"], favorite: true },
-  { id: "mock-2", name: "Neon Cyberpunk City", type: "image", date: "Dec 14, 2024", time: "10:15 AM", size: "3.1 MB", dimensions: "1024×1024", src: "https://images.unsplash.com/photo-1580584126903-c17d41830450?q=80&w=1000&auto=format&fit=crop", tags: ["Sci-Fi", "Vibrant"], favorite: false },
-  { id: "mock-3", name: "Minimalist Logo Mockup", type: "mockup", date: "Dec 12, 2024", time: "4:45 PM", size: "1.8 MB", dimensions: "2000×2000", src: "https://images.unsplash.com/photo-1507133750069-69d3cdad863a?q=80&w=1000&auto=format&fit=crop", tags: ["Clean", "Branding"], favorite: true },
-  { id: "mock-4", name: "Product Transparent BG", type: "bg-removed", date: "Dec 10, 2024", time: "11:20 AM", size: "1.2 MB", dimensions: "800×800", src: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop", tags: ["E-commerce"], favorite: false },
-  { id: "mock-5", name: "Abstract Fluid Art", type: "image", date: "Dec 08, 2024", time: "9:00 AM", size: "4.5 MB", dimensions: "1024×1024", src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1000&auto=format&fit=crop", tags: ["Abstract", "Colorful"], favorite: true },
-  { id: "mock-6", name: "T-Shirt Design Mockup", type: "mockup", date: "Dec 05, 2024", time: "3:30 PM", size: "3.8 MB", dimensions: "2400×2400", src: "https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?q=80&w=1000&auto=format&fit=crop", tags: ["Apparel", "Streetwear"], favorite: false },
-  { id: "mock-7", name: "Fantasy Dragon", type: "image", date: "Dec 03, 2024", time: "1:15 PM", size: "2.9 MB", dimensions: "1024×1024", src: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000&auto=format&fit=crop", tags: ["Fantasy", "Epic"], favorite: true },
-  { id: "mock-8", name: "Headshot Portrait", type: "bg-removed", date: "Nov 28, 2024", time: "10:00 AM", size: "1.5 MB", dimensions: "1000×1000", src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop", tags: ["Professional"], favorite: false },
-];
 
 type ItemType = {
   id: string;
@@ -101,9 +90,8 @@ export default function MyCreations() {
   // Fetch images from backend API
   const { images: dbImages, isLoading, toggleFavorite: apiToggleFavorite, deleteImage: apiDeleteImage } = useImages();
 
-  // Transform database images to UI format and combine with mock data
   const items: ItemType[] = useMemo(() => {
-    const dbItems: ItemType[] = dbImages.map((img: any) => ({
+    return dbImages.map((img: any) => ({
       id: img.id,
       name: img.prompt?.slice(0, 30) || "Generated Image",
       type: img.generationType || "image",
@@ -115,9 +103,6 @@ export default function MyCreations() {
       tags: [img.style || "Generated"],
       favorite: img.isFavorite || false,
     }));
-    
-    // Combine DB images with mock data for demo purposes
-    return [...dbItems, ...MOCK_ITEMS];
   }, [dbImages]);
 
   const toggleSelection = (id: string) => {
@@ -129,12 +114,6 @@ export default function MyCreations() {
   };
 
   const toggleFavorite = async (id: string) => {
-    // For mock items, just update local state
-    if (id.startsWith("mock-")) {
-      return;
-    }
-    
-    // For real items, call the API
     try {
       await apiToggleFavorite(id);
       if (selectedItem && selectedItem.id === id) {
