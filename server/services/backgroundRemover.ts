@@ -1,13 +1,11 @@
 /**
- * GEMINI-POWERED BACKGROUND REMOVAL SERVICE
- * Production-level background removal using Alpha Mask approach
- * 
- * Architecture:
- * 1. AI generates a black/white alpha mask (white = subject, black = background)
- * 2. Server applies mask to original image using Sharp for true transparency
+ * HYBRID BACKGROUND REMOVAL SERVICE
+ * Uses Replicate's bria/remove-background for transparent backgrounds
+ * Uses Gemini for creative background replacements (white, color, blur)
  */
 
 import { GoogleGenAI, Modality } from "@google/genai";
+import Replicate from "replicate";
 import sharp from "sharp";
 import type {
   BackgroundRemovalOptions,
@@ -22,8 +20,13 @@ const genAI = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || process.env.AI_INTEGRATIONS_GEMINI_API_KEY || ""
 });
 
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN || ""
+});
+
 const MODELS = {
   IMAGE_GENERATION: "gemini-2.0-flash-exp",
+  BACKGROUND_REMOVAL: "bria/remove-background",
 } as const;
 
 const GENERATION_CONFIG = {
@@ -48,110 +51,112 @@ const QUALITY_SETTINGS: Record<BackgroundRemovalQuality, { detail: string; preci
   }
 };
 
-async function applyAlphaMask(
-  originalBase64: string,
-  maskBase64: string
+async function applyChromaKey(
+  imageBase64: string,
+  chromaColor: { r: number; g: number; b: number } = { r: 255, g: 0, b: 255 },
+  tolerance: number = 60
 ): Promise<string> {
-  console.log('applyAlphaMask: Starting composite operation...');
+  console.log(`applyChromaKey: Removing color RGB(${chromaColor.r},${chromaColor.g},${chromaColor.b}) with tolerance ${tolerance}`);
   
-  const originalBuffer = Buffer.from(originalBase64, 'base64');
-  const maskBuffer = Buffer.from(maskBase64, 'base64');
+  const imageBuffer = Buffer.from(imageBase64, 'base64');
+  const image = sharp(imageBuffer);
+  const meta = await image.metadata();
   
-  const originalImage = sharp(originalBuffer);
-  const maskImage = sharp(maskBuffer);
+  const width = meta.width!;
+  const height = meta.height!;
   
-  const originalMeta = await originalImage.metadata();
-  const maskMeta = await maskImage.metadata();
-  
-  console.log(`applyAlphaMask: Original ${originalMeta.width}x${originalMeta.height}, Mask ${maskMeta.width}x${maskMeta.height}`);
-  
-  const targetWidth = originalMeta.width!;
-  const targetHeight = originalMeta.height!;
-  
-  const resizedMask = await sharp(maskBuffer)
-    .resize(targetWidth, targetHeight, { fit: 'fill' })
-    .grayscale()
-    .raw()
-    .toBuffer();
-  
-  const originalRaw = await sharp(originalBuffer)
+  const rawData = await sharp(imageBuffer)
     .ensureAlpha()
     .raw()
     .toBuffer();
   
-  const resultPixels = new Uint8Array(targetWidth * targetHeight * 4);
+  const resultPixels = new Uint8Array(rawData.length);
+  let transparentCount = 0;
+  let semiTransparentCount = 0;
   
-  for (let i = 0; i < targetWidth * targetHeight; i++) {
-    const srcIdx = i * 4;
-    const maskIdx = i;
+  for (let i = 0; i < width * height; i++) {
+    const idx = i * 4;
+    const r = rawData[idx];
+    const g = rawData[idx + 1];
+    const b = rawData[idx + 2];
     
-    resultPixels[srcIdx] = originalRaw[srcIdx];
-    resultPixels[srcIdx + 1] = originalRaw[srcIdx + 1];
-    resultPixels[srcIdx + 2] = originalRaw[srcIdx + 2];
-    resultPixels[srcIdx + 3] = resizedMask[maskIdx];
+    const dr = Math.abs(r - chromaColor.r);
+    const dg = Math.abs(g - chromaColor.g);
+    const db = Math.abs(b - chromaColor.b);
+    const distance = Math.sqrt(dr * dr + dg * dg + db * db);
+    
+    resultPixels[idx] = r;
+    resultPixels[idx + 1] = g;
+    resultPixels[idx + 2] = b;
+    
+    if (distance < tolerance * 0.5) {
+      resultPixels[idx + 3] = 0;
+      transparentCount++;
+    } else if (distance < tolerance) {
+      const alpha = Math.round(255 * (distance - tolerance * 0.5) / (tolerance * 0.5));
+      resultPixels[idx + 3] = alpha;
+      semiTransparentCount++;
+    } else {
+      resultPixels[idx + 3] = 255;
+    }
   }
   
-  const transparentPixels = Array.from(resultPixels).filter((_, i) => i % 4 === 3 && resultPixels[i] === 0).length;
-  console.log(`applyAlphaMask: ${transparentPixels}/${targetWidth * targetHeight} pixels made transparent`);
+  console.log(`applyChromaKey: ${transparentCount} fully transparent, ${semiTransparentCount} semi-transparent, out of ${width * height} pixels`);
+  
+  if (transparentCount < (width * height) * 0.05) {
+    console.warn('applyChromaKey: Warning - less than 5% pixels made transparent, chroma key may have failed');
+  }
   
   const result = await sharp(resultPixels, {
-    raw: {
-      width: targetWidth,
-      height: targetHeight,
-      channels: 4
-    }
+    raw: { width, height, channels: 4 }
   })
     .png()
     .toBuffer();
   
-  console.log('applyAlphaMask: Composite complete');
   return result.toString('base64');
 }
 
-function buildAlphaMaskPrompt(
+function buildMagentaBackgroundPrompt(
   options: BackgroundRemovalOptions
 ): { prompt: string; negativePrompts: string[] } {
   const qualitySetting = QUALITY_SETTINGS[options.quality];
   
-  const masterPrompt = `CRITICAL TASK: Generate a SEGMENTATION MASK image for background removal.
+  const masterPrompt = `PROFESSIONAL BACKGROUND REPLACEMENT TASK
 
-DO NOT output the original photo. Output a NEW grayscale MASK image.
+Replace the entire background with pure MAGENTA color (#FF00FF / RGB 255,0,255).
 
-=== MASK COLOR VALUES ===
-- WHITE (#FFFFFF, value 255) = Main subject body (what to KEEP - fully opaque)
-- BLACK (#000000, value 0) = Background areas (what to REMOVE - fully transparent)
-- GRAY VALUES (1-254) = Semi-transparent edges, hair strands, soft transitions
+REQUIREMENTS:
+1. KEEP the main subject (person, object, product) exactly as it appears - preserve ALL details, colors, textures
+2. REMOVE the entire background completely
+3. REPLACE background with solid, uniform MAGENTA (#FF00FF)
 
-=== STRUCTURE ===
-Think of this as a matte/alpha channel:
-- The subject's CORE/BODY = solid white fill
-- The BACKGROUND = solid black fill
-- The EDGES between subject and background = gray gradients for smooth transitions
+SUBJECT PRESERVATION (${qualitySetting.detail} quality):
+- Preserve every detail of the subject with ${qualitySetting.precision}
+- Keep original colors, lighting, and textures of the subject
+- Maintain fine details: hair strands, fur, eyelashes, jewelry, fabric texture
+- Preserve semi-transparent elements: glass, sheer fabric, shadows on subject
 
-=== EDGE HANDLING (CRITICAL) ===
-At the boundary between subject and background, use GRAY VALUES:
-- Hair strands and wisps: Use gray (128-200) for individual strands
-- Fur and fuzzy edges: Use gray gradients for soft transitions
-- Semi-transparent elements: Glass, sheer fabric = appropriate gray levels
-- Anti-aliasing: All edges should have 2-4 pixels of gray transition
+BACKGROUND REPLACEMENT:
+- Fill ALL background areas with solid magenta #FF00FF
+- No gradients - pure flat magenta color
+- Extend magenta into fine gaps (between hair strands, fingers, etc.)
+- Ensure magenta reaches right up to the subject edges
 
-=== QUALITY REQUIREMENTS ===
-- ${qualitySetting.detail} detail level with ${qualitySetting.precision}
-- Inner subject area: Pure white, no holes
-- Background area: Pure black, no missed spots
-- Edge transitions: Smooth gray gradients, not hard cutoffs
+EDGE QUALITY:
+- Clean, precise edges around the subject
+- Natural anti-aliasing at boundaries
+- Preserve the natural edge appearance of hair/fur
 
-OUTPUT: A grayscale mask image where white=keep, black=remove, gray=partial transparency.`;
+OUTPUT: The original subject on a solid magenta (#FF00FF) background.`;
 
   const negativePrompts = [
-    "original photo",
-    "colored output", 
-    "RGB colors",
-    "textures inside mask",
-    "photo details",
-    "holes in subject",
-    "background leakage",
-    "harsh binary edges at hair/fur"
+    "changing subject colors",
+    "altering subject appearance",
+    "gradient backgrounds",
+    "keeping original background",
+    "magenta tint on subject",
+    "blurry edges",
+    "artifacts"
   ];
 
   return { prompt: masterPrompt, negativePrompts };
@@ -294,6 +299,54 @@ VERIFICATION CHECKLIST:
   return { prompt: masterPrompt, negativePrompts };
 }
 
+async function removeBackgroundWithReplicate(
+  imageBase64: string
+): Promise<string> {
+  console.log('removeBackgroundWithReplicate: Starting Replicate background removal...');
+  
+  const dataUri = `data:image/png;base64,${imageBase64}`;
+  
+  const output = await replicate.run(MODELS.BACKGROUND_REMOVAL, {
+    input: {
+      image: dataUri
+    }
+  });
+  
+  if (!output) {
+    throw new Error('No output from Replicate background removal');
+  }
+  
+  let resultBuffer: Buffer;
+  
+  if (output instanceof ReadableStream) {
+    const chunks: Uint8Array[] = [];
+    const reader = output.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+    resultBuffer = Buffer.concat(chunks);
+  } else if (typeof output === 'object' && 'url' in output) {
+    const response = await fetch((output as { url: () => string }).url());
+    const arrayBuffer = await response.arrayBuffer();
+    resultBuffer = Buffer.from(arrayBuffer);
+  } else if (Buffer.isBuffer(output)) {
+    resultBuffer = output;
+  } else {
+    const response = await fetch(String(output));
+    const arrayBuffer = await response.arrayBuffer();
+    resultBuffer = Buffer.from(arrayBuffer);
+  }
+  
+  const pngBuffer = await sharp(resultBuffer)
+    .png()
+    .toBuffer();
+  
+  console.log('removeBackgroundWithReplicate: Successfully removed background');
+  return pngBuffer.toString('base64');
+}
+
 async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -304,14 +357,14 @@ function calculateRetryDelay(attempt: number): number {
   return Math.min(delay + jitter, GENERATION_CONFIG.MAX_RETRY_DELAY_MS);
 }
 
-async function generateAlphaMask(
+async function generateMagentaBackground(
   imageBase64: string,
   options: BackgroundRemovalOptions
 ): Promise<string> {
-  const { prompt, negativePrompts } = buildAlphaMaskPrompt(options);
+  const { prompt, negativePrompts } = buildMagentaBackgroundPrompt(options);
   const fullPrompt = `${prompt}\n\nAVOID: ${negativePrompts.join(", ")}`;
 
-  console.log('generateAlphaMask: Requesting mask from AI...');
+  console.log('generateMagentaBackground: Requesting magenta background replacement...');
 
   const response = await genAI.models.generateContent({
     model: MODELS.IMAGE_GENERATION,
@@ -346,7 +399,7 @@ async function generateAlphaMask(
 
   for (const part of content.parts) {
     if (part.inlineData && part.inlineData.data) {
-      console.log('generateAlphaMask: Received mask from AI');
+      console.log('generateMagentaBackground: Received magenta background image from AI');
       return part.inlineData.data;
     }
   }
@@ -442,15 +495,10 @@ export async function removeBackground(
       let resultImageData: string;
 
       if (normalizedOptions.outputType === 'transparent') {
-        console.log('Using Alpha Mask approach for transparent background...');
+        console.log('Using Replicate bria/remove-background for transparent background...');
         
-        const maskPromise = (async () => {
-          const maskData = await generateAlphaMask(imageBase64, normalizedOptions);
-          const transparentImage = await applyAlphaMask(imageBase64, maskData);
-          return transparentImage;
-        })();
-        
-        resultImageData = await Promise.race([maskPromise, timeoutPromise]);
+        const replicatePromise = removeBackgroundWithReplicate(imageBase64);
+        resultImageData = await Promise.race([replicatePromise, timeoutPromise]);
       } else {
         console.log(`Using direct replacement for ${normalizedOptions.outputType} background...`);
         
