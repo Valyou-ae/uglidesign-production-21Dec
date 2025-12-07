@@ -44,7 +44,7 @@ export default function Billing() {
     }
   };
 
-  const paymentMethod = null;
+  const paymentMethod: { last4: string; expiry: string } | null = null;
 
   const invoices: { id: number; desc: string; date: string; amount: string }[] = [];
 
