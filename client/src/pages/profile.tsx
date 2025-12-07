@@ -46,7 +46,7 @@ export default function Profile() {
       <main className="flex-1 flex flex-col relative h-full overflow-y-auto bg-[#FAFAFA] dark:bg-[#09090B]">
         {/* Cover Image */}
         <div className="h-64 w-full relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#B94E30] via-[#E3B436] to-[#664D3F] opacity-90" />
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
           <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
           
@@ -100,7 +100,7 @@ export default function Profile() {
                     <Share2 className="h-4 w-4 mr-2" />
                     Share
                   </Button>
-                  <Button size="sm" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-lg hover:shadow-purple-500/20 border-0 text-white">
+                  <Button size="sm" className="bg-gradient-to-r from-[#B94E30] to-[#8B3A24] hover:shadow-lg hover:shadow-[#B94E30]/20 border-0 text-white">
                     <Edit className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button>

@@ -118,14 +118,14 @@ const OUTPUT_TYPES: Array<{
     name: 'Custom Color', 
     description: 'Any solid color',
     icon: Palette,
-    preview: 'bg-gradient-to-br from-pink-400 to-purple-500'
+    preview: 'bg-gradient-to-br from-[#B94E30] to-[#8B3A24]'
   },
   { 
     id: 'blur', 
     name: 'Blur', 
     description: 'Bokeh depth effect',
     icon: Blend,
-    preview: 'bg-gradient-to-br from-blue-200 to-blue-400 blur-sm'
+    preview: 'bg-gradient-to-br from-[#E3B436] to-[#C99C2A] blur-sm'
   }
 ];
 
@@ -677,7 +677,7 @@ export default function BackgroundRemover() {
       case 'pending':
         return <Clock className="h-4 w-4 text-muted-foreground" />;
       case 'processing':
-        return <Loader2 className="h-4 w-4 text-pink-500 animate-spin" />;
+        return <Loader2 className="h-4 w-4 text-primary animate-spin" />;
       case 'complete':
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case 'error':
@@ -690,7 +690,7 @@ export default function BackgroundRemover() {
       <div className="w-full max-w-[800px]">
         
         <div 
-          className="group relative bg-card border-2 border-dashed border-border rounded-[20px] md:rounded-[24px] p-6 md:p-16 text-center transition-all duration-300 hover:border-pink-500 hover:bg-pink-50/50 dark:hover:bg-pink-900/10 hover:scale-[1.01] cursor-pointer"
+          className="group relative bg-card border-2 border-dashed border-border rounded-[20px] md:rounded-[24px] p-6 md:p-16 text-center transition-all duration-300 hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10 hover:scale-[1.01] cursor-pointer"
           onClick={() => mode === "single" ? fileInputRef.current?.click() : batchFileInputRef.current?.click()}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -715,18 +715,18 @@ export default function BackgroundRemover() {
           />
           
           <div className="mb-4 md:mb-6 relative inline-block">
-            <div className="absolute inset-0 bg-pink-500/20 blur-2xl rounded-full group-hover:bg-pink-500/30 transition-colors" />
+            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full group-hover:bg-primary/30 transition-colors" />
             <div className="relative">
               {mode === "single" ? (
-                <Upload className="h-12 w-12 md:h-20 md:w-20 text-pink-500 relative z-10 transition-transform duration-500 group-hover:-translate-y-2" />
+                <Upload className="h-12 w-12 md:h-20 md:w-20 text-primary relative z-10 transition-transform duration-500 group-hover:-translate-y-2" />
               ) : (
-                <ImagePlus className="h-12 w-12 md:h-20 md:w-20 text-pink-500 relative z-10 transition-transform duration-500 group-hover:-translate-y-2" />
+                <ImagePlus className="h-12 w-12 md:h-20 md:w-20 text-primary relative z-10 transition-transform duration-500 group-hover:-translate-y-2" />
               )}
               <div className="absolute -right-2 -bottom-1 md:-right-4 md:-bottom-2 bg-white dark:bg-black rounded-full p-1 md:p-1.5 shadow-lg border border-border">
                 {mode === "single" ? (
-                  <Layers className="h-4 w-4 md:h-6 md:w-6 text-blue-500" />
+                  <Layers className="h-4 w-4 md:h-6 md:w-6 text-[#664D3F]" />
                 ) : (
-                  <Grid3X3 className="h-4 w-4 md:h-6 md:w-6 text-blue-500" />
+                  <Grid3X3 className="h-4 w-4 md:h-6 md:w-6 text-[#664D3F]" />
                 )}
               </div>
             </div>
@@ -737,7 +737,7 @@ export default function BackgroundRemover() {
           </h2>
           <p className="text-sm md:text-lg text-muted-foreground mb-4">or click to browse</p>
           {mode === "batch" && (
-            <p className="text-sm text-pink-600 dark:text-pink-400 font-medium mb-2">
+            <p className="text-sm text-primary font-medium mb-2">
               Upload up to {MAX_BATCH_IMAGES} images at once
             </p>
           )}
@@ -750,10 +750,10 @@ export default function BackgroundRemover() {
           <Dialog open={isUrlDialogOpen} onOpenChange={setIsUrlDialogOpen}>
             <DialogTrigger asChild>
               <button 
-                className="flex flex-col items-start p-3 md:p-5 rounded-xl md:rounded-2xl bg-muted/30 border border-transparent hover:border-pink-500/30 hover:bg-card transition-all hover:-translate-y-0.5 w-full"
+                className="flex flex-col items-start p-3 md:p-5 rounded-xl md:rounded-2xl bg-muted/30 border border-transparent hover:border-primary/30 hover:bg-card transition-all hover:-translate-y-0.5 w-full"
                 data-testid="import-url-button"
               >
-                <div className="p-1.5 md:p-2 rounded-lg bg-purple-100 dark:bg-purple-900/20 text-purple-600 mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 rounded-lg bg-[#E3B436]/20 dark:bg-[#E3B436]/10 text-[#E3B436] mb-2 md:mb-3">
                   <LinkIcon className="h-4 w-4 md:h-6 md:w-6" />
                 </div>
                 <span className="text-xs md:text-sm font-semibold mb-0.5 md:mb-1 text-left">Import URL</span>
@@ -779,11 +779,11 @@ export default function BackgroundRemover() {
           </Dialog>
 
           <button 
-            className="flex flex-col items-start p-3 md:p-5 rounded-xl md:rounded-2xl bg-muted/30 border border-transparent hover:border-pink-500/30 hover:bg-card transition-all hover:-translate-y-0.5 w-full"
+            className="flex flex-col items-start p-3 md:p-5 rounded-xl md:rounded-2xl bg-muted/30 border border-transparent hover:border-primary/30 hover:bg-card transition-all hover:-translate-y-0.5 w-full"
             onClick={() => mode === "single" ? fileInputRef.current?.click() : batchFileInputRef.current?.click()}
             data-testid="browse-files-button"
           >
-             <div className="p-1.5 md:p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20 text-blue-600 mb-2 md:mb-3">
+             <div className="p-1.5 md:p-2 rounded-lg bg-[#664D3F]/20 dark:bg-[#664D3F]/10 text-[#664D3F] mb-2 md:mb-3">
               <ImageIcon className="h-4 w-4 md:h-6 md:w-6" />
             </div>
             <span className="text-xs md:text-sm font-semibold mb-0.5 md:mb-1 text-left">Browse Files</span>
@@ -800,7 +800,7 @@ export default function BackgroundRemover() {
               <button 
                 key={i}
                 onClick={() => handleSampleSelect(img)}
-                className="h-10 w-10 md:h-14 md:w-14 rounded-full border-2 border-transparent hover:border-pink-500 hover:scale-110 transition-all overflow-hidden shadow-sm"
+                className="h-10 w-10 md:h-14 md:w-14 rounded-full border-2 border-transparent hover:border-primary hover:scale-110 transition-all overflow-hidden shadow-sm"
                 data-testid={`sample-image-${i}`}
               >
                 <img src={img} alt="Sample" className="h-full w-full object-cover" />
@@ -922,7 +922,7 @@ export default function BackgroundRemover() {
         {batchImages.length < MAX_BATCH_IMAGES && state !== "processing" && (
           <button
             onClick={() => batchFileInputRef.current?.click()}
-            className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-pink-500 hover:bg-pink-50/50 dark:hover:bg-pink-900/10 transition-all flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-pink-500"
+            className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary"
             data-testid="add-more-batch"
           >
             <ImagePlus className="h-6 w-6" />
@@ -961,8 +961,8 @@ export default function BackgroundRemover() {
                   className={cn(
                     "relative p-4 rounded-xl border-2 transition-all text-left",
                     outputType === type.id
-                      ? "border-pink-500 bg-pink-50/50 dark:bg-pink-900/20"
-                      : "border-border hover:border-pink-300 bg-background"
+                      ? "border-primary bg-primary/5 dark:bg-primary/20"
+                      : "border-border hover:border-primary/50 bg-background"
                   )}
                   data-testid={`output-type-${type.id}`}
                 >
@@ -977,7 +977,7 @@ export default function BackgroundRemover() {
                   </div>
                   {outputType === type.id && (
                     <div className="absolute top-2 right-2">
-                      <Check className="h-4 w-4 text-pink-500" />
+                      <Check className="h-4 w-4 text-primary" />
                     </div>
                   )}
                 </button>
@@ -997,7 +997,7 @@ export default function BackgroundRemover() {
                     onClick={() => setCustomColor(color)}
                     className={cn(
                       "w-8 h-8 rounded-full border-2 transition-all",
-                      customColor === color ? "border-pink-500 scale-110" : "border-border"
+                      customColor === color ? "border-primary scale-110" : "border-border"
                     )}
                     style={{ backgroundColor: color }}
                     data-testid={`color-${color}`}
@@ -1045,18 +1045,18 @@ export default function BackgroundRemover() {
                 className={cn(
                   "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center justify-between",
                   quality === level.id
-                    ? "border-pink-500 bg-pink-50/50 dark:bg-pink-900/20"
-                    : "border-border hover:border-pink-300 bg-background"
+                    ? "border-primary bg-primary/5 dark:bg-primary/20"
+                    : "border-border hover:border-primary/50 bg-background"
                 )}
                 data-testid={`quality-${level.id}`}
               >
                 <div className="flex items-center gap-3">
                   <div className={cn(
                     "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-                    quality === level.id ? "border-pink-500" : "border-muted-foreground/30"
+                    quality === level.id ? "border-primary" : "border-muted-foreground/30"
                   )}>
                     {quality === level.id && (
-                      <div className="w-2 h-2 rounded-full bg-pink-500" />
+                      <div className="w-2 h-2 rounded-full bg-primary" />
                     )}
                   </div>
                   <div>
@@ -1099,12 +1099,12 @@ export default function BackgroundRemover() {
             <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-16 mb-1">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#B94E30] to-[#8B3A24] bg-clip-text text-transparent">
                     Background Remover
                   </h1>
-                  <Scissors className="h-5 w-5 md:h-6 md:w-6 text-pink-600" />
+                  <Scissors className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                 </div>
-                <Badge className="bg-pink-600 hover:bg-pink-700 text-white rounded-full px-2 py-0.5 text-[11px]">
+                <Badge className="bg-primary hover:bg-[#8B3A24] text-white rounded-full px-2 py-0.5 text-[11px]">
                   AI-Powered
                 </Badge>
               </div>
@@ -1200,7 +1200,7 @@ export default function BackgroundRemover() {
                   <Button 
                     onClick={processImage}
                     disabled={state === "processing"}
-                    className="h-12 px-8 rounded-[12px] bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold transition-all hover:-translate-y-[1px] hover:shadow-lg hover:shadow-pink-500/25"
+                    className="h-12 px-8 rounded-[12px] bg-gradient-to-r from-[#B94E30] to-[#8B3A24] hover:from-[#8B3A24] hover:to-[#6A2D1C] text-white font-bold transition-all hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/25"
                     data-testid="process-button"
                   >
                     {state === "processing" ? (
@@ -1233,7 +1233,7 @@ export default function BackgroundRemover() {
                   <div className="bg-card border border-border rounded-xl p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <Loader2 className="h-5 w-5 text-pink-500 animate-spin" />
+                        <Loader2 className="h-5 w-5 text-primary animate-spin" />
                         <span className="font-medium">{processingStage}</span>
                       </div>
                       <span className="text-sm text-muted-foreground">
@@ -1268,7 +1268,7 @@ export default function BackgroundRemover() {
                   <Button 
                     onClick={processBatch}
                     disabled={state === "processing" || batchImages.length === 0}
-                    className="h-12 px-8 rounded-[12px] bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold transition-all hover:-translate-y-[1px] hover:shadow-lg hover:shadow-pink-500/25"
+                    className="h-12 px-8 rounded-[12px] bg-gradient-to-r from-[#B94E30] to-[#8B3A24] hover:from-[#8B3A24] hover:to-[#6A2D1C] text-white font-bold transition-all hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/25"
                     data-testid="process-batch-button"
                   >
                     {state === "processing" ? (
@@ -1336,7 +1336,7 @@ export default function BackgroundRemover() {
                   <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/60 rounded-full text-white text-xs font-medium">
                     Original
                   </div>
-                  <div className="absolute top-4 right-4 px-3 py-1.5 bg-pink-500 rounded-full text-white text-xs font-medium flex items-center gap-1.5">
+                  <div className="absolute top-4 right-4 px-3 py-1.5 bg-primary rounded-full text-white text-xs font-medium flex items-center gap-1.5">
                     <Sparkles className="h-3 w-3" />
                     Processed
                   </div>
@@ -1379,8 +1379,8 @@ export default function BackgroundRemover() {
                       </div>
                     </div>
                     <div className="bg-card border border-border rounded-[16px] overflow-hidden">
-                      <div className="p-3 border-b border-border bg-pink-50 dark:bg-pink-900/20">
-                        <span className="text-sm font-medium text-pink-600 dark:text-pink-400 flex items-center gap-2">
+                      <div className="p-3 border-b border-border bg-primary/5 dark:bg-primary/20">
+                        <span className="text-sm font-medium text-primary flex items-center gap-2">
                           <Sparkles className="h-4 w-4" />
                           Processed
                         </span>
@@ -1411,7 +1411,7 @@ export default function BackgroundRemover() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
-                        className="h-12 px-6 rounded-[12px] bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold"
+                        className="h-12 px-6 rounded-[12px] bg-gradient-to-r from-[#B94E30] to-[#8B3A24] hover:from-[#8B3A24] hover:to-[#6A2D1C] text-white font-bold"
                         data-testid="download-button"
                       >
                         <Download className="h-5 w-5 mr-2" />
@@ -1484,7 +1484,7 @@ export default function BackgroundRemover() {
                   <Button 
                     onClick={downloadAllAsZip}
                     disabled={batchResults.successful === 0}
-                    className="h-12 px-6 rounded-[12px] bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold"
+                    className="h-12 px-6 rounded-[12px] bg-gradient-to-r from-[#B94E30] to-[#8B3A24] hover:from-[#8B3A24] hover:to-[#6A2D1C] text-white font-bold"
                     data-testid="download-all-zip"
                   >
                     <Package className="h-5 w-5 mr-2" />
@@ -1517,7 +1517,7 @@ export default function BackgroundRemover() {
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-muted overflow-hidden">
                 <motion.div 
-                  className="h-full bg-gradient-to-r from-pink-500 to-purple-500"
+                  className="h-full bg-gradient-to-r from-[#B94E30] to-[#8B3A24]"
                   initial={{ width: "0%" }}
                   animate={{ width: "100%" }}
                   transition={{ duration: 30, ease: "linear" }}
@@ -1525,13 +1525,13 @@ export default function BackgroundRemover() {
               </div>
               
               <div className="mb-8 relative inline-block">
-                <div className="absolute inset-0 bg-pink-500/20 blur-xl rounded-full animate-pulse" />
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                   className="relative z-10"
                 >
-                  <Scissors className="h-16 w-16 text-pink-500" />
+                  <Scissors className="h-16 w-16 text-primary" />
                 </motion.div>
               </div>
               
@@ -1541,7 +1541,7 @@ export default function BackgroundRemover() {
               </p>
               
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-6">
-                <Sparkles className="h-4 w-4 text-pink-500 animate-pulse" />
+                <Sparkles className="h-4 w-4 text-primary animate-pulse" />
                 <span>Powered by Gemini Vision</span>
               </div>
               

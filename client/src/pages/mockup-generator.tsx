@@ -476,12 +476,12 @@ function ProductPreview({ uploadedImage, selectedProduct, selectedColor, isMinim
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         onClick={onToggle}
-        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-40 h-14 w-14 rounded-full bg-card border-2 border-border shadow-lg flex items-center justify-center hover:border-indigo-400 hover:shadow-xl transition-all group"
+        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-40 h-14 w-14 rounded-full bg-card border-2 border-border shadow-lg flex items-center justify-center hover:border-[#B94E30] hover:shadow-xl transition-all group"
         data-testid="button-expand-preview"
       >
-        <Eye className="h-5 w-5 text-muted-foreground group-hover:text-indigo-600 transition-colors" />
+        <Eye className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
         {uploadedImage && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 bg-indigo-600 rounded-full flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full flex items-center justify-center">
             <CheckIcon className="h-2.5 w-2.5 text-white" />
           </span>
         )}
@@ -499,7 +499,7 @@ function ProductPreview({ uploadedImage, selectedProduct, selectedColor, isMinim
     >
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
-          <Eye className="h-3.5 w-3.5 text-indigo-600" />
+          <Eye className="h-3.5 w-3.5 text-primary" />
           <span className="text-xs font-semibold text-foreground">Live Preview</span>
         </div>
         <button
@@ -586,13 +586,13 @@ function ProductThumbnail({ productName, isSelected, color = "#FFFFFF" }: Produc
     <div 
       className={cn(
         "h-10 w-10 rounded-full flex items-center justify-center transition-colors overflow-hidden",
-        isSelected ? "bg-indigo-100 dark:bg-indigo-900/40" : "bg-muted"
+        isSelected ? "bg-[#B94E30]/20 dark:bg-[#B94E30]/40" : "bg-muted"
       )}
       style={{ backgroundColor: isSelected ? undefined : color }}
     >
       <div 
         className="h-6 w-6"
-        style={{ color: isSelected ? "rgb(79 70 229)" : "rgba(0,0,0,0.15)" }}
+        style={{ color: isSelected ? "#B94E30" : "rgba(0,0,0,0.15)" }}
         dangerouslySetInnerHTML={{ __html: silhouette.svg }}
       />
     </div>
@@ -1132,27 +1132,27 @@ export default function MockupGenerator() {
               <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-16 mb-1">
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-indigo-600">
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-primary">
                       Mockup Generator
                     </h1>
-                    <Shirt className="h-5 w-5 md:h-6 md:w-6 text-indigo-600 animate-cut" />
+                    <Shirt className="h-5 w-5 md:h-6 md:w-6 text-primary animate-cut" />
                   </div>
-                  <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-2 py-0.5 text-[11px]">
+                  <Badge className="bg-primary hover:bg-[#8B3A24] text-white rounded-full px-2 py-0.5 text-[11px]">
                     Professional
                   </Badge>
                 </div>
 
                 <div className="flex items-center gap-8 opacity-0 lg:opacity-100 animate-fade-in hidden lg:flex">
                   <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-                    <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
                     <span>Photorealistic 8K</span>
                   </div>
                   <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-                    <Grid className="h-3.5 w-3.5 text-purple-500" />
+                    <Grid className="h-3.5 w-3.5 text-secondary" />
                     <span>Smart 3D Mapping</span>
                   </div>
                   <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-                    <Camera className="h-3.5 w-3.5 text-pink-500" />
+                    <Camera className="h-3.5 w-3.5 text-[#664D3F]" />
                     <span>Multi-Angle Studio</span>
                   </div>
                 </div>
@@ -1171,16 +1171,16 @@ export default function MockupGenerator() {
                 {/* DTG Card */}
                 <div 
                   onClick={() => handleJourneySelect("DTG")}
-                  className="bg-card border-2 border-border rounded-[20px] md:rounded-[24px] p-5 md:p-10 text-left cursor-pointer transition-all duration-300 hover:border-indigo-600 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/15 group"
+                  className="bg-card border-2 border-border rounded-[20px] md:rounded-[24px] p-5 md:p-10 text-left cursor-pointer transition-all duration-300 hover:border-[#B94E30] hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#B94E30]/15 group"
                 >
-                  <div className="h-10 w-10 md:h-16 md:w-16 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-3 md:mb-6 group-hover:scale-110 transition-transform">
-                    <Shirt className="h-5 w-5 md:h-8 md:w-8 text-indigo-600" />
+                  <div className="h-10 w-10 md:h-16 md:w-16 rounded-xl bg-[#B94E30]/10 dark:bg-[#B94E30]/20 flex items-center justify-center mb-3 md:mb-6 group-hover:scale-110 transition-transform">
+                    <Shirt className="h-5 w-5 md:h-8 md:w-8 text-primary" />
                   </div>
                   <h3 className="text-lg md:text-2xl font-bold text-foreground mb-1 md:mb-3">Direct-to-Garment (DTG)</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed mb-3 md:mb-6">
                     For designs placed on a specific area of a product, like a logo on the chest of a t-shirt or a graphic on a tote bag.
                   </p>
-                  <span className="text-xs md:text-sm font-bold text-indigo-600 group-hover:underline flex items-center">
+                  <span className="text-xs md:text-sm font-bold text-primary group-hover:underline flex items-center">
                     Choose DTG <ChevronRight className="h-3 w-3 md:h-4 md:w-4 ml-1" />
                   </span>
                 </div>
@@ -1188,17 +1188,17 @@ export default function MockupGenerator() {
                 {/* AOP Card */}
                 <div 
                   onClick={() => handleJourneySelect("AOP")}
-                  className="bg-card border-2 border-border rounded-[20px] md:rounded-[24px] p-5 md:p-10 text-left cursor-pointer transition-all duration-300 hover:border-purple-600 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/15 group relative overflow-hidden"
+                  className="bg-card border-2 border-border rounded-[20px] md:rounded-[24px] p-5 md:p-10 text-left cursor-pointer transition-all duration-300 hover:border-secondary hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#E3B436]/15 group relative overflow-hidden"
                 >
                   <Badge className="absolute top-3 right-3 md:top-6 md:right-6 bg-amber-500 text-white hover:bg-amber-600 text-[10px] md:text-[11px]">Pro</Badge>
-                  <div className="h-10 w-10 md:h-16 md:w-16 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mb-3 md:mb-6 group-hover:scale-110 transition-transform">
-                    <Grid className="h-5 w-5 md:h-8 md:w-8 text-purple-600" />
+                  <div className="h-10 w-10 md:h-16 md:w-16 rounded-xl bg-[#E3B436]/10 dark:bg-[#E3B436]/20 flex items-center justify-center mb-3 md:mb-6 group-hover:scale-110 transition-transform">
+                    <Grid className="h-5 w-5 md:h-8 md:w-8 text-secondary" />
                   </div>
                   <h3 className="text-lg md:text-2xl font-bold text-foreground mb-1 md:mb-3">All-Over Print (AOP)</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed mb-3 md:mb-6">
                     For seamless patterns that cover the entire surface of a product, like leggings, backpacks, or custom-cut apparel.
                   </p>
-                  <span className="text-xs md:text-sm font-bold text-purple-600 group-hover:underline flex items-center">
+                  <span className="text-xs md:text-sm font-bold text-secondary group-hover:underline flex items-center">
                     Choose AOP <ChevronRight className="h-3 w-3 md:h-4 md:w-4 ml-1" />
                   </span>
                 </div>
@@ -1216,7 +1216,7 @@ export default function MockupGenerator() {
                     {/* Connecting Line */}
                     <div className="absolute top-[16px] sm:top-[18px] left-0 w-full h-[2px] bg-border -z-10">
                       <motion.div 
-                        className="h-full bg-indigo-600"
+                        className="h-full bg-primary"
                         initial={{ width: "0%" }}
                         animate={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
                         transition={{ duration: 0.3 }}
@@ -1243,15 +1243,15 @@ export default function MockupGenerator() {
                         <div key={step} className="flex flex-col items-center gap-1 sm:gap-2 flex-shrink-0">
                           <div className={cn(
                             "h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10",
-                            isCompleted ? "bg-indigo-600 border-indigo-600 text-white" :
-                            isCurrent ? "bg-indigo-600 border-indigo-600 text-white ring-2 sm:ring-4 ring-indigo-600/20" :
+                            isCompleted ? "bg-primary border-primary text-white" :
+                            isCurrent ? "bg-primary border-primary text-white ring-2 sm:ring-4 ring-[#B94E30]/20" :
                             "bg-card border-border text-muted-foreground"
                           )}>
                             <StepIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           </div>
                           <span className={cn(
                             "text-[7px] sm:text-[8px] md:text-[10px] font-bold uppercase tracking-wider transition-colors text-center hidden xs:block sm:block",
-                            isCurrent ? "text-indigo-600" : "text-muted-foreground"
+                            isCurrent ? "text-primary" : "text-muted-foreground"
                           )}>
                             {step}
                           </span>
@@ -1283,7 +1283,7 @@ export default function MockupGenerator() {
                           <div className="flex flex-col items-center justify-center h-full max-w-[600px] mx-auto text-center flex-1 px-2 sm:px-0">
                           {!uploadedImage ? (
                             <div 
-                              className="w-full border-2 border-dashed border-border rounded-[16px] sm:rounded-[20px] p-6 sm:p-8 md:p-16 hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all cursor-pointer group active:scale-[0.99]"
+                              className="w-full border-2 border-dashed border-border rounded-[16px] sm:rounded-[20px] p-6 sm:p-8 md:p-16 hover:border-[#B94E30] hover:bg-[#B94E30]/10 dark:hover:bg-[#B94E30]/10 transition-all cursor-pointer group active:scale-[0.99]"
                               onClick={() => fileInputRef.current?.click()}
                               data-testid="dropzone-upload"
                             >
@@ -1294,8 +1294,8 @@ export default function MockupGenerator() {
                                 accept="image/*"
                                 onChange={handleFileUpload}
                               />
-                              <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
-                                <Cloud className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-indigo-600" />
+                              <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 bg-[#B94E30]/10 dark:bg-[#B94E30]/20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                                <Cloud className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary" />
                               </div>
                               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2">Drag & drop your design</h2>
                               <p className="text-sm text-muted-foreground mb-3 sm:mb-4">or tap to browse</p>
@@ -1325,7 +1325,7 @@ export default function MockupGenerator() {
                                     type="checkbox"
                                     checked={isAlreadySeamless}
                                     onChange={(e) => setIsAlreadySeamless(e.target.checked)}
-                                    className="h-5 w-5 min-w-[20px] rounded border-border text-indigo-600 focus:ring-indigo-500"
+                                    className="h-5 w-5 min-w-[20px] rounded border-border text-primary focus:ring-primary"
                                   />
                                   <div className="flex-1">
                                     <p className="font-medium text-sm text-foreground">This design is already a seamless pattern</p>
@@ -1355,7 +1355,7 @@ export default function MockupGenerator() {
                                     className={cn(
                                         "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                         uploadedImage
-                                            ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
+                                            ? "bg-primary hover:bg-[#8B3A24] text-white shadow-sm hover:shadow-[#B94E30]/20 hover:-translate-y-0.5" 
                                             : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                     )}
                                     data-testid="button-next"
@@ -1417,8 +1417,8 @@ export default function MockupGenerator() {
                                         className={cn(
                                           "flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap min-h-[44px] flex-shrink-0",
                                           isActive 
-                                            ? "bg-indigo-600 text-white shadow-md" 
-                                            : "bg-card border border-border hover:border-indigo-300 text-muted-foreground hover:text-foreground"
+                                            ? "bg-primary text-white shadow-md" 
+                                            : "bg-card border border-border hover:border-[#B94E30]/50 text-muted-foreground hover:text-foreground"
                                         )}
                                         data-testid={`category-${cat.name.replace(/\s+/g, '-').toLowerCase()}`}
                                       >
@@ -1445,8 +1445,8 @@ export default function MockupGenerator() {
                                         className={cn(
                                           "group relative border rounded-xl p-3 sm:p-4 cursor-pointer transition-all flex flex-col items-center text-center gap-1.5 sm:gap-2 min-h-[90px] active:scale-[0.98]",
                                           isSelected 
-                                            ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-sm" 
-                                            : "border-border hover:border-indigo-300 bg-card"
+                                            ? "border-primary bg-[#B94E30]/10 dark:bg-[#B94E30]/20 shadow-sm" 
+                                            : "border-border hover:border-[#B94E30]/50 bg-card"
                                         )}
                                       >
                                         <ProductThumbnail 
@@ -1454,9 +1454,9 @@ export default function MockupGenerator() {
                                           isSelected={isSelected}
                                           color={isSelected ? undefined : (PRODUCT_COLOR_MAP[selectedColors[0]] || "#FFFFFF")}
                                         />
-                                        <p className={cn("font-medium text-[10px] sm:text-xs leading-tight line-clamp-2", isSelected ? "text-indigo-700" : "text-foreground")}>{item.name}</p>
+                                        <p className={cn("font-medium text-[10px] sm:text-xs leading-tight line-clamp-2", isSelected ? "text-[#B94E30]" : "text-foreground")}>{item.name}</p>
                                         {isSelected && (
-                                          <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                                          <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-primary text-white flex items-center justify-center">
                                             <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                                           </div>
                                         )}
@@ -1491,8 +1491,8 @@ export default function MockupGenerator() {
                                         className={cn(
                                           "h-11 min-h-[44px] min-w-[44px] px-3 rounded-lg text-sm font-medium border-2 transition-all active:scale-95",
                                           isSelected 
-                                            ? "bg-indigo-600 border-indigo-600 text-white" 
-                                            : "bg-background border-border text-muted-foreground hover:border-indigo-300"
+                                            ? "bg-primary border-primary text-white" 
+                                            : "bg-background border-border text-muted-foreground hover:border-[#B94E30]/50"
                                         )}
                                         data-testid={`size-${size}`}
                                       >
@@ -1510,13 +1510,13 @@ export default function MockupGenerator() {
                                   {journey !== "AOP" && <Badge variant="secondary" className="text-xs">{selectedColors.length} selected</Badge>}
                                 </div>
                                 {journey === "AOP" ? (
-                                  <div className="flex items-center gap-3 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 min-h-[60px]">
-                                    <Palette className="h-5 w-5 text-indigo-600 flex-shrink-0" />
+                                  <div className="flex items-center gap-3 p-3 rounded-lg bg-[#B94E30]/10 dark:bg-[#B94E30]/20 min-h-[60px]">
+                                    <Palette className="h-5 w-5 text-primary flex-shrink-0" />
                                     <div className="flex-1 min-w-0">
                                       <p className="font-medium text-sm">Pattern-Derived Colors</p>
                                       <p className="text-xs text-muted-foreground">Colors extracted from your seamless pattern</p>
                                     </div>
-                                    <CheckCircle2 className="h-5 w-5 text-indigo-600 flex-shrink-0" />
+                                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
                                   </div>
                                 ) : (
                                   <div className="flex flex-wrap gap-2 sm:gap-2">
@@ -1556,7 +1556,7 @@ export default function MockupGenerator() {
                                                 className={cn(
                                                   "h-9 w-9 sm:h-8 sm:w-8 rounded-full border-2 transition-all hover:scale-110 active:scale-95",
                                                   color.class,
-                                                  isSelected ? "ring-2 ring-indigo-600 ring-offset-2" : "border-transparent"
+                                                  isSelected ? "ring-2 ring-primary ring-offset-2" : "border-transparent"
                                                 )}
                                                 data-testid={`color-${color.name.replace(/\s+/g, '-').toLowerCase()}`}
                                               />
@@ -1581,7 +1581,7 @@ export default function MockupGenerator() {
                                       onClick={() => setUseModel(true)}
                                       className={cn(
                                         "flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] flex-1 sm:flex-none justify-center",
-                                        useModel ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
+                                        useModel ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                                       )}
                                       data-testid="button-on-model"
                                     >
@@ -1592,7 +1592,7 @@ export default function MockupGenerator() {
                                       onClick={() => setUseModel(false)}
                                       className={cn(
                                         "flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] flex-1 sm:flex-none justify-center",
-                                        !useModel ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"
+                                        !useModel ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:text-foreground"
                                       )}
                                       data-testid="button-flat-lay"
                                     >
@@ -1618,8 +1618,8 @@ export default function MockupGenerator() {
                                             className={cn(
                                               "flex-1 py-2.5 min-h-[44px] rounded-lg text-sm font-medium border-2 transition-all active:scale-95",
                                               modelDetails.sex === sex
-                                                ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                                                : "border-border hover:border-indigo-300"
+                                                ? "border-primary bg-[#B94E30]/10 text-[#B94E30]"
+                                                : "border-border hover:border-[#B94E30]/50"
                                             )}
                                             data-testid={`sex-${sex.toLowerCase()}`}
                                           >
@@ -1666,8 +1666,8 @@ export default function MockupGenerator() {
                                             className={cn(
                                               "flex-1 py-2.5 min-h-[44px] rounded-lg text-sm font-medium border-2 transition-all active:scale-95",
                                               modelDetails.modelSize === size
-                                                ? "border-indigo-600 bg-indigo-600 text-white"
-                                                : "border-border hover:border-indigo-300"
+                                                ? "border-primary bg-primary text-white"
+                                                : "border-border hover:border-[#B94E30]/50"
                                             )}
                                             data-testid={`body-size-${size}`}
                                           >
@@ -1774,7 +1774,7 @@ export default function MockupGenerator() {
                               className={cn(
                                 "gap-2 px-4 sm:px-6 min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                 (selectedProductType && selectedSizes.length > 0 && (journey === "AOP" || selectedColors.length > 0))
-                                  ? "bg-indigo-600 hover:bg-indigo-700 text-white" 
+                                  ? "bg-primary hover:bg-[#8B3A24] text-white" 
                                   : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                               )}
                               data-testid="button-next"
@@ -1790,7 +1790,7 @@ export default function MockupGenerator() {
                           {/* Phase 1 & 2: Loading States */}
                           {(seamlessPhase === 'analyzing' || seamlessPhase === 'generating') && (
                             <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                              <Loader2 className="h-12 w-12 text-indigo-600 animate-spin mb-4" />
+                              <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
                               <h2 className="text-lg font-medium text-foreground mb-1">
                                 {seamlessPhase === 'analyzing' ? "Analyzing your image..." : "Running pattern lab..."}
                               </h2>
@@ -1804,12 +1804,12 @@ export default function MockupGenerator() {
                           {seamlessPhase === 'selecting' && (
                             <div className="flex-1 flex flex-col overflow-hidden">
                               {/* Info Banner */}
-                              <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-900/30 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 shrink-0">
+                              <div className="bg-[#B94E30]/10 dark:bg-[#B94E30]/10 border border-[#B94E30]/20 dark:border-[#B94E30]/30 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 shrink-0">
                                 <div className="flex items-start gap-2 sm:gap-3">
-                                  <Info className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                                  <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary mt-0.5 flex-shrink-0" />
                                   <div>
-                                    <h3 className="text-sm sm:text-base font-bold text-indigo-900 dark:text-indigo-100 mb-0.5 sm:mb-1">Pattern Lab</h3>
-                                    <p className="text-[11px] sm:text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed">
+                                    <h3 className="text-sm sm:text-base font-bold text-[#B94E30] dark:text-[#E8C9B0] mb-0.5 sm:mb-1">Pattern Lab</h3>
+                                    <p className="text-[11px] sm:text-xs text-[#B94E30] dark:text-[#D4A987] leading-relaxed">
                                       We analyzed your image and generated several options. The best methods are marked with a <span className="inline-flex items-center"><Star className="h-2.5 w-2.5 mx-0.5 fill-current" /></span>. Select your favorite pattern to continue.
                                     </p>
                                   </div>
@@ -1835,8 +1835,8 @@ export default function MockupGenerator() {
                                             className={cn(
                                               "relative aspect-square rounded-xl overflow-hidden border-4 transition-all duration-200 cursor-pointer group",
                                               isSelected 
-                                                ? "border-purple-600 shadow-lg shadow-purple-500/25 scale-105 z-10" 
-                                                : "border-transparent hover:border-purple-200 dark:hover:border-purple-800 hover:shadow-lg"
+                                                ? "border-secondary shadow-lg shadow-[#E3B436]/25 scale-105 z-10" 
+                                                : "border-transparent hover:border-[#E3B436]/20 dark:hover:border-[#E3B436]/80 hover:shadow-lg"
                                             )}
                                           >
                                             <div 
@@ -1850,12 +1850,12 @@ export default function MockupGenerator() {
                                             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 pt-4">
                                               <span className="text-xs font-bold text-white block truncate">{variation.name}</span>
                                             </div>
-                                            <div className="absolute top-2 right-2 bg-purple-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
+                                            <div className="absolute top-2 right-2 bg-secondary text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
                                               <Sparkles className="h-3 w-3 fill-current" />
                                               AI
                                             </div>
                                             {isSelected && (
-                                              <div className="absolute inset-0 bg-purple-600/30 flex items-center justify-center backdrop-blur-[1px]">
+                                              <div className="absolute inset-0 bg-[#E3B436]/30 flex items-center justify-center backdrop-blur-[1px]">
                                                 <CheckCircle2 className="h-12 w-12 text-white drop-shadow-md" />
                                               </div>
                                             )}
@@ -1867,11 +1867,11 @@ export default function MockupGenerator() {
                                       return (
                                         <div 
                                           key={variation.id}
-                                          className="relative aspect-square rounded-xl border-4 border-dashed border-purple-300 dark:border-purple-700 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 flex flex-col items-center justify-center text-center p-4 group cursor-pointer hover:border-purple-400 dark:hover:border-purple-600 transition-all"
+                                          className="relative aspect-square rounded-xl border-4 border-dashed border-[#E3B436]/30 dark:border-[#E3B436]/70 bg-gradient-to-br from-[#E3B436]/10 to-[#B94E30]/10 dark:from-[#E3B436]/20 dark:to-[#B94E30]/20 flex flex-col items-center justify-center text-center p-4 group cursor-pointer hover:border-[#E3B436]/40 dark:hover:border-secondary transition-all"
                                         >
-                                          <Sparkles className="h-8 w-8 text-purple-500 mb-2" />
-                                          <span className="text-xs font-bold text-purple-900 dark:text-purple-100 mb-1">{variation.name}</span>
-                                          <p className="text-[10px] text-purple-600 dark:text-purple-400 mb-3">{variation.description}</p>
+                                          <Sparkles className="h-8 w-8 text-secondary mb-2" />
+                                          <span className="text-xs font-bold text-[#664D3F] dark:text-[#E8C9B0] mb-1">{variation.name}</span>
+                                          <p className="text-[10px] text-secondary dark:text-[#C99C2A] mb-3">{variation.description}</p>
                                           <Button 
                                             size="sm" 
                                             onClick={(e) => {
@@ -1879,7 +1879,7 @@ export default function MockupGenerator() {
                                               generateAIEnhancedPattern();
                                             }}
                                             disabled={isGeneratingAIPattern}
-                                            className="h-7 text-[10px] bg-purple-600 hover:bg-purple-700 text-white gap-1.5"
+                                            className="h-7 text-[10px] bg-secondary hover:bg-[#C99C2A] text-white gap-1.5"
                                           >
                                             {isGeneratingAIPattern ? (
                                               <>
@@ -1904,8 +1904,8 @@ export default function MockupGenerator() {
                                         className={cn(
                                           "relative aspect-square rounded-xl overflow-hidden border-4 transition-all duration-200 cursor-pointer group",
                                           isSelected 
-                                            ? "border-indigo-600 shadow-lg shadow-indigo-500/25 scale-105 z-10" 
-                                            : "border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-lg"
+                                            ? "border-primary shadow-lg shadow-[#B94E30]/25 scale-105 z-10" 
+                                            : "border-transparent hover:border-[#B94E30]/20 dark:hover:border-[#B94E30]/80 hover:shadow-lg"
                                         )}
                                       >
                                         {/* Pattern Preview */}
@@ -1933,7 +1933,7 @@ export default function MockupGenerator() {
 
                                         {/* Selection Overlay */}
                                         {isSelected && (
-                                          <div className="absolute inset-0 bg-indigo-600/30 flex items-center justify-center backdrop-blur-[1px]">
+                                          <div className="absolute inset-0 bg-primary/30 flex items-center justify-center backdrop-blur-[1px]">
                                             <CheckCircle2 className="h-12 w-12 text-white drop-shadow-md" />
                                           </div>
                                         )}
@@ -1967,7 +1967,7 @@ export default function MockupGenerator() {
                                             );
                                           }
                                         }}
-                                        className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                                        className="flex items-center gap-2 text-xs font-bold text-primary hover:text-[#B94E30] dark:text-[#CD8B67] dark:hover:text-[#D4A987] transition-colors"
                                       >
                                         <Download className="h-4 w-4" />
                                         Download Texture
@@ -2031,7 +2031,7 @@ export default function MockupGenerator() {
                                         className={cn(
                                             "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                             selectedVariationId
-                                                ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
+                                                ? "bg-primary hover:bg-[#8B3A24] text-white shadow-sm hover:shadow-[#B94E30]/20 hover:-translate-y-0.5" 
                                                 : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                         )}
                                         data-testid="button-next"
@@ -2065,7 +2065,7 @@ export default function MockupGenerator() {
                             <div className="mb-4 shrink-0">
                                <div className="flex items-center justify-between mb-2">
                                  <div className="flex items-center gap-2">
-                                   <PersonStanding className="h-4 w-4 text-indigo-600" />
+                                   <PersonStanding className="h-4 w-4 text-primary" />
                                    <h2 className="text-sm font-bold text-foreground">Choose Camera Angles</h2>
                                  </div>
                                  
@@ -2073,7 +2073,7 @@ export default function MockupGenerator() {
                                    <button 
                                      onClick={() => setSelectedAngles(MOCKUP_ANGLES.map(a => a.id))}
                                      disabled={selectedAngles.length === MOCKUP_ANGLES.length}
-                                     className="text-[10px] font-medium text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                     className="text-[10px] font-medium text-primary disabled:opacity-50 disabled:cursor-not-allowed"
                                    >
                                      Select All
                                    </button>
@@ -2107,8 +2107,8 @@ export default function MockupGenerator() {
                                       className={cn(
                                         "relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col justify-between cursor-pointer min-h-[90px] sm:min-h-[100px] active:scale-[0.98]",
                                         isSelected 
-                                          ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-sm" 
-                                          : "border-border bg-card hover:border-indigo-300 dark:hover:border-indigo-700"
+                                          ? "border-primary bg-[#B94E30]/10 dark:bg-[#B94E30]/10 shadow-sm" 
+                                          : "border-border bg-card hover:border-[#B94E30]/50 dark:hover:border-[#B94E30]/70"
                                       )}
                                       data-testid={`angle-${angle.id}`}
                                     >
@@ -2117,11 +2117,11 @@ export default function MockupGenerator() {
                                         <div className="flex items-center gap-2 mb-2">
                                           <div className={cn(
                                             "p-1.5 rounded-lg transition-colors",
-                                            isSelected ? "bg-indigo-100 dark:bg-indigo-900/40" : "bg-muted"
+                                            isSelected ? "bg-[#B94E30]/20 dark:bg-[#B94E30]/40" : "bg-muted"
                                           )}>
                                             <angle.icon className={cn(
                                               "h-4 w-4",
-                                              isSelected ? "text-indigo-600 dark:text-indigo-400" : "text-muted-foreground"
+                                              isSelected ? "text-primary dark:text-[#CD8B67]" : "text-muted-foreground"
                                             )} />
                                           </div>
                                           {angle.recommended && (
@@ -2133,13 +2133,13 @@ export default function MockupGenerator() {
                                         
                                         <h3 className={cn(
                                           "text-xs font-bold mb-0.5 transition-colors",
-                                          isSelected ? "text-indigo-900 dark:text-indigo-100" : "text-foreground"
+                                          isSelected ? "text-[#B94E30] dark:text-[#E8C9B0]" : "text-foreground"
                                         )}>
                                           {angle.name}
                                         </h3>
                                         <p className={cn(
                                           "text-[10px] leading-tight transition-colors line-clamp-2",
-                                          isSelected ? "text-indigo-700 dark:text-indigo-300" : "text-muted-foreground"
+                                          isSelected ? "text-[#B94E30] dark:text-[#D4A987]" : "text-muted-foreground"
                                         )}>
                                           {angle.description}
                                         </p>
@@ -2150,7 +2150,7 @@ export default function MockupGenerator() {
                                         <div className={cn(
                                           "h-4 w-4 rounded-full border-2 flex items-center justify-center transition-all",
                                           isSelected 
-                                            ? "border-indigo-600 bg-indigo-600" 
+                                            ? "border-primary bg-primary" 
                                             : "border-muted-foreground/20 bg-transparent"
                                         )}>
                                           {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
@@ -2167,7 +2167,7 @@ export default function MockupGenerator() {
                               <div className="flex gap-2 w-full">
                                 <button
                                   onClick={() => setSelectedAngles(['front', 'three-quarter'])}
-                                  className="flex-1 px-3 py-2 text-[10px] md:text-xs font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors border border-indigo-100 dark:border-indigo-900/50"
+                                  className="flex-1 px-3 py-2 text-[10px] md:text-xs font-bold bg-[#B94E30]/10 dark:bg-[#B94E30]/20 text-[#B94E30] dark:text-[#D4A987] rounded-lg hover:bg-[#B94E30]/20 dark:hover:bg-[#B94E30]/30 transition-colors border border-[#B94E30]/10 dark:border-[#B94E30]/50"
                                 >
                                   Standard Pack (2)
                                 </button>
@@ -2183,7 +2183,7 @@ export default function MockupGenerator() {
                                 <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-lg px-3 py-2 text-[10px] md:text-xs font-medium w-full text-center shadow-sm flex justify-between items-center">
                                   <span>Total Output:</span>
                                   <span>
-                                    <span className="font-bold text-indigo-300">{selectedAngles.length}</span> Angles × <span className="font-bold text-indigo-300">{selectedColors.length}</span> Colors = <span className="font-bold text-green-400">{selectedAngles.length * selectedColors.length}</span> Mockups
+                                    <span className="font-bold text-[#D4A987]">{selectedAngles.length}</span> Angles × <span className="font-bold text-[#D4A987]">{selectedColors.length}</span> Colors = <span className="font-bold text-green-400">{selectedAngles.length * selectedColors.length}</span> Mockups
                                   </span>
                                 </div>
                               )}
@@ -2208,7 +2208,7 @@ export default function MockupGenerator() {
                                     className={cn(
                                         "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                         selectedAngles.length > 0
-                                            ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
+                                            ? "bg-primary hover:bg-[#8B3A24] text-white shadow-sm hover:shadow-[#B94E30]/20 hover:-translate-y-0.5" 
                                             : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                     )}
                                     data-testid="button-next"
@@ -2238,7 +2238,7 @@ export default function MockupGenerator() {
                           {/* Section 1: Quick Templates */}
                           <div className="mb-4 md:mb-6 shrink-0">
                             <h3 className="text-sm font-bold text-foreground/80 mb-3 flex items-center gap-2">
-                              <Sparkles className="h-4 w-4 text-indigo-600" />
+                              <Sparkles className="h-4 w-4 text-primary" />
                               Quick Templates
                             </h3>
                             <div className="grid grid-cols-3 gap-2">
@@ -2256,19 +2256,19 @@ export default function MockupGenerator() {
                                   className={cn(
                                     "flex flex-col items-center justify-center gap-2 p-2 md:p-3 text-center rounded-xl border transition-all duration-150 h-[80px] md:h-[100px]",
                                     environmentPrompt === template.prompt
-                                      ? "bg-indigo-50 border-indigo-600 dark:bg-indigo-900/20 dark:border-indigo-500 shadow-sm"
-                                      : "bg-card border-border hover:bg-accent dark:hover:bg-accent/50 text-muted-foreground hover:text-foreground hover:border-indigo-300"
+                                      ? "bg-[#B94E30]/10 border-primary dark:bg-[#B94E30]/20 dark:border-[#B94E30] shadow-sm"
+                                      : "bg-card border-border hover:bg-accent dark:hover:bg-accent/50 text-muted-foreground hover:text-foreground hover:border-[#B94E30]/50"
                                   )}
                                 >
                                   <div className={cn(
                                     "h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center transition-colors",
-                                    environmentPrompt === template.prompt ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300" : "bg-muted text-muted-foreground"
+                                    environmentPrompt === template.prompt ? "bg-[#B94E30]/20 text-primary dark:bg-[#B94E30]/40 dark:text-[#D4A987]" : "bg-muted text-muted-foreground"
                                   )}>
                                     <template.icon className="h-4 w-4 md:h-5 md:w-5" />
                                   </div>
                                   <span className={cn(
                                     "text-[10px] md:text-sm font-medium",
-                                    environmentPrompt === template.prompt ? "text-indigo-900 dark:text-indigo-100" : "text-current"
+                                    environmentPrompt === template.prompt ? "text-[#B94E30] dark:text-[#E8C9B0]" : "text-current"
                                   )}>
                                     {template.label}
                                   </span>
@@ -2280,18 +2280,18 @@ export default function MockupGenerator() {
                           {/* Section 2: Custom Scene Textarea */}
                           <div className="flex-1 flex flex-col min-h-0">
                             <h3 className="text-sm font-bold text-foreground/80 mb-3 flex items-center gap-2">
-                              <Wand2 className="h-4 w-4 text-indigo-600" />
+                              <Wand2 className="h-4 w-4 text-primary" />
                               Custom Scene
                             </h3>
                             <div className="relative flex-1 max-h-[200px] mb-2 group">
-                              <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
+                              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#B94E30] to-[#E3B436] rounded-xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
                               <Textarea
                                 value={environmentPrompt}
                                 onChange={(e) => setEnvironmentPrompt(e.target.value)}
                                 placeholder="Describe your perfect scene (e.g., Walking down a busy Tokyo street at night...)"
                                 className={cn(
                                   "relative w-full h-full min-h-[120px] p-4 rounded-xl border-2 resize-none transition-colors text-sm md:text-base bg-background/95 backdrop-blur-sm",
-                                  "focus-visible:ring-0 focus-visible:border-indigo-600 placeholder:text-muted-foreground/50"
+                                  "focus-visible:ring-0 focus-visible:border-primary placeholder:text-muted-foreground/50"
                                 )}
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter" && !e.shiftKey) {
@@ -2328,7 +2328,7 @@ export default function MockupGenerator() {
                                     className={cn(
                                         "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                         environmentPrompt.length > 5 
-                                            ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
+                                            ? "bg-primary hover:bg-[#8B3A24] text-white shadow-sm hover:shadow-[#B94E30]/20 hover:-translate-y-0.5" 
                                             : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                     )}
                                     data-testid="button-next"
@@ -2370,8 +2370,8 @@ export default function MockupGenerator() {
                                   className={cn(
                                     "group relative bg-card rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 hover:shadow-lg active:scale-[0.98]",
                                     isSelected 
-                                      ? "border-indigo-600 ring-2 sm:ring-4 ring-indigo-600/20 shadow-lg" 
-                                      : "border-border hover:border-indigo-600/50"
+                                      ? "border-primary ring-2 sm:ring-4 ring-[#B94E30]/20 shadow-lg" 
+                                      : "border-border hover:border-[#B94E30]/50"
                                   )}
                                 >
                                   <div className="p-3 sm:p-4 flex flex-col">
@@ -2382,7 +2382,7 @@ export default function MockupGenerator() {
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                                       />
                                       {isSelected && (
-                                        <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-indigo-600 rounded-full p-1 sm:p-1.5 shadow-lg">
+                                        <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-primary rounded-full p-1 sm:p-1.5 shadow-lg">
                                           <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
                                         </div>
                                       )}
@@ -2428,7 +2428,7 @@ export default function MockupGenerator() {
                                     className={cn(
                                         "gap-2 px-4 sm:px-6 transition-all min-h-[44px] h-11 sm:h-10 flex-1 sm:flex-none max-w-[200px] sm:max-w-none",
                                         selectedStyle
-                                            ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-indigo-500/20 hover:-translate-y-0.5" 
+                                            ? "bg-primary hover:bg-[#8B3A24] text-white shadow-sm hover:shadow-[#B94E30]/20 hover:-translate-y-0.5" 
                                             : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                                     )}
                                     data-testid="button-next"
@@ -2460,21 +2460,21 @@ export default function MockupGenerator() {
                               <h2 className="text-xl sm:text-3xl font-bold mb-2">Ready to Generate Photoshoot</h2>
                               <p className="text-sm text-muted-foreground mb-4 sm:mb-6">Review your batch configuration before generating</p>
                               
-                              <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full mb-4 sm:mb-6 border border-indigo-200 dark:border-indigo-800" data-testid="batch-summary-card">
+                              <div className="bg-gradient-to-br from-[#B94E30]/10 to-[#E3B436]/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full mb-4 sm:mb-6 border border-[#B94E30]/20 dark:border-[#B94E30]/80" data-testid="batch-summary-card">
                                 <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-2 sm:mb-4">
                                   <div className="flex items-center gap-1.5 sm:gap-2 bg-card rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 border border-border">
-                                    <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-600" />
-                                    <span className="text-lg sm:text-2xl font-bold text-indigo-600">{journey === "AOP" ? 1 : selectedColors.length}</span>
+                                    <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                                    <span className="text-lg sm:text-2xl font-bold text-primary">{journey === "AOP" ? 1 : selectedColors.length}</span>
                                     <span className="text-xs sm:text-sm text-muted-foreground">Colors</span>
                                   </div>
                                   <span className="text-lg sm:text-2xl font-bold text-muted-foreground">×</span>
                                   <div className="flex items-center gap-1.5 sm:gap-2 bg-card rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 border border-border">
-                                    <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600" />
-                                    <span className="text-lg sm:text-2xl font-bold text-purple-600">{selectedAngles.length || 1}</span>
+                                    <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-secondary" />
+                                    <span className="text-lg sm:text-2xl font-bold text-secondary">{selectedAngles.length || 1}</span>
                                     <span className="text-xs sm:text-sm text-muted-foreground">Angles</span>
                                   </div>
                                   <span className="text-lg sm:text-2xl font-bold text-muted-foreground">=</span>
-                                  <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-white">
+                                  <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-[#B94E30] to-[#E3B436] rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-white">
                                     <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                     <span className="text-lg sm:text-2xl font-bold">{Math.max(1, selectedAngles.length * (journey === "AOP" ? 1 : selectedColors.length))}</span>
                                     <span className="text-xs sm:text-sm">Mockups</span>
@@ -2532,7 +2532,7 @@ export default function MockupGenerator() {
 
                               <div className="bg-muted/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full mb-4 sm:mb-6 border border-border">
                                 <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                                  <Maximize2 className="h-4 w-4 text-indigo-600" />
+                                  <Maximize2 className="h-4 w-4 text-primary" />
                                   <span className="text-sm font-bold text-foreground">Output Quality</span>
                                 </div>
                                 <div className="grid grid-cols-1 gap-2 sm:gap-3">
@@ -2543,14 +2543,14 @@ export default function MockupGenerator() {
                                       className={cn(
                                         "relative flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 transition-all text-left min-h-[60px] active:scale-[0.99]",
                                         outputQuality === quality.id
-                                          ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20"
-                                          : "border-border hover:border-indigo-300"
+                                          ? "border-primary bg-[#B94E30]/10 dark:bg-[#B94E30]/20"
+                                          : "border-border hover:border-[#B94E30]/50"
                                       )}
                                       data-testid={`quality-option-${quality.id}`}
                                     >
                                       {outputQuality === quality.id && (
                                         <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
-                                          <CheckCircle2 className="h-5 w-5 text-indigo-600" />
+                                          <CheckCircle2 className="h-5 w-5 text-primary" />
                                         </div>
                                       )}
                                       <div className="flex-1">
@@ -2588,7 +2588,7 @@ export default function MockupGenerator() {
                                 <Button 
                                   size="lg" 
                                   onClick={handleGenerate}
-                                  className="flex-[2] h-12 sm:h-14 text-base sm:text-lg rounded-[12px] bg-gradient-to-r from-[#7C3AED] to-[#9333EA] hover:brightness-110 shadow-lg shadow-purple-600/20 transition-all hover:-translate-y-[1px] min-h-[48px]"
+                                  className="flex-[2] h-12 sm:h-14 text-base sm:text-lg rounded-[12px] bg-gradient-to-r from-[#B94E30] to-[#8B3A24] hover:brightness-110 shadow-lg shadow-[#B94E30]/20 transition-all hover:-translate-y-[1px] min-h-[48px]"
                                   data-testid="button-generate-all"
                                 >
                                   <Wand2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -2599,16 +2599,16 @@ export default function MockupGenerator() {
                           ) : isGenerating && generatedMockups.length === 0 ? (
                             <div className="flex-1 flex flex-col items-center justify-center text-center max-w-[400px] mx-auto">
                               <div className="relative mb-8 w-full">
-                                <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full animate-pulse" />
-                                <RefreshCw className="h-16 w-16 text-indigo-600 animate-spin relative z-10 mx-auto" />
+                                <div className="absolute inset-0 bg-[#B94E30]/20 blur-2xl rounded-full animate-pulse" />
+                                <RefreshCw className="h-16 w-16 text-primary animate-spin relative z-10 mx-auto" />
                               </div>
                               
                               <h2 className="text-2xl font-bold mb-2">Generating Photoshoot...</h2>
-                              <p className="text-indigo-600 font-medium mb-4">{generationStage}</p>
+                              <p className="text-primary font-medium mb-4">{generationStage}</p>
                               
                               <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden mb-2">
                                 <motion.div 
-                                  className="bg-indigo-600 h-full rounded-full"
+                                  className="bg-primary h-full rounded-full"
                                   initial={{ width: 0 }}
                                   animate={{ width: `${generationProgress}%` }}
                                 />
@@ -2644,7 +2644,7 @@ export default function MockupGenerator() {
                                       }
                                     </h2>
                                     {isGenerating && (
-                                      <RefreshCw className="h-5 w-5 text-indigo-600 animate-spin" />
+                                      <RefreshCw className="h-5 w-5 text-primary animate-spin" />
                                     )}
                                   </div>
                                   <p className="text-sm text-muted-foreground">{selectedProductType || "T-Shirt"} - {BRAND_STYLES.find(s => s.id === selectedStyle)?.name || "Minimal"}</p>
@@ -2665,7 +2665,7 @@ export default function MockupGenerator() {
                                     Regenerate
                                   </Button>
                                   <Button 
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white flex-1 sm:flex-none"
+                                    className="bg-primary hover:bg-[#8B3A24] text-white flex-1 sm:flex-none"
                                     onClick={downloadAllAsZip}
                                     disabled={isGenerating || generatedMockups.length === 0 || isDownloadingZip}
                                     data-testid="button-download-zip"
@@ -2690,7 +2690,7 @@ export default function MockupGenerator() {
                                 <div className="bg-muted/30 border border-border rounded-xl p-4 mb-4 shrink-0" data-testid="batch-progress-tracker">
                                   <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
-                                      <Package className="h-4 w-4 text-indigo-600" />
+                                      <Package className="h-4 w-4 text-primary" />
                                       <span className="text-sm font-medium text-foreground">Batch Progress</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-xs">
@@ -2720,7 +2720,7 @@ export default function MockupGenerator() {
                                         className={cn(
                                           "relative rounded-lg border p-2 text-center text-xs transition-all",
                                           job.status === 'completed' && "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800",
-                                          job.status === 'processing' && "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-700 animate-pulse",
+                                          job.status === 'processing' && "bg-[#B94E30]/10 dark:bg-[#B94E30]/20 border-[#B94E30]/30 dark:border-[#B94E30]/70 animate-pulse",
                                           job.status === 'pending' && "bg-muted/50 border-border",
                                           job.status === 'failed' && "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
                                         )}
@@ -2728,7 +2728,7 @@ export default function MockupGenerator() {
                                       >
                                         <div className="flex items-center justify-center gap-1.5 mb-1">
                                           {job.status === 'completed' && <CheckCircle2 className="h-3 w-3 text-green-600" />}
-                                          {job.status === 'processing' && <Loader2 className="h-3 w-3 text-indigo-600 animate-spin" />}
+                                          {job.status === 'processing' && <Loader2 className="h-3 w-3 text-primary animate-spin" />}
                                           {job.status === 'pending' && <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30" />}
                                           {job.status === 'failed' && <AlertCircle className="h-3 w-3 text-red-600" />}
                                         </div>
@@ -2737,7 +2737,7 @@ export default function MockupGenerator() {
                                         {job.status === 'failed' && (
                                           <button
                                             onClick={() => retryFailedJob(job.id)}
-                                            className="mt-1 text-[10px] text-indigo-600 hover:underline flex items-center justify-center gap-0.5"
+                                            className="mt-1 text-[10px] text-primary hover:underline flex items-center justify-center gap-0.5"
                                             data-testid={`retry-job-${job.id}`}
                                           >
                                             <RotateCw className="h-2.5 w-2.5" />
@@ -2779,7 +2779,7 @@ export default function MockupGenerator() {
                                   <CollapsibleTrigger asChild>
                                     <button className="flex items-center justify-between w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors" data-testid="button-toggle-summary">
                                       <div className="flex items-center gap-2">
-                                        <Info className="h-4 w-4 text-indigo-600" />
+                                        <Info className="h-4 w-4 text-primary" />
                                         <span className="text-sm font-medium text-foreground">Generation Summary</span>
                                       </div>
                                       <ChevronDown className={cn(
@@ -2794,7 +2794,7 @@ export default function MockupGenerator() {
                                         {/* Product */}
                                         <div className="bg-card rounded-lg p-3 border border-border" data-testid="summary-product">
                                           <div className="flex items-center gap-1.5 mb-1">
-                                            <Shirt className="h-3 w-3 text-indigo-600" />
+                                            <Shirt className="h-3 w-3 text-primary" />
                                             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Product</span>
                                           </div>
                                           <p className="text-xs font-medium text-foreground truncate">{selectedProductType || "T-Shirt"}</p>
@@ -2803,7 +2803,7 @@ export default function MockupGenerator() {
                                         {/* Colors */}
                                         <div className="bg-card rounded-lg p-3 border border-border" data-testid="summary-colors">
                                           <div className="flex items-center gap-1.5 mb-1">
-                                            <Palette className="h-3 w-3 text-indigo-600" />
+                                            <Palette className="h-3 w-3 text-primary" />
                                             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Colors</span>
                                           </div>
                                           <p className="text-xs font-medium text-foreground truncate">
@@ -2816,7 +2816,7 @@ export default function MockupGenerator() {
                                         {/* Sizes */}
                                         <div className="bg-card rounded-lg p-3 border border-border" data-testid="summary-sizes">
                                           <div className="flex items-center gap-1.5 mb-1">
-                                            <Ruler className="h-3 w-3 text-indigo-600" />
+                                            <Ruler className="h-3 w-3 text-primary" />
                                             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Sizes</span>
                                           </div>
                                           <p className="text-xs font-medium text-foreground truncate">
@@ -2827,7 +2827,7 @@ export default function MockupGenerator() {
                                         {/* Model */}
                                         <div className="bg-card rounded-lg p-3 border border-border" data-testid="summary-model">
                                           <div className="flex items-center gap-1.5 mb-1">
-                                            <User className="h-3 w-3 text-indigo-600" />
+                                            <User className="h-3 w-3 text-primary" />
                                             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Model</span>
                                           </div>
                                           <p className="text-xs font-medium text-foreground truncate">
@@ -2840,7 +2840,7 @@ export default function MockupGenerator() {
                                         {/* Brand Style */}
                                         <div className="bg-card rounded-lg p-3 border border-border" data-testid="summary-brand-style">
                                           <div className="flex items-center gap-1.5 mb-1">
-                                            <Sparkles className="h-3 w-3 text-indigo-600" />
+                                            <Sparkles className="h-3 w-3 text-primary" />
                                             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Style</span>
                                           </div>
                                           <p className="text-xs font-medium text-foreground truncate">
@@ -2851,7 +2851,7 @@ export default function MockupGenerator() {
                                         {/* Angles */}
                                         <div className="bg-card rounded-lg p-3 border border-border" data-testid="summary-angles">
                                           <div className="flex items-center gap-1.5 mb-1">
-                                            <Camera className="h-3 w-3 text-indigo-600" />
+                                            <Camera className="h-3 w-3 text-primary" />
                                             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Angles</span>
                                           </div>
                                           <p className="text-xs font-medium text-foreground truncate">
@@ -2874,12 +2874,12 @@ export default function MockupGenerator() {
                               {isGenerating && (
                                 <div className="mb-4 shrink-0">
                                   <div className="flex items-center justify-between mb-2">
-                                    <p className="text-sm text-indigo-600 font-medium">{generationStage}</p>
+                                    <p className="text-sm text-primary font-medium">{generationStage}</p>
                                     <p className="text-xs text-muted-foreground">{generationProgress}%</p>
                                   </div>
                                   <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                                     <motion.div 
-                                      className="bg-indigo-600 h-full rounded-full"
+                                      className="bg-primary h-full rounded-full"
                                       initial={{ width: 0 }}
                                       animate={{ width: `${generationProgress}%` }}
                                     />
@@ -2961,7 +2961,7 @@ export default function MockupGenerator() {
                                           {angleName}
                                         </Badge>
                                         <div className="absolute top-2 right-2 flex flex-col gap-1">
-                                          <Badge className="bg-indigo-600/80 backdrop-blur-md text-[10px] border-0 text-white font-semibold px-2 py-0.5">
+                                          <Badge className="bg-primary/80 backdrop-blur-md text-[10px] border-0 text-white font-semibold px-2 py-0.5">
                                             {mockup.size}
                                           </Badge>
                                           <Badge className="bg-emerald-600/80 backdrop-blur-md text-[10px] border-0 text-white font-normal px-2 py-0.5">
@@ -2982,8 +2982,8 @@ export default function MockupGenerator() {
                                     >
                                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                                         <div className="relative">
-                                          <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full animate-pulse" />
-                                          <Loader2 className="h-8 w-8 text-indigo-600 animate-spin relative z-10" />
+                                          <div className="absolute inset-0 bg-[#B94E30]/20 blur-xl rounded-full animate-pulse" />
+                                          <Loader2 className="h-8 w-8 text-primary animate-spin relative z-10" />
                                         </div>
                                         <p className="text-xs text-muted-foreground">Generating...</p>
                                       </div>
@@ -3006,7 +3006,7 @@ export default function MockupGenerator() {
                                     Start Over
                                   </Button>
                                   <Button 
-                                    className="flex-[2] h-12 min-h-[48px] bg-indigo-600 hover:bg-indigo-700 text-white"
+                                    className="flex-[2] h-12 min-h-[48px] bg-primary hover:bg-[#8B3A24] text-white"
                                     onClick={downloadAllAsZip}
                                     disabled={isGenerating || generatedMockups.length === 0 || isDownloadingZip}
                                     data-testid="button-download-all-mobile"

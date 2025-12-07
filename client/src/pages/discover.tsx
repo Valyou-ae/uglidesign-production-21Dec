@@ -189,17 +189,17 @@ export default function Discover() {
             <motion.div 
               animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
               transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-[100px] -left-[100px] w-[400px] h-[400px] bg-[#7C3AED] rounded-full opacity-20 blur-[100px]" 
+              className="absolute -top-[100px] -left-[100px] w-[400px] h-[400px] bg-[#B94E30] rounded-full opacity-20 blur-[100px]" 
             />
             <motion.div 
               animate={{ y: [0, 30, 0], x: [0, -20, 0] }}
               transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-[#EC4899] rounded-full opacity-15 blur-[80px]" 
+              className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-[#E3B436] rounded-full opacity-15 blur-[80px]" 
             />
             <motion.div 
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-1/2 right-1/4 w-[200px] h-[200px] bg-[#3B82F6] rounded-full opacity-10 blur-[60px]" 
+              className="absolute top-1/2 right-1/4 w-[200px] h-[200px] bg-[#664D3F] rounded-full opacity-10 blur-[60px]" 
             />
             
             {/* Grid Pattern */}
@@ -209,11 +209,11 @@ export default function Discover() {
           {/* Hero Content */}
           <div className="relative z-10 h-full flex flex-col justify-center px-12 max-w-[1400px] mx-auto">
             <div className="flex items-center gap-4 mb-3">
-              <Compass className="h-8 w-8 text-transparent bg-clip-text bg-gradient-to-br from-[#7C3AED] to-[#EC4899]" stroke="url(#compass-gradient)" />
+              <Compass className="h-8 w-8 text-transparent bg-clip-text bg-gradient-to-br from-[#B94E30] to-[#E3B436]" stroke="url(#compass-gradient)" />
               <svg width="0" height="0">
                 <linearGradient id="compass-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop stopColor="#7C3AED" offset="0%" />
-                  <stop stopColor="#EC4899" offset="100%" />
+                  <stop stopColor="#B94E30" offset="0%" />
+                  <stop stopColor="#E3B436" offset="100%" />
                 </linearGradient>
               </svg>
               <h1 className="text-[40px] font-bold text-[#FAFAFA]">Discover</h1>
@@ -247,7 +247,7 @@ export default function Discover() {
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-all backdrop-blur-md border",
                     activeFilter === filter.label
-                      ? "bg-gradient-to-r from-[#7C3AED] to-[#EC4899] border-transparent text-white shadow-lg shadow-purple-500/20"
+                      ? "bg-gradient-to-r from-[#B94E30] to-[#8B3A24] border-transparent text-white shadow-lg shadow-[#B94E30]/20"
                       : "bg-white/10 border-white/10 text-[#A1A1AA] hover:bg-white/20 hover:text-[#FAFAFA]"
                   )}
                 >
@@ -277,7 +277,7 @@ export default function Discover() {
         <div className="px-6 md:px-12 py-8 md:py-12 max-w-[1400px] mx-auto w-full">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-7 gap-4 sm:gap-0">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-6 w-6 text-[#EC4899]" />
+              <TrendingUp className="h-6 w-6 text-[#B94E30]" />
               <h2 className="text-2xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Trending Now</h2>
               <div className="flex items-center gap-2 px-2.5 py-1 bg-[#16A34A]/10 rounded-full ml-1">
                 <span className="relative flex h-2 w-2">
@@ -293,7 +293,7 @@ export default function Discover() {
             {trendingItems.map((item, i) => (
               <div 
                 key={i}
-                className="group bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-[20px] overflow-hidden cursor-pointer hover:border-[#7C3AED]/50 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(124,58,237,0.15)] transition-all duration-300"
+                className="group bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-[20px] overflow-hidden cursor-pointer hover:border-[#B94E30]/50 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(185,78,48,0.15)] transition-all duration-300"
               >
                 {/* Card Image */}
                 <div className="aspect-square relative overflow-hidden">
@@ -305,7 +305,7 @@ export default function Discover() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
                   
                   {/* Rank Badge */}
-                  <div className="absolute top-3 left-3 w-8 h-8 bg-gradient-to-br from-[#7C3AED] to-[#EC4899] rounded-[10px] flex items-center justify-center text-sm font-bold text-white shadow-lg">
+                  <div className="absolute top-3 left-3 w-8 h-8 bg-gradient-to-br from-[#B94E30] to-[#8B3A24] rounded-[10px] flex items-center justify-center text-sm font-bold text-white shadow-lg">
                     #{item.rank}
                   </div>
 
@@ -315,7 +315,7 @@ export default function Discover() {
                   </div>
 
                   {/* Save Button (Hover) */}
-                  <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-md p-2 rounded-[10px] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#7C3AED] text-white">
+                  <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-md p-2 rounded-[10px] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#B94E30] text-white">
                     <Bookmark className="h-5 w-5" />
                   </div>
                 </div>
@@ -325,9 +325,9 @@ export default function Discover() {
                   <h3 className="text-[17px] font-semibold text-[#18181B] dark:text-[#FAFAFA] truncate">{item.title}</h3>
                   
                   <div className="flex items-center gap-2 mt-2.5">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500" />
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#B94E30] to-[#E3B436]" />
                     <span className="text-[13px] text-[#71717A]">by @{item.creator}</span>
-                    {item.verified && <BadgeCheck className="h-3.5 w-3.5 text-[#3B82F6]" />}
+                    {item.verified && <BadgeCheck className="h-3.5 w-3.5 text-[#B94E30]" />}
                   </div>
 
                   <div className="flex gap-4 mt-3.5">

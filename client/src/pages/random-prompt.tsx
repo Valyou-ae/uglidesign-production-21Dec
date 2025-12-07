@@ -26,12 +26,12 @@ export default function RandomPrompt() {
             <h2 className="text-xl font-semibold mb-6">Feeling stuck?</h2>
             
             <div className="bg-background border border-border p-6 rounded-xl shadow-sm max-w-lg w-full mb-8 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-pink-500"></div>
+              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#B94E30] to-[#8B3A24]"></div>
               <p className="text-lg font-medium leading-relaxed">
                 "A futuristic city floating in the clouds, art deco style, golden hour lighting, cinematic composition, 8k resolution."
               </p>
               <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
-                <Sparkles className="h-3 w-3 text-purple-500" />
+                <Sparkles className="h-3 w-3 text-[#B94E30]" />
                 <span>AI Generated</span>
               </div>
             </div>

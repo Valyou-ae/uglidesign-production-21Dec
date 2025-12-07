@@ -85,7 +85,7 @@ export default function AffiliateProgram() {
         amount,
         bankName,
         accountNumber,
-        accountName,
+        accountHolderName: accountName,
         routingNumber,
       });
       
@@ -210,7 +210,7 @@ export default function AffiliateProgram() {
           </div>
 
           {/* Hero Card */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 p-6 md:p-12 text-white shadow-xl">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#B94E30] to-[#8B3A24] p-6 md:p-12 text-white shadow-xl">
             <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
             <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
             
@@ -220,7 +220,7 @@ export default function AffiliateProgram() {
                 <h2 className="text-3xl md:text-4xl font-bold leading-tight">
                   Earn 20% Commission on All Referrals
                 </h2>
-                <p className="text-indigo-100 text-lg">
+                <p className="text-white/90 text-lg">
                   Join our affiliate program and start earning recurring revenue. Share your unique link and get paid when people subscribe.
                 </p>
                 <div className="flex flex-wrap gap-4 pt-2">
@@ -242,7 +242,7 @@ export default function AffiliateProgram() {
               <Card className="w-full md:max-w-sm bg-white/10 border-white/20 backdrop-blur-md shadow-2xl text-white">
                 <CardHeader>
                   <CardTitle className="text-lg font-medium text-white">Your Affiliate Link</CardTitle>
-                  <CardDescription className="text-indigo-200">Share this link to start earning</CardDescription>
+                  <CardDescription className="text-white/80">Share this link to start earning</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex gap-2">
@@ -252,9 +252,9 @@ export default function AffiliateProgram() {
                         value={affiliateLink} 
                         className="bg-black/20 border-white/10 text-white placeholder:text-white/50 pr-10 focus-visible:ring-offset-0 focus-visible:ring-white/30"
                       />
-                      <Globe className="absolute right-3 top-3 h-4 w-4 text-indigo-200" />
+                      <Globe className="absolute right-3 top-3 h-4 w-4 text-white/80" />
                     </div>
-                    <Button onClick={handleCopy} size="icon" className="bg-white text-indigo-600 hover:bg-white/90 shrink-0">
+                    <Button onClick={handleCopy} size="icon" className="bg-white text-[#B94E30] hover:bg-white/90 shrink-0">
                       {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
@@ -344,7 +344,7 @@ export default function AffiliateProgram() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="flex gap-4">
-                        <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400 font-bold">1</div>
+                        <div className="h-10 w-10 rounded-full bg-[#B94E30]/10 dark:bg-[#B94E30]/20 flex items-center justify-center shrink-0 text-[#B94E30] font-bold">1</div>
                         <div>
                           <h3 className="font-semibold">Share your link</h3>
                           <p className="text-sm text-muted-foreground mt-1">
@@ -353,7 +353,7 @@ export default function AffiliateProgram() {
                         </div>
                       </div>
                       <div className="flex gap-4">
-                        <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0 text-purple-600 dark:text-purple-400 font-bold">2</div>
+                        <div className="h-10 w-10 rounded-full bg-[#E3B436]/10 dark:bg-[#E3B436]/20 flex items-center justify-center shrink-0 text-[#E3B436] font-bold">2</div>
                         <div>
                           <h3 className="font-semibold">They subscribe</h3>
                           <p className="text-sm text-muted-foreground mt-1">
@@ -389,7 +389,7 @@ export default function AffiliateProgram() {
                         ].map((item, i) => (
                           <div key={i} className="flex items-center justify-between py-2 border-b last:border-0 border-border">
                             <div className="flex items-center gap-3">
-                              <div className={`h-2 w-2 rounded-full ${item.amount ? 'bg-green-500' : 'bg-blue-500'}`} />
+                              <div className={`h-2 w-2 rounded-full ${item.amount ? 'bg-green-500' : 'bg-[#B94E30]'}`} />
                               <div>
                                 <p className="text-sm font-medium">{item.action}</p>
                                 <p className="text-xs text-muted-foreground">{item.user} • {item.date}</p>

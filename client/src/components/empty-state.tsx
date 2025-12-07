@@ -36,8 +36,8 @@ const EMPTY_STATE_CONFIGS = {
     description: "Upload your design and create stunning product mockups for your store or portfolio.",
     actionLabel: "Create Mockup",
     actionHref: "/mockup",
-    gradient: "from-blue-500/10 to-blue-700/10",
-    iconBg: "bg-blue-500/10 text-blue-500",
+    gradient: "from-[#664D3F]/10 to-[#4A3830]/10",
+    iconBg: "bg-[#664D3F]/10 text-[#664D3F]",
   },
   backgrounds: {
     icon: Scissors,
@@ -154,7 +154,8 @@ export function QuickStartCard({
             "h-12 w-12 rounded-xl flex items-center justify-center mb-4",
             gradient.includes("B94E30") ? "bg-[#B94E30]/10 text-[#B94E30]" :
             gradient.includes("E3B436") ? "bg-[#E3B436]/10 text-[#B99A2C]" :
-            "bg-blue-500/10 text-blue-500"
+            gradient.includes("664D3F") ? "bg-[#664D3F]/10 text-[#664D3F]" :
+            "bg-[#B94E30]/10 text-[#B94E30]"
           )}>
             <Icon className="h-6 w-6" />
           </div>

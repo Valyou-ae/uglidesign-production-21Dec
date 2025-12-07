@@ -51,8 +51,8 @@ export default function Login() {
       <div className="hidden lg:flex w-1/2 relative bg-black items-center justify-center overflow-hidden">
         {/* Background Gradients */}
         <div className="absolute top-0 left-0 w-full h-full bg-[#0A0A0B]">
-          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-purple-600/20 rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-pink-600/20 rounded-full blur-[120px]" />
+          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-[#B94E30]/20 rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-[#E3B436]/20 rounded-full blur-[120px]" />
         </div>
         
         {/* Content */}
@@ -66,7 +66,7 @@ export default function Login() {
             
             <h1 className="text-5xl font-bold text-white mb-6 leading-tight">
               Where Ideas <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#B94E30] to-[#E3B436]">
                 Come to Life
               </span>
             </h1>
@@ -107,8 +107,8 @@ export default function Login() {
 
         {/* Abstract floating elements */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 right-1/4 w-24 h-24 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl opacity-20 blur-2xl animate-float" />
-          <div className="absolute bottom-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full opacity-20 blur-3xl animate-float-delayed" />
+          <div className="absolute top-1/4 right-1/4 w-24 h-24 bg-gradient-to-br from-[#E3B436] to-[#C99C2A] rounded-2xl opacity-20 blur-2xl animate-float" />
+          <div className="absolute bottom-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-[#B94E30] to-[#8B3A24] rounded-full opacity-20 blur-3xl animate-float-delayed" />
         </div>
       </div>
 
@@ -236,7 +236,7 @@ export default function Login() {
               <Button 
                 type="submit" 
                 disabled={isLoggingIn} 
-                className="h-11 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#9333EA] hover:brightness-110 text-white font-bold shadow-lg shadow-purple-600/20 transition-all hover:-translate-y-[1px]"
+                className="h-11 rounded-xl bg-gradient-to-r from-[#B94E30] to-[#8B3A24] hover:brightness-110 text-white font-bold shadow-lg shadow-[#B94E30]/20 transition-all hover:-translate-y-[1px]"
                 data-testid="button-login"
               >
                 {isLoggingIn ? (

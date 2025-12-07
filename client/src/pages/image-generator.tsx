@@ -128,9 +128,9 @@ type Agent = {
 };
 
 const AGENTS: Agent[] = [
-  { id: 1, name: "Text Sentinel", status: "idle", message: "Analyzing prompt...", icon: Bot, activeColor: "#3B82F6" },
-  { id: 2, name: "Style Architect", status: "idle", message: "Enhancing style...", icon: Sparkles, activeColor: "#8B5CF6" },
-  { id: 3, name: "Visual Synthesizer", status: "idle", message: "Generating image...", icon: Palette, activeColor: "#EC4899" },
+  { id: 1, name: "Text Sentinel", status: "idle", message: "Analyzing prompt...", icon: Bot, activeColor: "#B94E30" },
+  { id: 2, name: "Style Architect", status: "idle", message: "Enhancing style...", icon: Sparkles, activeColor: "#E3B436" },
+  { id: 3, name: "Visual Synthesizer", status: "idle", message: "Generating image...", icon: Palette, activeColor: "#664D3F" },
 ];
 
 const STYLE_PRESETS = [
@@ -415,7 +415,7 @@ export default function ImageGenerator() {
     toast({
       title: "Listening...",
       description: "Speak now to add to your prompt.",
-      className: "bg-blue-50 border-blue-200 text-blue-800"
+      className: "bg-[#B94E30]/10 border-[#B94E30]/30 text-[#B94E30]"
     });
 
     // Simulate voice recognition for consistent mockup experience
@@ -574,7 +574,7 @@ export default function ImageGenerator() {
         toast({
           title: "Image Generated!",
           description: `Created ${imageCount} image${imageCount > 1 ? "s" : ""}.`,
-          className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
+          className: "bg-[#B94E30]/10 border-[#B94E30]/30 text-[#B94E30] dark:bg-[#B94E30]/20 dark:border-[#B94E30]/50 dark:text-[#E3B436]",
         });
 
         setTimeout(() => {
@@ -653,7 +653,7 @@ export default function ImageGenerator() {
     toast({
       title: "Image Generated!",
       description: "Your creation is ready.",
-      className: "bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-900/20 dark:border-purple-900/50 dark:text-purple-400",
+      className: "bg-[#B94E30]/10 border-[#B94E30]/30 text-[#B94E30] dark:bg-[#B94E30]/20 dark:border-[#B94E30]/50 dark:text-[#E3B436]",
     });
 
     // Reset agents after delay
@@ -789,7 +789,7 @@ export default function ImageGenerator() {
                         </Button>
                         <div className="w-px bg-border/50 my-2" />
                         <Button variant="ghost" className="flex flex-col items-center justify-center h-20 w-24 gap-2 text-xs hover:bg-muted hover:text-foreground border border-transparent hover:border-border/50 rounded-xl transition-all">
-                          <div className="h-8 w-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
+                          <div className="h-8 w-8 rounded-full bg-[#E3B436]/10 flex items-center justify-center text-[#E3B436]">
                             <RefreshCcw className="h-4 w-4" />
                           </div>
                           Remix
@@ -850,7 +850,7 @@ export default function ImageGenerator() {
                           onClick={handleGenerate}
                           disabled={status === "generating"}
                           size="icon"
-                          className="h-9 w-9 rounded-lg bg-gradient-to-r from-[#7C3AED] to-[#9333EA] hover:brightness-110 text-white shadow-sm transition-all"
+                          className="h-9 w-9 rounded-lg bg-gradient-to-r from-[#B94E30] to-[#8B3A24] hover:brightness-110 text-white shadow-sm transition-all"
                         >
                           {status === "generating" ? (
                             <RefreshCw className="h-4 w-4 animate-spin" />
@@ -1099,7 +1099,7 @@ export default function ImageGenerator() {
 
           {filteredGenerations.length === 0 && status !== "generating" ? (
             <div className="h-full flex flex-col items-center justify-center text-center animate-fade-in max-w-xl mx-auto mt-[-100px]">
-              <div className="w-40 h-40 bg-gradient-to-tr from-purple-500 to-pink-500 rounded-full blur-[80px] opacity-20 mb-8" />
+              <div className="w-40 h-40 bg-gradient-to-tr from-[#B94E30] to-[#E3B436] rounded-full blur-[80px] opacity-20 mb-8" />
               <h2 className="text-3xl font-bold mb-3 text-foreground">Start Creating</h2>
               <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
                 Enter a prompt above to unleash the power of our 5-agent AI system.
@@ -1122,7 +1122,7 @@ export default function ImageGenerator() {
               {/* Loading State Card */}
               {status === "generating" && (
                 <div className="break-inside-avoid mb-6 relative group rounded-xl overflow-hidden bg-card border border-border shadow-xl animate-in fade-in zoom-in duration-300">
-                  <div className="w-full aspect-square bg-gradient-to-br from-[#7C3AED] via-purple-600 to-[#9333EA] animate-pulse flex flex-col items-center justify-center relative overflow-hidden">
+                  <div className="w-full aspect-square bg-gradient-to-br from-[#B94E30] via-[#8B3A24] to-[#664D3F] animate-pulse flex flex-col items-center justify-center relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTAgMzhoNDB2MmgtNDB6Ii8+PHBhdGggZD0iTTAgMGg0MHYyaC00MHoiLz48cGF0aCBkPSJNMCAwdjQwaDJWMHoiLz48cGF0aCBkPSJNMzggMHY0MGgyVjB6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
                     <Sparkles className="h-12 w-12 text-white animate-spin-slow duration-[3s]" />
                     <p className="text-white/90 font-medium mt-4 text-sm animate-pulse">Generating masterpiece...</p>
