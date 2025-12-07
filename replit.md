@@ -231,3 +231,30 @@ All products include:
 - Replicate API integration (bria/remove-background)
 - Supports transparent, white, solid color, blur, and custom background options
 - Base64 image processing pipeline
+
+# Recent Changes
+
+## December 7, 2024 - Database Integration Audit
+
+**Fixed Issues**
+- Fixed broken href="#" links in login, forgot-password, and landing pages (now point to /help)
+- Connected TopBar to display real username from auth context (dynamic time-of-day greeting)
+- Connected BentoGrid stats to real database counts via /api/user/stats endpoint
+- Updated Billing page to use real usage stats with demo mode for payment/subscription data
+- Removed all MOCK_ITEMS from My Creations - now exclusively displays database images
+
+**Schema Updates**
+- Added `generationType` field to generated_images table to distinguish between "image", "mockup", and "bg-removed" types
+- Default value ensures backward compatibility with existing records
+
+**New API Endpoints**
+- `GET /api/user/stats` - Returns imageCount, mockupCount, bgRemovedCount for authenticated user
+
+**Storage Interface Updates**
+- Added `getUserStats(userId)` method to IStorage interface
+- Implemented in DatabaseStorage with efficient COUNT queries by generationType
+
+**Next Steps**
+- Ensure all image creation flows populate generationType field for accurate tracking
+- Integrate payment system (Stripe) for real billing data
+- Add /help page or redirect
