@@ -30,14 +30,28 @@ export async function registerRoutes(
     return req.user?.claims?.sub;
   };
 
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
+  app.get("/api/auth/user", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json(user);
+      res.json({ 
+        user: {
+          id: user.id, 
+          username: user.username,
+          email: user.email,
+          displayName: user.displayName,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          bio: user.bio,
+          profileImageUrl: user.profileImageUrl,
+          socialLinks: user.socialLinks || [],
+          affiliateCode: user.affiliateCode,
+          createdAt: user.createdAt
+        }
+      });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });

@@ -12,7 +12,8 @@ async function fetchUser() {
     throw new Error("Failed to fetch user");
   }
   
-  return response.json();
+  const data = await response.json();
+  return data.user;
 }
 
 export function useAuth() {

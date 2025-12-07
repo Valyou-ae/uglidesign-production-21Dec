@@ -20,8 +20,8 @@ Preferred communication style: Simple, everyday language.
 
 -   **Server Framework**: Express.js with TypeScript, middleware-based request handling, and custom logging.
 -   **Database Layer**: PostgreSQL with Drizzle ORM for type-safe queries and schema-first migrations.
--   **Session Management**: `express-session` with `connect-pg-simple` for PostgreSQL session store, 30-day expiration, HttpOnly cookies with SameSite=lax.
--   **Authentication Strategy**: Username/email + password with bcrypt hashing, session-based, and middleware-based route protection.
+-   **Session Management**: `express-session` with `connect-pg-simple` for PostgreSQL session store, 7-day expiration, HttpOnly cookies.
+-   **Authentication Strategy**: Replit Auth (OpenID Connect) supporting Google, GitHub, Apple, and email sign-in. Uses passport.js with automatic token refresh. Login redirects to `/api/login`, callback at `/api/callback`, logout at `/api/logout`.
 -   **Data Models**: Users, Generated Images, Affiliate Commissions, and Withdrawal Requests.
 -   **Storage Pattern**: Repository pattern via `IStorage` interface with `DatabaseStorage` implementation.
 
