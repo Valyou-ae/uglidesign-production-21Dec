@@ -8,7 +8,6 @@ import {
   Folder, 
   Star, 
   HelpCircle,
-  ChevronRight,
   Sun,
   Moon,
   Compass
@@ -266,7 +265,7 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
         {collapsed && (
           <Link href="/login">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#B94E30] to-[#E3B436] flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-lg">
-              <ChevronRight className="h-5 w-5 text-white" />
+              <span className="text-sm font-bold text-white">Go</span>
             </div>
           </Link>
         )}
