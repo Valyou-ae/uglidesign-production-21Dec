@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { 
   TrendingUp, 
-  Bookmark, 
   BadgeCheck, 
   Eye, 
   Heart, 
@@ -97,15 +96,7 @@ function LazyMasonryCard({ item, index }: { item: InspirationItem; index: number
             {item.category}
           </div>
 
-          <div className="absolute top-3 right-3 flex gap-2">
-            <div className="bg-black/40 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-medium text-white/80">
-              {item.aspectRatio}
-            </div>
-            <div className="bg-white/20 backdrop-blur-md p-2 rounded-[10px] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#B94E30] text-white">
-              <Bookmark className="h-4 w-4" />
-            </div>
-          </div>
-
+          
           <div className="absolute bottom-0 left-0 right-0 p-4">
             <h3 className="text-base font-semibold text-white truncate drop-shadow-lg">{item.title}</h3>
             <div className="flex items-center gap-2 mt-1.5">
