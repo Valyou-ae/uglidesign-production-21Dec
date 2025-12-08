@@ -33,7 +33,6 @@ export function useAuth() {
   };
 
   const logout = async () => {
-    queryClient.clear();
     try {
       await fetch("/api/auth/logout", { 
         method: "POST",
@@ -42,6 +41,7 @@ export function useAuth() {
     } catch (error) {
       console.error("Logout error:", error);
     }
+    // Redirect first - the page reload will naturally clear the cache
     window.location.href = "/";
   };
 
