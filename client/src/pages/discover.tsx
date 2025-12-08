@@ -1,15 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { 
-  Compass, 
-  Search, 
-  SlidersHorizontal, 
-  Sparkles, 
-  Clock, 
-  Flame, 
-  Palette, 
-  Type, 
-  Lightbulb, 
-  Users, 
   TrendingUp, 
   Bookmark, 
   BadgeCheck, 
@@ -177,507 +167,602 @@ function LazyMasonryCard({ item, index }: { item: InspirationItem; index: number
 const allInspirations: InspirationItem[] = [
   {
     id: 1,
-    title: "Ethereal Glow",
-    image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop",
-    creator: "creativemind",
+    title: "Neon Dreams",
+    image: "https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?q=80&w=1000&auto=format&fit=crop",
+    creator: "neonartist",
     verified: true,
-    views: "45.2K",
-    likes: "8.9K",
-    uses: "3.2K",
-    tags: ["portrait", "ethereal", "soft light"],
+    views: "89.2K",
+    likes: "12.4K",
+    uses: "5.8K",
+    tags: ["neon", "colorful", "vibrant"],
     category: "Style",
     aspectRatio: "9:16",
-    prompt: "A beautiful portrait with soft ethereal lighting, dreamy atmosphere, gentle bokeh background, warm golden tones"
+    prompt: "Vibrant neon light installation, electric blue and hot pink, glowing tubes forming abstract patterns"
   },
   {
     id: 2,
-    title: "Neon Dystopia",
-    image: "https://images.unsplash.com/photo-1580584126903-c17d41830450?q=80&w=1000&auto=format&fit=crop",
-    creator: "futuredesign",
-    verified: false,
-    views: "38.1K",
-    likes: "7.2K",
-    uses: "2.8K",
-    tags: ["cyberpunk", "neon", "city"],
+    title: "Holographic Splash",
+    image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=1000&auto=format&fit=crop",
+    creator: "colormaster",
+    verified: true,
+    views: "67.3K",
+    likes: "9.8K",
+    uses: "4.2K",
+    tags: ["gradient", "holographic", "abstract"],
     category: "Style",
-    aspectRatio: "16:9",
-    prompt: "Cyberpunk cityscape at night, neon lights reflecting on wet streets, futuristic buildings, rain atmosphere"
+    aspectRatio: "1:1",
+    prompt: "Holographic gradient background, iridescent colors shifting from purple to teal to gold"
   },
   {
     id: 3,
-    title: "Liquid Dreams",
-    image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1000&auto=format&fit=crop",
-    creator: "artflow",
+    title: "Electric Aurora",
+    image: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=1000&auto=format&fit=crop",
+    creator: "gradientpro",
     verified: false,
-    views: "31.4K",
-    likes: "5.8K",
-    uses: "2.1K",
-    tags: ["watercolor", "abstract", "flowing"],
+    views: "54.1K",
+    likes: "7.6K",
+    uses: "3.1K",
+    tags: ["aurora", "gradient", "colors"],
     category: "Technique",
-    aspectRatio: "1:1",
-    prompt: "Abstract watercolor painting with flowing liquid forms, vibrant colors mixing together, artistic splashes"
+    aspectRatio: "16:9",
+    prompt: "Mesmerizing aurora borealis colors, flowing gradient from green to purple to blue, cosmic atmosphere"
   },
   {
     id: 4,
-    title: "Clean Commerce",
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop",
-    creator: "minimalstudio",
+    title: "Candy Pop",
+    image: "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1000&auto=format&fit=crop",
+    creator: "popdesign",
     verified: true,
-    views: "28.9K",
-    likes: "4.5K",
-    uses: "1.9K",
-    tags: ["minimal", "product", "clean"],
-    category: "Prompt",
+    views: "78.5K",
+    likes: "11.2K",
+    uses: "4.9K",
+    tags: ["pink", "bold", "pop art"],
+    category: "Style",
     aspectRatio: "4:5",
-    prompt: "Minimalist product photography, clean white background, floating sneaker, soft shadows, commercial style"
+    prompt: "Candy pink and electric blue gradient, bold pop art style, smooth color transitions"
   },
   {
     id: 5,
-    title: "Fantasy Realms",
-    image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000&auto=format&fit=crop",
-    creator: "dragonmaster",
+    title: "Cosmic Burst",
+    image: "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1000&auto=format&fit=crop",
+    creator: "cosmicart",
     verified: true,
-    views: "25.6K",
-    likes: "4.1K",
-    uses: "1.5K",
-    tags: ["fantasy", "dragon", "epic"],
+    views: "92.7K",
+    likes: "14.3K",
+    uses: "6.7K",
+    tags: ["space", "colorful", "explosion"],
     category: "Style",
-    aspectRatio: "9:16",
-    prompt: "Epic fantasy landscape with majestic dragon flying over mountains, dramatic clouds, golden hour lighting"
+    aspectRatio: "1:1",
+    prompt: "Cosmic explosion of colors, vibrant nebula with orange, pink, and purple hues, stardust particles"
   },
   {
     id: 6,
-    title: "Retro Wave",
-    image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop",
-    creator: "80slover",
+    title: "Sunset Gradient",
+    image: "https://images.unsplash.com/photo-1507400492013-162706c8c05e?q=80&w=1000&auto=format&fit=crop",
+    creator: "sunsetlover",
     verified: false,
-    views: "22.1K",
-    likes: "3.8K",
-    uses: "1.2K",
-    tags: ["retro", "synthwave", "80s"],
+    views: "45.8K",
+    likes: "6.9K",
+    uses: "2.8K",
+    tags: ["sunset", "warm", "gradient"],
     category: "Style",
     aspectRatio: "16:9",
-    prompt: "Synthwave aesthetic, retro 80s vibes, neon pink and blue gradient, geometric shapes, sunset"
+    prompt: "Stunning sunset gradient, warm orange melting into deep purple, golden hour atmosphere"
   },
   {
     id: 7,
-    title: "Paper Cutout",
-    image: "https://images.unsplash.com/photo-1516051662668-f3b5f6b9a131?q=80&w=1000&auto=format&fit=crop",
-    creator: "crafty",
-    verified: false,
-    views: "19.8K",
-    likes: "3.2K",
-    uses: "1.1K",
-    tags: ["paper", "craft", "cutout"],
+    title: "Liquid Chrome",
+    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop",
+    creator: "chromeart",
+    verified: true,
+    views: "61.4K",
+    likes: "8.7K",
+    uses: "3.6K",
+    tags: ["chrome", "liquid", "metallic"],
     category: "Technique",
-    aspectRatio: "3:4",
-    prompt: "Paper cutout art style illustration, layered paper effect, colorful shapes, handcraft aesthetic"
+    aspectRatio: "1:1",
+    prompt: "Liquid chrome waves, iridescent metallic surface, reflecting rainbow colors"
   },
   {
     id: 8,
-    title: "Isometric Worlds",
-    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop",
-    creator: "iso_king",
-    verified: true,
-    views: "18.5K",
-    likes: "2.9K",
-    uses: "950",
-    tags: ["isometric", "3d", "miniature"],
+    title: "Tropical Vibes",
+    image: "https://images.unsplash.com/photo-1533628635777-112b2239b1c7?q=80&w=1000&auto=format&fit=crop",
+    creator: "tropicalart",
+    verified: false,
+    views: "38.9K",
+    likes: "5.4K",
+    uses: "2.1K",
+    tags: ["tropical", "colorful", "plants"],
     category: "Style",
-    aspectRatio: "1:1",
-    prompt: "Isometric 3D miniature world, tiny buildings and trees, tilt-shift effect, cute diorama style"
+    aspectRatio: "3:4",
+    prompt: "Tropical leaves in vibrant colors, neon pink and electric green foliage, exotic pattern"
   },
   {
     id: 9,
-    title: "Golden Hour Portrait",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop",
-    creator: "sunsetsnap",
+    title: "Geometric Rainbow",
+    image: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?q=80&w=1000&auto=format&fit=crop",
+    creator: "geomaster",
     verified: true,
-    views: "42.3K",
-    likes: "9.1K",
-    uses: "4.2K",
-    tags: ["portrait", "golden hour", "warm"],
-    category: "Style",
-    aspectRatio: "4:5",
-    prompt: "Portrait photography during golden hour, warm sunlight, natural beauty, soft skin tones, bokeh"
+    views: "73.2K",
+    likes: "10.5K",
+    uses: "4.4K",
+    tags: ["geometric", "rainbow", "shapes"],
+    category: "Technique",
+    aspectRatio: "1:1",
+    prompt: "Geometric shapes in rainbow colors, overlapping triangles and circles, bold design"
   },
   {
     id: 10,
-    title: "Abstract Geometry",
-    image: "https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=1000&auto=format&fit=crop",
-    creator: "shapecraft",
-    verified: false,
-    views: "15.7K",
-    likes: "2.4K",
-    uses: "890",
-    tags: ["abstract", "geometry", "colorful"],
-    category: "Technique",
-    aspectRatio: "1:1",
-    prompt: "Abstract geometric art, bold colors, overlapping shapes, modern design, digital art style"
+    title: "Cyberpunk City",
+    image: "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=1000&auto=format&fit=crop",
+    creator: "cyberpunk",
+    verified: true,
+    views: "112.4K",
+    likes: "18.9K",
+    uses: "8.2K",
+    tags: ["cyberpunk", "neon", "city"],
+    category: "Style",
+    aspectRatio: "9:16",
+    prompt: "Futuristic cyberpunk cityscape, neon signs in pink and blue, rain-soaked streets reflecting lights"
   },
   {
     id: 11,
-    title: "Urban Architecture",
-    image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1000&auto=format&fit=crop",
-    creator: "cityscape",
-    verified: true,
-    views: "21.4K",
-    likes: "3.6K",
-    uses: "1.3K",
-    tags: ["architecture", "urban", "modern"],
-    category: "Style",
-    aspectRatio: "9:16",
-    prompt: "Modern urban architecture photography, tall skyscrapers, dramatic perspective, blue hour sky"
+    title: "Paint Explosion",
+    image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1000&auto=format&fit=crop",
+    creator: "splashart",
+    verified: false,
+    views: "56.7K",
+    likes: "8.1K",
+    uses: "3.3K",
+    tags: ["paint", "splash", "colorful"],
+    category: "Technique",
+    aspectRatio: "1:1",
+    prompt: "Explosive paint splash, vibrant colors colliding in mid-air, high-speed photography effect"
   },
   {
     id: 12,
-    title: "Macro Nature",
-    image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=1000&auto=format&fit=crop",
-    creator: "naturelens",
-    verified: false,
-    views: "12.8K",
-    likes: "2.1K",
-    uses: "780",
-    tags: ["macro", "nature", "details"],
+    title: "Prism Light",
+    image: "https://images.unsplash.com/photo-1550537687-c91072c4792d?q=80&w=1000&auto=format&fit=crop",
+    creator: "lightart",
+    verified: true,
+    views: "48.3K",
+    likes: "6.7K",
+    uses: "2.6K",
+    tags: ["prism", "rainbow", "light"],
     category: "Technique",
-    aspectRatio: "3:4",
-    prompt: "Macro photography of ocean waves, crystal clear water droplets, nature details, close-up textures"
+    aspectRatio: "16:9",
+    prompt: "Light passing through prism creating rainbow spectrum, crystal clear refraction, pure colors"
   },
   {
     id: 13,
-    title: "Moody Landscape",
-    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1000&auto=format&fit=crop",
-    creator: "wanderlust",
-    verified: true,
-    views: "35.2K",
-    likes: "6.8K",
-    uses: "2.9K",
-    tags: ["landscape", "moody", "mountains"],
-    category: "Style",
-    aspectRatio: "16:9",
-    prompt: "Dramatic mountain landscape, moody atmosphere, fog rolling through valleys, cinematic composition"
+    title: "Fluid Abstract",
+    image: "https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?q=80&w=1000&auto=format&fit=crop",
+    creator: "fluidart",
+    verified: false,
+    views: "41.5K",
+    likes: "5.9K",
+    uses: "2.3K",
+    tags: ["fluid", "abstract", "marble"],
+    category: "Technique",
+    aspectRatio: "4:5",
+    prompt: "Fluid art with swirling colors, marbled effect in gold, teal, and magenta"
   },
   {
     id: 14,
-    title: "Cinematic Portrait",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop",
-    creator: "filmmaker",
-    verified: false,
-    views: "27.9K",
-    likes: "5.2K",
-    uses: "1.8K",
-    tags: ["cinematic", "portrait", "dramatic"],
+    title: "Synthwave Sunset",
+    image: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=1000&auto=format&fit=crop",
+    creator: "synthwave",
+    verified: true,
+    views: "87.9K",
+    likes: "13.2K",
+    uses: "5.9K",
+    tags: ["synthwave", "retro", "80s"],
     category: "Style",
-    aspectRatio: "4:5",
-    prompt: "Cinematic portrait with dramatic lighting, movie-like quality, deep shadows, professional headshot"
+    aspectRatio: "16:9",
+    prompt: "Retro synthwave sunset, grid landscape, neon purple and orange sky, 80s aesthetic"
   },
   {
     id: 15,
-    title: "Minimalist Design",
-    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop",
-    creator: "simplicity",
+    title: "Glass Morphism",
+    image: "https://images.unsplash.com/photo-1604076913837-52ab5f25f437?q=80&w=1000&auto=format&fit=crop",
+    creator: "glassui",
     verified: true,
-    views: "19.3K",
-    likes: "3.4K",
-    uses: "1.2K",
-    tags: ["minimal", "clean", "simple"],
-    category: "Prompt",
+    views: "69.4K",
+    likes: "9.8K",
+    uses: "4.1K",
+    tags: ["glass", "blur", "modern"],
+    category: "Style",
     aspectRatio: "1:1",
-    prompt: "Minimalist abstract design, clean lines, simple shapes, elegant composition, soft pastel colors"
+    prompt: "Glassmorphism design, frosted glass effect with colorful gradient background, modern UI"
   },
   {
     id: 16,
-    title: "Street Photography",
-    image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=1000&auto=format&fit=crop",
-    creator: "streetwise",
+    title: "Color Smoke",
+    image: "https://images.unsplash.com/photo-1558470598-a5dda9640f68?q=80&w=1000&auto=format&fit=crop",
+    creator: "smokeart",
     verified: false,
-    views: "23.6K",
-    likes: "4.1K",
-    uses: "1.5K",
-    tags: ["street", "urban", "candid"],
-    category: "Style",
+    views: "52.1K",
+    likes: "7.4K",
+    uses: "2.9K",
+    tags: ["smoke", "colorful", "flowing"],
+    category: "Technique",
     aspectRatio: "9:16",
-    prompt: "Street photography in urban setting, candid moments, natural light, documentary style"
+    prompt: "Colorful smoke trails intertwining, purple and cyan wisps, ethereal atmosphere"
   },
   {
     id: 17,
-    title: "Ocean Sunset",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop",
-    creator: "beachlover",
+    title: "Neon Portrait",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop",
+    creator: "neonface",
     verified: true,
-    views: "52.1K",
-    likes: "11.2K",
-    uses: "5.1K",
-    tags: ["sunset", "ocean", "beach"],
+    views: "94.6K",
+    likes: "15.7K",
+    uses: "7.1K",
+    tags: ["portrait", "neon", "glow"],
     category: "Style",
-    aspectRatio: "16:9",
-    prompt: "Beautiful ocean sunset, golden and orange sky, calm waves, tropical beach paradise, peaceful atmosphere"
+    aspectRatio: "4:5",
+    prompt: "Portrait with neon lighting, pink and blue glow on face, futuristic portrait photography"
   },
   {
     id: 18,
-    title: "Vintage Film",
-    image: "https://images.unsplash.com/photo-1501612780327-45045538702b?q=80&w=1000&auto=format&fit=crop",
-    creator: "filmgrain",
+    title: "Crystal Colors",
+    image: "https://images.unsplash.com/photo-1553356084-58ef4a67b2a7?q=80&w=1000&auto=format&fit=crop",
+    creator: "crystalart",
     verified: false,
-    views: "18.4K",
-    likes: "3.1K",
-    uses: "980",
-    tags: ["vintage", "film", "retro"],
+    views: "36.8K",
+    likes: "5.1K",
+    uses: "1.9K",
+    tags: ["crystal", "colorful", "gem"],
     category: "Technique",
-    aspectRatio: "3:4",
-    prompt: "Vintage film photography aesthetic, grainy texture, faded colors, nostalgic atmosphere, 35mm look"
+    aspectRatio: "1:1",
+    prompt: "Colorful crystal formations, gemstone colors reflecting light, magical rainbow effect"
   },
   {
     id: 19,
-    title: "Neon Portrait",
-    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1000&auto=format&fit=crop",
-    creator: "neonart",
+    title: "Digital Waves",
+    image: "https://images.unsplash.com/photo-1557264305-7e2764da873b?q=80&w=1000&auto=format&fit=crop",
+    creator: "waveart",
     verified: true,
-    views: "33.7K",
-    likes: "6.4K",
-    uses: "2.7K",
-    tags: ["neon", "portrait", "glow"],
+    views: "58.3K",
+    likes: "8.4K",
+    uses: "3.5K",
+    tags: ["waves", "digital", "gradient"],
     category: "Style",
-    aspectRatio: "4:5",
-    prompt: "Portrait with neon lighting, pink and blue glow, futuristic vibes, studio photography, dramatic colors"
+    aspectRatio: "16:9",
+    prompt: "Digital wave patterns, flowing gradients from cyan to magenta, futuristic design"
   },
   {
     id: 20,
-    title: "Forest Mist",
-    image: "https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000&auto=format&fit=crop",
-    creator: "forestdreams",
+    title: "Ink Bloom",
+    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop",
+    creator: "inkart",
     verified: false,
-    views: "29.5K",
-    likes: "5.8K",
-    uses: "2.3K",
-    tags: ["forest", "mist", "nature"],
-    category: "Style",
-    aspectRatio: "9:16",
-    prompt: "Misty forest scene, tall trees fading into fog, mystical atmosphere, natural light filtering through"
+    views: "44.7K",
+    likes: "6.3K",
+    uses: "2.4K",
+    tags: ["ink", "bloom", "watercolor"],
+    category: "Technique",
+    aspectRatio: "3:4",
+    prompt: "Ink blooming in water, vibrant colors spreading organically, abstract fluid art"
   },
   {
     id: 21,
-    title: "Coffee Art",
-    image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1000&auto=format&fit=crop",
-    creator: "cafestyle",
+    title: "Aurora Waves",
+    image: "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?q=80&w=1000&auto=format&fit=crop",
+    creator: "aurorart",
     verified: true,
-    views: "14.2K",
-    likes: "2.6K",
-    uses: "850",
-    tags: ["coffee", "lifestyle", "cozy"],
-    category: "Prompt",
-    aspectRatio: "1:1",
-    prompt: "Aesthetic coffee photography, latte art, cozy cafe vibes, warm tones, lifestyle photography"
+    views: "76.9K",
+    likes: "11.8K",
+    uses: "5.2K",
+    tags: ["aurora", "night", "colors"],
+    category: "Style",
+    aspectRatio: "16:9",
+    prompt: "Northern lights dancing over mountains, green and purple aurora waves, starry night sky"
   },
   {
     id: 22,
-    title: "Space Dreams",
-    image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1000&auto=format&fit=crop",
-    creator: "cosmicart",
-    verified: true,
-    views: "47.8K",
-    likes: "9.5K",
-    uses: "4.1K",
-    tags: ["space", "galaxy", "cosmic"],
-    category: "Style",
-    aspectRatio: "16:9",
-    prompt: "Cosmic space nebula, galaxy colors, stars and dust clouds, astronomical photography, deep space"
+    title: "Pixel Gradient",
+    image: "https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=1000&auto=format&fit=crop",
+    creator: "pixelart",
+    verified: false,
+    views: "29.4K",
+    likes: "4.2K",
+    uses: "1.6K",
+    tags: ["pixel", "retro", "gradient"],
+    category: "Technique",
+    aspectRatio: "1:1",
+    prompt: "Pixelated gradient pattern, colorful blocks transitioning smoothly, retro digital art"
   },
   {
     id: 23,
-    title: "Fashion Editorial",
-    image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1000&auto=format&fit=crop",
-    creator: "fashionista",
+    title: "Fire & Ice",
+    image: "https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?q=80&w=1000&auto=format&fit=crop",
+    creator: "dualart",
     verified: true,
-    views: "36.4K",
-    likes: "7.2K",
-    uses: "3.1K",
-    tags: ["fashion", "editorial", "style"],
+    views: "83.2K",
+    likes: "12.9K",
+    uses: "5.6K",
+    tags: ["fire", "ice", "contrast"],
     category: "Style",
     aspectRatio: "9:16",
-    prompt: "High fashion editorial photography, dramatic pose, studio lighting, magazine quality, elegant style"
+    prompt: "Fire and ice collision, orange flames meeting blue frost, dramatic color contrast"
   },
   {
     id: 24,
-    title: "Tokyo Nights",
-    image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1000&auto=format&fit=crop",
-    creator: "japantravel",
+    title: "Bubble Universe",
+    image: "https://images.unsplash.com/photo-1528818955841-a7f1425131b5?q=80&w=1000&auto=format&fit=crop",
+    creator: "bubbleart",
     verified: false,
-    views: "41.2K",
-    likes: "8.1K",
-    uses: "3.5K",
-    tags: ["tokyo", "night", "japan"],
-    category: "Style",
-    aspectRatio: "3:4",
-    prompt: "Tokyo city at night, neon signs in Japanese, busy streets, rain reflections, urban Japan atmosphere"
+    views: "33.6K",
+    likes: "4.7K",
+    uses: "1.8K",
+    tags: ["bubbles", "iridescent", "macro"],
+    category: "Technique",
+    aspectRatio: "1:1",
+    prompt: "Iridescent soap bubbles, rainbow reflections on surface, macro photography"
   },
   {
     id: 25,
-    title: "Floral Beauty",
-    image: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=1000&auto=format&fit=crop",
-    creator: "gardenart",
-    verified: false,
-    views: "22.8K",
-    likes: "4.3K",
-    uses: "1.6K",
-    tags: ["flowers", "nature", "spring"],
-    category: "Technique",
-    aspectRatio: "1:1",
-    prompt: "Beautiful flower photography, soft focus, spring colors, natural lighting, botanical art"
+    title: "Gradient Mesh",
+    image: "https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1000&auto=format&fit=crop",
+    creator: "meshart",
+    verified: true,
+    views: "62.8K",
+    likes: "9.1K",
+    uses: "3.8K",
+    tags: ["mesh", "gradient", "modern"],
+    category: "Style",
+    aspectRatio: "4:5",
+    prompt: "Smooth gradient mesh, blending purple, pink, orange and blue, modern graphic design"
   },
   {
     id: 26,
-    title: "Industrial Grit",
-    image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=1000&auto=format&fit=crop",
-    creator: "urbanexplore",
-    verified: true,
-    views: "17.6K",
-    likes: "2.9K",
-    uses: "920",
-    tags: ["industrial", "urban", "gritty"],
-    category: "Style",
+    title: "Laser Beams",
+    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop",
+    creator: "laserart",
+    verified: false,
+    views: "47.2K",
+    likes: "6.6K",
+    uses: "2.5K",
+    tags: ["laser", "neon", "tech"],
+    category: "Technique",
     aspectRatio: "16:9",
-    prompt: "Industrial architecture, metal and concrete, gritty textures, abandoned factory aesthetic"
+    prompt: "Colorful laser beams cutting through darkness, red, green, and blue lights intersecting"
   },
   {
     id: 27,
-    title: "Underwater World",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1000&auto=format&fit=crop",
-    creator: "oceandiver",
+    title: "Oil Slick",
+    image: "https://images.unsplash.com/photo-1517999144091-3d9dca6d1e43?q=80&w=1000&auto=format&fit=crop",
+    creator: "oilart",
     verified: true,
-    views: "31.9K",
-    likes: "6.2K",
-    uses: "2.4K",
-    tags: ["underwater", "ocean", "marine"],
+    views: "39.5K",
+    likes: "5.6K",
+    uses: "2.1K",
+    tags: ["oil", "rainbow", "texture"],
     category: "Technique",
-    aspectRatio: "4:5",
-    prompt: "Underwater photography, crystal clear water, marine life, sunlight rays through water, diving scene"
+    aspectRatio: "1:1",
+    prompt: "Oil slick rainbow effect, iridescent colors on dark surface, psychedelic pattern"
   },
   {
     id: 28,
-    title: "Autumn Colors",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop",
-    creator: "seasonalart",
+    title: "Neon Grid",
+    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop",
+    creator: "gridart",
     verified: false,
-    views: "26.3K",
-    likes: "5.1K",
-    uses: "1.9K",
-    tags: ["autumn", "fall", "colors"],
+    views: "71.4K",
+    likes: "10.3K",
+    uses: "4.5K",
+    tags: ["grid", "neon", "retro"],
     category: "Style",
-    aspectRatio: "9:16",
-    prompt: "Autumn forest scene, golden and red leaves, warm fall colors, peaceful nature photography"
+    aspectRatio: "16:9",
+    prompt: "Retro neon grid extending to horizon, vaporwave aesthetic, purple and pink glow"
   },
   {
     id: 29,
-    title: "Art Deco",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=1000&auto=format&fit=crop",
-    creator: "decodesign",
+    title: "Color Tunnel",
+    image: "https://images.unsplash.com/photo-1516617442634-75371039cb3a?q=80&w=1000&auto=format&fit=crop",
+    creator: "tunnelart",
     verified: true,
-    views: "15.4K",
-    likes: "2.7K",
-    uses: "890",
-    tags: ["art deco", "vintage", "design"],
+    views: "55.8K",
+    likes: "7.9K",
+    uses: "3.2K",
+    tags: ["tunnel", "colorful", "abstract"],
     category: "Style",
-    aspectRatio: "3:4",
-    prompt: "Art deco style illustration, geometric patterns, gold and black, 1920s aesthetic, elegant design"
+    aspectRatio: "9:16",
+    prompt: "Colorful tunnel leading to light, rainbow walls spiraling inward, trippy perspective"
   },
   {
     id: 30,
-    title: "Mountain Peak",
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1000&auto=format&fit=crop",
-    creator: "alpineview",
-    verified: true,
-    views: "44.7K",
-    likes: "8.9K",
-    uses: "3.8K",
-    tags: ["mountain", "peak", "adventure"],
-    category: "Style",
-    aspectRatio: "16:9",
-    prompt: "Dramatic mountain peak, snow-capped summit, adventure photography, epic landscape, clear blue sky"
+    title: "Plasma Orb",
+    image: "https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?q=80&w=1000&auto=format&fit=crop",
+    creator: "plasmaart",
+    verified: false,
+    views: "43.1K",
+    likes: "6.1K",
+    uses: "2.3K",
+    tags: ["plasma", "energy", "glow"],
+    category: "Technique",
+    aspectRatio: "1:1",
+    prompt: "Plasma ball energy, electric purple and blue tendrils, sci-fi energy orb"
   },
   {
     id: 31,
-    title: "Minimal Interior",
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1000&auto=format&fit=crop",
-    creator: "homedecor",
-    verified: false,
-    views: "19.8K",
-    likes: "3.5K",
-    uses: "1.2K",
-    tags: ["interior", "minimal", "home"],
-    category: "Prompt",
-    aspectRatio: "1:1",
-    prompt: "Minimalist interior design, clean white space, modern furniture, natural light, scandinavian style"
+    title: "Macro Flora",
+    image: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=1000&auto=format&fit=crop",
+    creator: "floraart",
+    verified: true,
+    views: "68.7K",
+    likes: "9.9K",
+    uses: "4.2K",
+    tags: ["flowers", "macro", "colorful"],
+    category: "Style",
+    aspectRatio: "3:4",
+    prompt: "Macro flower photography, vibrant petals in pink and yellow, extreme close-up detail"
   },
   {
     id: 32,
-    title: "Night Sky",
-    image: "https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?q=80&w=1000&auto=format&fit=crop",
-    creator: "stargazer",
-    verified: true,
-    views: "38.9K",
-    likes: "7.6K",
-    uses: "3.2K",
-    tags: ["stars", "night", "milkyway"],
+    title: "Glitch Art",
+    image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop",
+    creator: "glitchart",
+    verified: false,
+    views: "51.3K",
+    likes: "7.3K",
+    uses: "2.9K",
+    tags: ["glitch", "digital", "error"],
     category: "Technique",
     aspectRatio: "16:9",
-    prompt: "Night sky photography, milky way visible, countless stars, dark silhouette foreground, astrophotography"
+    prompt: "Digital glitch effect, fragmented RGB channels, corrupted beautiful image"
+  },
+  {
+    id: 33,
+    title: "Sunset Palms",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop",
+    creator: "beachvibes",
+    verified: true,
+    views: "97.4K",
+    likes: "16.2K",
+    uses: "7.4K",
+    tags: ["sunset", "beach", "tropical"],
+    category: "Style",
+    aspectRatio: "16:9",
+    prompt: "Tropical sunset through palm trees, orange and pink sky, silhouette of paradise"
+  },
+  {
+    id: 34,
+    title: "Crystal Cave",
+    image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=1000&auto=format&fit=crop",
+    creator: "caveart",
+    verified: false,
+    views: "37.9K",
+    likes: "5.3K",
+    uses: "2.0K",
+    tags: ["crystal", "cave", "magical"],
+    category: "Technique",
+    aspectRatio: "4:5",
+    prompt: "Magical crystal cave, glowing amethyst and quartz formations, ethereal light"
+  },
+  {
+    id: 35,
+    title: "Gradient Sky",
+    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1000&auto=format&fit=crop",
+    creator: "skyart",
+    verified: true,
+    views: "84.6K",
+    likes: "13.5K",
+    uses: "6.1K",
+    tags: ["sky", "gradient", "mountains"],
+    category: "Style",
+    aspectRatio: "16:9",
+    prompt: "Dramatic mountain sky, cotton candy pink and blue gradient, epic landscape photography"
+  },
+  {
+    id: 36,
+    title: "Hologram Effect",
+    image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop",
+    creator: "holoart",
+    verified: false,
+    views: "46.2K",
+    likes: "6.5K",
+    uses: "2.5K",
+    tags: ["hologram", "portrait", "future"],
+    category: "Technique",
+    aspectRatio: "9:16",
+    prompt: "Holographic portrait effect, rainbow light refractions on skin, futuristic beauty"
+  },
+  {
+    id: 37,
+    title: "Color Field",
+    image: "https://images.unsplash.com/photo-1502691876148-a84978e59af8?q=80&w=1000&auto=format&fit=crop",
+    creator: "fieldart",
+    verified: true,
+    views: "79.8K",
+    likes: "12.1K",
+    uses: "5.4K",
+    tags: ["flowers", "field", "colorful"],
+    category: "Style",
+    aspectRatio: "16:9",
+    prompt: "Endless field of colorful tulips, red, yellow, and purple rows, Dutch landscape"
+  },
+  {
+    id: 38,
+    title: "Electric Storm",
+    image: "https://images.unsplash.com/photo-1508873696983-2dfd5898f08b?q=80&w=1000&auto=format&fit=crop",
+    creator: "stormart",
+    verified: false,
+    views: "59.4K",
+    likes: "8.5K",
+    uses: "3.4K",
+    tags: ["storm", "lightning", "dramatic"],
+    category: "Technique",
+    aspectRatio: "1:1",
+    prompt: "Purple lightning storm, electric bolts across night sky, dramatic weather photography"
+  },
+  {
+    id: 39,
+    title: "Candy Colors",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=1000&auto=format&fit=crop",
+    creator: "candyart",
+    verified: true,
+    views: "42.7K",
+    likes: "6.0K",
+    uses: "2.2K",
+    tags: ["candy", "pastel", "sweet"],
+    category: "Style",
+    aspectRatio: "1:1",
+    prompt: "Pastel candy colors, soft pink, mint green, and lavender gradient, sweet aesthetic"
+  },
+  {
+    id: 40,
+    title: "Ocean Gradient",
+    image: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?q=80&w=1000&auto=format&fit=crop",
+    creator: "oceanart",
+    verified: false,
+    views: "66.1K",
+    likes: "9.4K",
+    uses: "4.0K",
+    tags: ["ocean", "blue", "waves"],
+    category: "Style",
+    aspectRatio: "3:4",
+    prompt: "Deep ocean gradient, turquoise to navy blue transition, underwater color palette"
   }
 ];
 
 export default function Discover() {
-  const [activeFilter, setActiveFilter] = useState("Trending");
   const [displayedItems, setDisplayedItems] = useState<InspirationItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const ITEMS_PER_LOAD = 8;
-
-  const filters = [
-    { icon: Sparkles, label: "Trending" },
-    { icon: Clock, label: "New This Week" },
-    { icon: Flame, label: "Most Popular" },
-    { icon: Palette, label: "Styles" },
-    { icon: Type, label: "Prompts" },
-    { icon: Lightbulb, label: "Techniques" },
-    { icon: Users, label: "Community" }
-  ];
+  const ITEMS_PER_LOAD = 12;
 
   useEffect(() => {
     setDisplayedItems(allInspirations.slice(0, ITEMS_PER_LOAD));
+    setPage(1);
   }, []);
 
   const loadMore = useCallback(() => {
-    if (isLoading || !hasMore) return;
+    if (isLoading) return;
+    
+    const startIndex = page * ITEMS_PER_LOAD;
+    const endIndex = startIndex + ITEMS_PER_LOAD;
+    
+    if (startIndex >= allInspirations.length) {
+      return;
+    }
     
     setIsLoading(true);
     
     setTimeout(() => {
-      const currentLength = displayedItems.length;
-      const nextItems = allInspirations.slice(currentLength, currentLength + ITEMS_PER_LOAD);
-      
-      if (nextItems.length === 0) {
-        const shuffled = [...allInspirations].sort(() => Math.random() - 0.5);
-        const newItems = shuffled.slice(0, ITEMS_PER_LOAD).map((item, i) => ({
-          ...item,
-          id: currentLength + i + 1,
-          views: `${Math.floor(Math.random() * 50 + 10)}.${Math.floor(Math.random() * 9)}K`,
-          likes: `${Math.floor(Math.random() * 10 + 1)}.${Math.floor(Math.random() * 9)}K`,
-          uses: `${Math.floor(Math.random() * 5 + 1)}.${Math.floor(Math.random() * 9)}K`
-        }));
-        setDisplayedItems(prev => [...prev, ...newItems]);
-      } else {
-        setDisplayedItems(prev => [...prev, ...nextItems]);
-      }
-      
+      const nextItems = allInspirations.slice(startIndex, endIndex);
+      setDisplayedItems(prev => [...prev, ...nextItems]);
+      setPage(prev => prev + 1);
       setIsLoading(false);
-    }, 500);
-  }, [displayedItems.length, isLoading, hasMore]);
+    }, 300);
+  }, [page, isLoading]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && displayedItems.length < allInspirations.length) {
           loadMore();
         }
       },
@@ -689,7 +774,7 @@ export default function Discover() {
     }
 
     return () => observer.disconnect();
-  }, [loadMore]);
+  }, [loadMore, displayedItems.length]);
 
   return (
     <div className="h-screen bg-background flex font-sans text-foreground overflow-hidden">
@@ -697,82 +782,11 @@ export default function Discover() {
       
       <main className="flex-1 flex flex-col relative h-full overflow-y-auto bg-[#F8F8F8] dark:bg-[#0A0A0B] text-[#18181B] dark:text-[#FAFAFA] pb-20 md:pb-0">
         
-        {/* HERO SECTION */}
-        <div className="relative h-[280px] md:h-[320px] bg-[#0A0A0B] overflow-hidden flex-shrink-0">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[#0A0A0B] via-[#1A1A2E] to-[#16132D]" />
-            
-            <motion.div 
-              animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
-              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-[100px] -left-[100px] w-[400px] h-[400px] bg-[#B94E30] rounded-full opacity-20 blur-[100px]" 
-            />
-            <motion.div 
-              animate={{ y: [0, 30, 0], x: [0, -20, 0] }}
-              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-[#E3B436] rounded-full opacity-15 blur-[80px]" 
-            />
-            
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay" />
-          </div>
-
-          <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-12 max-w-[1400px] mx-auto">
-            <div className="flex items-center gap-4 mb-3">
-              <Compass className="h-7 w-7 md:h-8 md:w-8 text-transparent bg-clip-text bg-gradient-to-br from-[#B94E30] to-[#E3B436]" stroke="url(#compass-gradient)" />
-              <svg width="0" height="0">
-                <linearGradient id="compass-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop stopColor="#B94E30" offset="0%" />
-                  <stop stopColor="#E3B436" offset="100%" />
-                </linearGradient>
-              </svg>
-              <h1 className="text-3xl md:text-[40px] font-bold text-[#FAFAFA]">Discover</h1>
-            </div>
-            
-            <p className="text-base md:text-lg text-[#A1A1AA] max-w-xl">
-              Explore trending styles and creative inspiration from the community.
-            </p>
-
-            <div className="mt-5 max-w-[600px] w-full">
-              <div className="flex items-center bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-1 focus-within:bg-white/15 focus-within:border-white/20 transition-all">
-                <Search className="h-5 w-5 text-[#71717A] ml-4" />
-                <input 
-                  type="text" 
-                  placeholder="Search styles, prompts, techniques..."
-                  className="flex-1 bg-transparent border-none p-3 text-base text-[#FAFAFA] placeholder:text-[#71717A] focus:outline-none focus:ring-0"
-                  data-testid="input-discover-search"
-                />
-                <button className="p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition-colors mr-1" data-testid="button-discover-filters">
-                  <SlidersHorizontal className="h-5 w-5 text-[#FAFAFA]" />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2 mt-4 overflow-x-auto pb-2 no-scrollbar">
-              {filters.map((filter) => (
-                <button
-                  key={filter.label}
-                  onClick={() => setActiveFilter(filter.label)}
-                  data-testid={`filter-${filter.label.toLowerCase().replace(/\s/g, '-')}`}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all backdrop-blur-md border whitespace-nowrap",
-                    activeFilter === filter.label
-                      ? "bg-gradient-to-r from-[#B94E30] to-[#8B3A24] border-transparent text-white shadow-lg shadow-[#B94E30]/20"
-                      : "bg-white/10 border-white/10 text-[#A1A1AA] hover:bg-white/20 hover:text-[#FAFAFA]"
-                  )}
-                >
-                  <filter.icon className="h-3.5 w-3.5" />
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* MASONRY GRID */}
-        <div className="px-4 md:px-8 lg:px-12 py-8 max-w-[1600px] mx-auto w-full">
+        {/* MASONRY GRID - No header */}
+        <div className="px-4 md:px-8 lg:px-12 py-6 max-w-[1600px] mx-auto w-full">
           <div className="flex items-center gap-3 mb-6">
             <TrendingUp className="h-5 w-5 text-[#B94E30]" />
-            <h2 className="text-xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Trending Now</h2>
+            <h2 className="text-xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Discover</h2>
             <div className="flex items-center gap-2 px-2.5 py-1 bg-[#16A34A]/10 rounded-full ml-1">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16A34A] opacity-75"></span>
@@ -781,14 +795,14 @@ export default function Discover() {
               <span className="text-xs font-medium text-[#16A34A]">Live</span>
             </div>
             <div className="ml-auto text-sm text-[#71717A]">
-              {displayedItems.length} images
+              {displayedItems.length} of {allInspirations.length} designs
             </div>
           </div>
 
           {/* Masonry Layout using CSS Columns */}
           <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
             {displayedItems.map((item, index) => (
-              <LazyMasonryCard key={`${item.id}-${index}`} item={item} index={index} />
+              <LazyMasonryCard key={item.id} item={item} index={index} />
             ))}
           </div>
 
@@ -797,7 +811,12 @@ export default function Discover() {
             {isLoading && (
               <div className="flex items-center gap-3 text-[#71717A]">
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="text-sm">Loading more inspiration...</span>
+                <span className="text-sm">Loading more designs...</span>
+              </div>
+            )}
+            {displayedItems.length >= allInspirations.length && (
+              <div className="text-sm text-[#71717A]">
+                You've seen all {allInspirations.length} designs
               </div>
             )}
           </div>
