@@ -265,15 +265,16 @@ export function FloatingPromptBar() {
     >
       <motion.div
         layout
-        className={cn(
-          "bg-black backdrop-blur-xl border border-[#B94E30]/40 shadow-2xl shadow-black/50 overflow-hidden",
-          isExpanded ? "rounded-2xl" : "rounded-full"
-        )}
+        className="bg-black backdrop-blur-xl border border-[#B94E30]/40 shadow-2xl shadow-black/50 overflow-hidden"
+        style={{ borderRadius: isExpanded ? 16 : 9999 }}
         initial={false}
         animate={{
           borderRadius: isExpanded ? 16 : 9999,
         }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ 
+          borderRadius: { duration: 0.25, ease: "easeOut" },
+          layout: { duration: 0.25, ease: "easeOut" }
+        }}
       >
         <div className="p-3 flex items-center gap-3">
           <div className="flex-1 relative">
