@@ -105,7 +105,6 @@ export function Sidebar({ className }: SidebarProps) {
   const account = [
     { name: "Settings", shortName: "Settings", icon: Settings, href: "/settings" },
     { name: "Billing", shortName: "Billing", icon: CreditCard, href: "/billing" },
-    { name: "Affiliate Program", shortName: "Affiliate", icon: Star, href: "/affiliate" },
     { name: "Help & Support", shortName: "Help", icon: HelpCircle, href: "/help" },
   ];
 
@@ -152,11 +151,8 @@ export function Sidebar({ className }: SidebarProps) {
       </Link>
       <Link href="/settings">
         <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/settings" ? "text-primary" : "text-muted-foreground")}>
-          <Avatar className="h-6 w-6 border border-border">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <span className="text-[10px] mt-1">Profile</span>
+          <Settings className="h-6 w-6" />
+          <span className="text-[10px] mt-1">Settings</span>
         </div>
       </Link>
     </div>
@@ -174,33 +170,6 @@ export function Sidebar({ className }: SidebarProps) {
       >
       {/* Header spacing */}
       <div className={cn("h-4", collapsed ? "" : "")} />
-
-      {/* User Profile */}
-      <div className="px-3 mb-4">
-        <Link href="/profile">
-          {collapsed ? (
-            <div className="flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-xl font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all cursor-pointer group select-none mx-1">
-              <Avatar className="h-7 w-7 border-2 border-white/30 group-hover:border-white/60 transition-all">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback className="bg-zinc-700 text-white/80 text-[10px]">JD</AvatarFallback>
-              </Avatar>
-              <span className="text-[9px] font-medium text-sidebar-foreground/50 group-hover:text-sidebar-foreground">Profile</span>
-            </div>
-          ) : (
-            <div className="p-2 rounded-xl flex items-center gap-3 cursor-pointer hover:bg-sidebar-accent transition-colors group overflow-hidden bg-sidebar-accent/50 border border-sidebar-border/50">
-              <Avatar className="h-9 w-9 border-2 border-white/30 group-hover:border-white/60 transition-all flex-shrink-0">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback className="bg-zinc-700 text-white/80 text-xs">JD</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 overflow-hidden animate-fade-in">
-                <p className="text-sm font-semibold truncate text-sidebar-foreground">John Doe</p>
-                <p className="text-xs text-muted-foreground truncate">john@example.com</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto" />
-            </div>
-          )}
-        </Link>
-      </div>
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-3">
