@@ -92,7 +92,7 @@ export function FloatingPromptBar() {
   return (
     <div 
       ref={containerRef}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4"
+      className="fixed bottom-[54px] left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onBlur={handleBlur}
