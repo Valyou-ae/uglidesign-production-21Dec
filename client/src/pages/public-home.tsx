@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { PublicSidebar } from "@/components/public-sidebar";
+import { FloatingPromptBar } from "@/components/floating-prompt-bar";
 import { Link } from "wouter";
 
 interface InspirationItem {
@@ -513,7 +514,7 @@ export default function PublicHome() {
     <div className="h-screen bg-background flex font-sans text-foreground overflow-hidden">
       <PublicSidebar className="hidden md:flex border-r border-border/50" />
       
-      <main className="flex-1 flex flex-col relative h-full overflow-y-auto bg-[#F8F8F8] dark:bg-[#0A0A0B] text-[#18181B] dark:text-[#FAFAFA] pb-20 md:pb-0">
+      <main className="flex-1 flex flex-col relative h-full overflow-y-auto bg-[#F8F8F8] dark:bg-[#0A0A0B] text-[#18181B] dark:text-[#FAFAFA] pb-32 md:pb-28">
         
         <div className="px-4 md:px-8 lg:px-12 py-6 max-w-[1600px] mx-auto w-full">
           <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-2">
@@ -532,6 +533,8 @@ export default function PublicHome() {
           </div>
         </div>
       </main>
+
+      <FloatingPromptBar />
     </div>
   );
 }
