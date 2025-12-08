@@ -329,6 +329,71 @@ export function Sidebar({ className }: SidebarProps) {
               )}
             </Link>
           ) : null}
+          
+          {/* Credits/Token display - below Profile */}
+          {collapsed ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link href="/billing">
+                    <div className="flex flex-col items-center justify-center py-2 px-2 mx-auto w-[52px] cursor-pointer">
+                      <div className="relative h-6 w-6 flex items-center justify-center">
+                        <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            className="text-sidebar-accent"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                          />
+                          <path
+                            className="text-primary"
+                            strokeDasharray={`${creditsPercentage}, 100`}
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <Coins className="absolute h-2.5 w-2.5 text-primary" />
+                      </div>
+                      <span className="text-[9px] font-medium text-white/50 mt-1">{credits}</span>
+                    </div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right"><p>{credits} credits available</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Link href="/billing">
+              <div className="flex items-center gap-3 rounded-lg font-medium text-white/50 hover:bg-white/10 hover:text-white transition-all cursor-pointer group select-none px-3.5 py-3 text-sm">
+                <div className="relative h-5 w-5 flex items-center justify-center">
+                  <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      className="text-sidebar-accent"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    />
+                    <path
+                      className="text-primary"
+                      strokeDasharray={`${creditsPercentage}, 100`}
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <Coins className="absolute h-2 w-2 text-primary" />
+                </div>
+                <span>{credits} credits</span>
+              </div>
+            </Link>
+          )}
+          
           {account.map((item) => {
             const isActive = location === item.href;
             return collapsed ? (
@@ -381,76 +446,8 @@ export function Sidebar({ className }: SidebarProps) {
         )}
       </div>
 
-      {/* Footer - Credits */}
+      {/* Footer - Theme Toggle only */}
       <div className={cn("mt-auto pb-6", collapsed ? "px-3 flex flex-col items-center pt-2" : "px-3 pt-4")}>
-        {!collapsed ? (
-          <div className="flex items-center gap-4 mb-4 px-2 animate-fade-in">
-            <div className="relative h-12 w-12 flex items-center justify-center">
-              <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
-                <path
-                  className="text-sidebar-accent"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                />
-                <path
-                  className="text-primary drop-shadow-md"
-                  strokeDasharray={`${creditsPercentage}, 100`}
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <Coins className="absolute h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <div className="flex items-baseline gap-1">
-                <span className="text-lg font-bold text-sidebar-foreground">{credits}</span>
-                <span className="text-[10px] text-muted-foreground">credits</span>
-              </div>
-              <Link href="/billing">
-                <Button size="sm" className="h-7 text-[10px] rounded-full w-full mt-1 bg-primary hover:bg-primary/90 text-white border-0">
-                  Get More
-                </Button>
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link href="/billing">
-                  <div className="relative h-10 w-10 mb-4 flex items-center justify-center cursor-pointer">
-                    <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
-                      <path
-                        className="text-sidebar-accent"
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                      />
-                      <path
-                        className="text-primary"
-                        strokeDasharray={`${creditsPercentage}, 100`}
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <Coins className="absolute h-3.5 w-3.5 text-primary" />
-                  </div>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right"><p>{credits} credits available</p></TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-        
         {!collapsed && <ThemeToggle collapsed={collapsed} />}
       </div>
     </aside>
