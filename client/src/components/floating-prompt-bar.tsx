@@ -256,6 +256,40 @@ export function FloatingPromptBar() {
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       >
         <div className="p-3 flex items-center gap-3">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all text-white/80 hover:text-white"
+                data-testid="main-style-dropdown"
+              >
+                <Palette className="h-4 w-4 text-[#B94E30]" />
+                <span className="text-xs font-medium">{styleOptions.find(s => s.id === selectedStyle)?.label}</span>
+                <ChevronDown className="h-3 w-3 text-white/50" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-36 p-1 bg-black/95 border-white/10 backdrop-blur-xl"
+              align="start"
+              sideOffset={8}
+            >
+              {styleOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setSelectedStyle(option.id)}
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                    selectedStyle === option.id
+                      ? "bg-[#B94E30] text-white"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  )}
+                >
+                  {option.label}
+                  {selectedStyle === option.id && <Check className="h-3 w-3" />}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
+
           <div className="flex-1 relative">
             <input
               type="text"
@@ -269,6 +303,25 @@ export function FloatingPromptBar() {
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5 p-1 bg-white/5 rounded-lg">
+              {countOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setSelectedCount(option.id)}
+                  className={cn(
+                    "w-7 h-7 flex items-center justify-center rounded text-xs font-semibold transition-all",
+                    selectedCount === option.id
+                      ? "bg-[#B94E30] text-white"
+                      : "text-white/50 hover:text-white hover:bg-white/10"
+                  )}
+                  data-testid={`main-count-${option.id}`}
+                  title={`Generate ${option.label} image${option.id !== "1" ? "s" : ""}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 rounded-full">
               <Zap className="h-3.5 w-3.5 text-[#E3B436]" />
               <span className="text-xs font-medium text-white/70">10</span>
