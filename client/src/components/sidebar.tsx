@@ -93,13 +93,15 @@ export function Sidebar({ className }: SidebarProps) {
   const maxCredits = 100;
   const creditsPercentage = Math.min(Math.round((credits / maxCredits) * 100), 100);
 
+  const totalCreations = stats ? (stats.images + stats.mockups + stats.bgRemoved) : 0;
+
   const navigation = [
     { name: "Home", shortName: "Home", icon: Home, href: "/", count: null },
     { name: "Discover", shortName: "Discover", icon: Compass, href: "/discover", badge: "New" },
     { name: "Image Generator", shortName: "Image", icon: ImageIcon, href: "/image-gen", badge: "5 agents" },
     { name: "Mockup Generator", shortName: "Mockup", icon: Shirt, href: "/mockup", badge: "New" },
     { name: "Background Remover", shortName: "BG", icon: Scissors, href: "/bg-remover", count: null },
-    { name: "My Creations", shortName: "Creations", icon: Folder, href: "/my-creations", count: "8" },
+    { name: "My Creations", shortName: "Creations", icon: Folder, href: "/my-creations", count: totalCreations > 0 ? totalCreations.toString() : null },
   ];
 
   const account = [

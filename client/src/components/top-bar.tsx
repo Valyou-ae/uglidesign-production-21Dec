@@ -15,6 +15,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { userApi } from "@/lib/api";
 
 const NOTIFICATIONS = [
   {
@@ -50,7 +52,17 @@ const NOTIFICATIONS = [
 ];
 
 export function TopBar() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ["user", "stats"],
+    queryFn: userApi.getStats,
+    staleTime: 1000 * 60 * 5,
+    enabled: isAuthenticated,
+  });
+  
+  const hasCreditsData = stats !== undefined && stats.credits !== undefined;
+  const credits = stats?.credits ?? 0;
   
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -126,20 +138,22 @@ export function TopBar() {
           </PopoverContent>
         </Popover>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link href="/billing">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer" data-testid="credit-display">
-                <Zap className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">1,523</span>
-                <span className="text-xs text-muted-foreground hidden lg:inline">credits</span>
-              </div>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>1,523 of 2,000 credits remaining</p>
-          </TooltipContent>
-        </Tooltip>
+        {isAuthenticated && hasCreditsData && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href="/billing">
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer" data-testid="credit-display">
+                  <Zap className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold text-primary">{credits.toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground hidden lg:inline">credits</span>
+                </div>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{credits.toLocaleString()} credits remaining</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         <div className="relative hidden md:block group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />

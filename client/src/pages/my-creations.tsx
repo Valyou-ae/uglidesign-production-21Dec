@@ -97,7 +97,7 @@ export default function MyCreations() {
       type: img.generationType || "image",
       date: new Date(img.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
       time: new Date(img.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      size: "2.0 MB",
+      size: "—",
       dimensions: img.aspectRatio || "1024×1024",
       src: img.imageUrl,
       tags: [img.style || "Generated"],
