@@ -358,110 +358,174 @@ export function FloatingPromptBar() {
               className="overflow-hidden"
             >
               <div className="px-4 py-3 border-t border-white/10">
-                <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
+                <div className="flex items-center gap-3 overflow-x-auto no-scrollbar">
                   <div className="flex items-center gap-1.5 min-w-fit">
                     <Settings2 className="h-3.5 w-3.5 text-white/40" />
                     <span className="text-[10px] font-medium text-white/40 uppercase">Options</span>
                   </div>
 
-                  <div className="flex items-center gap-1">
-                    {qualityOptions.map((option) => (
+                  <Popover>
+                    <PopoverTrigger asChild>
                       <button
-                        key={option.id}
-                        onClick={() => setSelectedQuality(option.id)}
-                        className={cn(
-                          "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all",
-                          selectedQuality === option.id
-                            ? "bg-[#B94E30] text-white"
-                            : "text-white/50 hover:text-white hover:bg-white/5"
-                        )}
-                        data-testid={`quality-${option.id}`}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
+                        data-testid="quality-dropdown"
                       >
-                        <Sparkles className="h-2.5 w-2.5" />
-                        {option.label}
+                        <Sparkles className="h-3 w-3 text-[#E3B436]" />
+                        {qualityOptions.find(q => q.id === selectedQuality)?.label}
+                        <ChevronDown className="h-3 w-3 text-white/50" />
                       </button>
-                    ))}
-                  </div>
-
-                  <div className="w-px h-4 bg-white/10" />
-
-                  <div className="flex items-center gap-1">
-                    {speedOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        onClick={() => setSelectedSpeed(option.id)}
-                        className={cn(
-                          "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all",
-                          selectedSpeed === option.id
-                            ? "bg-[#B94E30] text-white"
-                            : "text-white/50 hover:text-white hover:bg-white/5"
-                        )}
-                        data-testid={`speed-${option.id}`}
-                      >
-                        <Zap className="h-2.5 w-2.5" />
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="w-px h-4 bg-white/10" />
-
-                  <div className="flex items-center gap-0.5">
-                    {ratioOptions.map((option) => {
-                      const Icon = option.icon;
-                      return (
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl"
+                      align="center"
+                      sideOffset={8}
+                    >
+                      {qualityOptions.map((option) => (
                         <button
                           key={option.id}
-                          onClick={() => setSelectedRatio(option.id)}
+                          onClick={() => setSelectedQuality(option.id)}
                           className={cn(
-                            "flex items-center justify-center w-6 h-6 rounded transition-all",
-                            selectedRatio === option.id
+                            "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                            selectedQuality === option.id
                               ? "bg-[#B94E30] text-white"
-                              : "text-white/50 hover:text-white hover:bg-white/5"
+                              : "text-white/70 hover:text-white hover:bg-white/10"
                           )}
-                          data-testid={`ratio-${option.id}`}
+                          data-testid={`quality-${option.id}`}
                         >
-                          <Icon className="h-3 w-3" />
+                          {option.label}
+                          {selectedQuality === option.id && <Check className="h-3 w-3" />}
                         </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="w-px h-4 bg-white/10" />
-
-                  <div className="flex items-center gap-1">
-                    {detailOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        onClick={() => setSelectedDetail(option.id)}
-                        className={cn(
-                          "px-2 py-1 rounded text-[10px] font-medium transition-all",
-                          selectedDetail === option.id
-                            ? "text-white bg-white/10"
-                            : "text-white/50 hover:text-white"
-                        )}
-                        data-testid={`detail-${option.id}`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="w-px h-4 bg-white/10" />
+                      ))}
+                    </PopoverContent>
+                  </Popover>
 
                   <Popover>
                     <PopoverTrigger asChild>
                       <button
-                        className="flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
-                        data-testid="style-dropdown"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
+                        data-testid="speed-dropdown"
                       >
-                        <Palette className="h-2.5 w-2.5 text-[#B94E30]" />
-                        {styleOptions.find(s => s.id === selectedStyle)?.label}
-                        <ChevronDown className="h-2.5 w-2.5" />
+                        <Zap className="h-3 w-3 text-[#E3B436]" />
+                        {speedOptions.find(s => s.id === selectedSpeed)?.label}
+                        <ChevronDown className="h-3 w-3 text-white/50" />
                       </button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-36 p-1 bg-black/95 border-white/10 backdrop-blur-xl"
+                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl"
+                      align="center"
+                      sideOffset={8}
+                    >
+                      {speedOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => setSelectedSpeed(option.id)}
+                          className={cn(
+                            "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                            selectedSpeed === option.id
+                              ? "bg-[#B94E30] text-white"
+                              : "text-white/70 hover:text-white hover:bg-white/10"
+                          )}
+                          data-testid={`speed-${option.id}`}
+                        >
+                          {option.label}
+                          {selectedSpeed === option.id && <Check className="h-3 w-3" />}
+                        </button>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
+                        data-testid="ratio-dropdown"
+                      >
+                        {(() => {
+                          const RatioIcon = ratioOptions.find(r => r.id === selectedRatio)?.icon || Square;
+                          return <RatioIcon className="h-3 w-3 text-[#B94E30]" />;
+                        })()}
+                        {selectedRatio}
+                        <ChevronDown className="h-3 w-3 text-white/50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl"
+                      align="center"
+                      sideOffset={8}
+                    >
+                      {ratioOptions.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <button
+                            key={option.id}
+                            onClick={() => setSelectedRatio(option.id)}
+                            className={cn(
+                              "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                              selectedRatio === option.id
+                                ? "bg-[#B94E30] text-white"
+                                : "text-white/70 hover:text-white hover:bg-white/10"
+                            )}
+                            data-testid={`ratio-${option.id}`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Icon className="h-3 w-3" />
+                              {option.id}
+                            </span>
+                            {selectedRatio === option.id && <Check className="h-3 w-3" />}
+                          </button>
+                        );
+                      })}
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
+                        data-testid="detail-dropdown"
+                      >
+                        <span className="text-[#B94E30]">◉</span>
+                        {detailOptions.find(d => d.id === selectedDetail)?.label}
+                        <ChevronDown className="h-3 w-3 text-white/50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl"
+                      align="center"
+                      sideOffset={8}
+                    >
+                      {detailOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => setSelectedDetail(option.id)}
+                          className={cn(
+                            "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                            selectedDetail === option.id
+                              ? "bg-[#B94E30] text-white"
+                              : "text-white/70 hover:text-white hover:bg-white/10"
+                          )}
+                          data-testid={`detail-${option.id}`}
+                        >
+                          {option.label}
+                          {selectedDetail === option.id && <Check className="h-3 w-3" />}
+                        </button>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
+                        data-testid="style-dropdown-expanded"
+                      >
+                        <Palette className="h-3 w-3 text-[#B94E30]" />
+                        {styleOptions.find(s => s.id === selectedStyle)?.label}
+                        <ChevronDown className="h-3 w-3 text-white/50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl"
                       align="center"
                       sideOffset={8}
                     >
@@ -483,25 +547,40 @@ export function FloatingPromptBar() {
                     </PopoverContent>
                   </Popover>
 
-                  <div className="w-px h-4 bg-white/10" />
-
-                  <div className="flex items-center gap-0.5">
-                    {countOptions.map((option) => (
+                  <Popover>
+                    <PopoverTrigger asChild>
                       <button
-                        key={option.id}
-                        onClick={() => setSelectedCount(option.id)}
-                        className={cn(
-                          "w-6 h-6 flex items-center justify-center rounded text-[10px] font-medium transition-all",
-                          selectedCount === option.id
-                            ? "bg-[#B94E30] text-white"
-                            : "text-white/50 hover:text-white hover:bg-white/5"
-                        )}
-                        data-testid={`count-${option.id}`}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
+                        data-testid="count-dropdown"
                       >
-                        {option.label}
+                        <span className="text-[#E3B436] font-bold">#</span>
+                        {selectedCount} {parseInt(selectedCount) > 1 ? "Images" : "Image"}
+                        <ChevronDown className="h-3 w-3 text-white/50" />
                       </button>
-                    ))}
-                  </div>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl"
+                      align="center"
+                      sideOffset={8}
+                    >
+                      {countOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => setSelectedCount(option.id)}
+                          className={cn(
+                            "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                            selectedCount === option.id
+                              ? "bg-[#B94E30] text-white"
+                              : "text-white/70 hover:text-white hover:bg-white/10"
+                          )}
+                          data-testid={`count-${option.id}`}
+                        >
+                          {option.label} {parseInt(option.id) > 1 ? "Images" : "Image"}
+                          {selectedCount === option.id && <Check className="h-3 w-3" />}
+                        </button>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             </motion.div>
