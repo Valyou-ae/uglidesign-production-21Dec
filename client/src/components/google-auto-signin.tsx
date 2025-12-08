@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 
 declare global {
   interface Window {
@@ -47,6 +48,7 @@ interface GoogleAutoSignInProps {
 
 export function GoogleAutoSignIn({ onSuccess, onError }: GoogleAutoSignInProps) {
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const initializedRef = useRef(false);
   const isAuthenticatingRef = useRef(false);
 
@@ -116,6 +118,7 @@ export function GoogleAutoSignIn({ onSuccess, onError }: GoogleAutoSignInProps) 
 
               if (authResponse.ok) {
                 console.log("Google sign-in successful");
+                await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
                 onSuccess?.();
                 setLocation("/discover");
               } else {
