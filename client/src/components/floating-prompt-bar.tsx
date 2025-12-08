@@ -10,7 +10,21 @@ import {
   Settings2,
   Loader2,
   Palette,
-  Check
+  Check,
+  Camera,
+  Clapperboard,
+  Tv,
+  Droplets,
+  Monitor,
+  Circle,
+  Sunset,
+  Sword,
+  Shapes,
+  Box,
+  Pencil,
+  Minus,
+  Plus,
+  Smartphone
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
@@ -21,35 +35,44 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const qualityOptions = [
-  { id: "draft", label: "Draft" },
-  { id: "premium", label: "Premium" },
+const STYLE_PRESETS = [
+  { id: "auto", name: "Auto", icon: Sparkles },
+  { id: "photo", name: "Photorealistic", icon: Camera },
+  { id: "cinematic", name: "Cinematic", icon: Clapperboard },
+  { id: "anime", name: "Anime/Manga", icon: Tv },
+  { id: "oil", name: "Oil Painting", icon: Palette },
+  { id: "watercolor", name: "Watercolor", icon: Droplets },
+  { id: "digital", name: "Digital Art", icon: Monitor },
+  { id: "minimal", name: "Minimalist", icon: Circle },
+  { id: "retro", name: "Retrowave", icon: Sunset },
+  { id: "fantasy", name: "Dark Fantasy", icon: Sword },
+  { id: "pop", name: "Pop Art", icon: Shapes },
+  { id: "iso", name: "Isometric 3D", icon: Box },
+  { id: "sketch", name: "Pencil Sketch", icon: Pencil },
 ];
 
-const speedOptions = [
-  { id: "fast", label: "Fast" },
-  { id: "quality", label: "Quality" },
+const QUALITY_PRESETS = [
+  { id: "draft", name: "Draft", icon: Zap },
+  { id: "premium", name: "Premium", icon: Sparkles },
 ];
 
-const ratioOptions = [
-  { id: "1:1", icon: Square },
-  { id: "16:9", icon: RectangleHorizontal },
-  { id: "9:16", icon: RectangleVertical },
-  { id: "4:3", icon: RectangleHorizontal },
-  { id: "3:4", icon: RectangleVertical },
+const SPEED_OPTIONS = [
+  { id: "fast", name: "Fast", icon: Zap },
+  { id: "quality", name: "Quality", icon: Sparkles },
 ];
 
-const detailOptions = [
-  { id: "low", label: "Low" },
-  { id: "medium", label: "Medium" },
-  { id: "high", label: "High" },
+const ASPECT_RATIOS = [
+  { id: "1:1", name: "Square", icon: Square },
+  { id: "16:9", name: "Landscape", icon: RectangleHorizontal },
+  { id: "9:16", name: "Portrait", icon: RectangleVertical },
+  { id: "4:3", name: "Classic", icon: Monitor },
+  { id: "3:4", name: "Tall", icon: Smartphone },
 ];
 
-const styleOptions = [
-  { id: "auto", label: "Auto" },
-  { id: "photo", label: "Photo" },
-  { id: "art", label: "Art" },
-  { id: "anime", label: "Anime" },
+const DETAIL_LEVELS = [
+  { id: "low", name: "Low", icon: Minus },
+  { id: "medium", name: "Medium", icon: Circle },
+  { id: "high", name: "High", icon: Plus },
 ];
 
 const countOptions = [
@@ -258,7 +281,7 @@ export function FloatingPromptBar() {
   return (
     <div 
       ref={containerRef}
-      className="fixed bottom-[124px] left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4"
+      className="fixed bottom-[224px] left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onBlur={handleBlur}
@@ -338,32 +361,41 @@ export function FloatingPromptBar() {
                         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
                         data-testid="quality-dropdown"
                       >
-                        <Sparkles className="h-3 w-3 text-[#E3B436]" />
-                        {qualityOptions.find(q => q.id === selectedQuality)?.label}
+                        {(() => {
+                          const QualityIcon = QUALITY_PRESETS.find(q => q.id === selectedQuality)?.icon || Sparkles;
+                          return <QualityIcon className="h-3 w-3 text-[#E3B436]" />;
+                        })()}
+                        {QUALITY_PRESETS.find(q => q.id === selectedQuality)?.name}
                         <ChevronDown className={cn("h-3 w-3 text-white/50 transition-transform", openDropdown === "quality" && "rotate-180")} />
                       </button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
+                      className="w-36 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
                       align="center"
                       sideOffset={8}
                     >
-                      {qualityOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          onClick={() => { setSelectedQuality(option.id); setOpenDropdown(null); }}
-                          className={cn(
-                            "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
-                            selectedQuality === option.id
-                              ? "bg-[#B94E30] text-white"
-                              : "text-white/70 hover:text-white hover:bg-white/10"
-                          )}
-                          data-testid={`quality-${option.id}`}
-                        >
-                          {option.label}
-                          {selectedQuality === option.id && <Check className="h-3 w-3" />}
-                        </button>
-                      ))}
+                      {QUALITY_PRESETS.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <button
+                            key={option.id}
+                            onClick={() => { setSelectedQuality(option.id); setOpenDropdown(null); }}
+                            className={cn(
+                              "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                              selectedQuality === option.id
+                                ? "bg-[#B94E30] text-white"
+                                : "text-white/70 hover:text-white hover:bg-white/10"
+                            )}
+                            data-testid={`quality-${option.id}`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Icon className="h-3 w-3" />
+                              {option.name}
+                            </span>
+                            {selectedQuality === option.id && <Check className="h-3 w-3" />}
+                          </button>
+                        );
+                      })}
                     </PopoverContent>
                   </Popover>
 
@@ -373,32 +405,41 @@ export function FloatingPromptBar() {
                         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
                         data-testid="speed-dropdown"
                       >
-                        <Zap className="h-3 w-3 text-[#E3B436]" />
-                        {speedOptions.find(s => s.id === selectedSpeed)?.label}
+                        {(() => {
+                          const SpeedIcon = SPEED_OPTIONS.find(s => s.id === selectedSpeed)?.icon || Zap;
+                          return <SpeedIcon className="h-3 w-3 text-[#E3B436]" />;
+                        })()}
+                        {SPEED_OPTIONS.find(s => s.id === selectedSpeed)?.name}
                         <ChevronDown className={cn("h-3 w-3 text-white/50 transition-transform", openDropdown === "speed" && "rotate-180")} />
                       </button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
+                      className="w-36 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
                       align="center"
                       sideOffset={8}
                     >
-                      {speedOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          onClick={() => { setSelectedSpeed(option.id); setOpenDropdown(null); }}
-                          className={cn(
-                            "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
-                            selectedSpeed === option.id
-                              ? "bg-[#B94E30] text-white"
-                              : "text-white/70 hover:text-white hover:bg-white/10"
-                          )}
-                          data-testid={`speed-${option.id}`}
-                        >
-                          {option.label}
-                          {selectedSpeed === option.id && <Check className="h-3 w-3" />}
-                        </button>
-                      ))}
+                      {SPEED_OPTIONS.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <button
+                            key={option.id}
+                            onClick={() => { setSelectedSpeed(option.id); setOpenDropdown(null); }}
+                            className={cn(
+                              "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                              selectedSpeed === option.id
+                                ? "bg-[#B94E30] text-white"
+                                : "text-white/70 hover:text-white hover:bg-white/10"
+                            )}
+                            data-testid={`speed-${option.id}`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Icon className="h-3 w-3" />
+                              {option.name}
+                            </span>
+                            {selectedSpeed === option.id && <Check className="h-3 w-3" />}
+                          </button>
+                        );
+                      })}
                     </PopoverContent>
                   </Popover>
 
@@ -409,7 +450,7 @@ export function FloatingPromptBar() {
                         data-testid="ratio-dropdown"
                       >
                         {(() => {
-                          const RatioIcon = ratioOptions.find(r => r.id === selectedRatio)?.icon || Square;
+                          const RatioIcon = ASPECT_RATIOS.find(r => r.id === selectedRatio)?.icon || Square;
                           return <RatioIcon className="h-3 w-3 text-[#B94E30]" />;
                         })()}
                         {selectedRatio}
@@ -417,11 +458,11 @@ export function FloatingPromptBar() {
                       </button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
+                      className="w-40 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
                       align="center"
                       sideOffset={8}
                     >
-                      {ratioOptions.map((option) => {
+                      {ASPECT_RATIOS.map((option) => {
                         const Icon = option.icon;
                         return (
                           <button
@@ -437,7 +478,7 @@ export function FloatingPromptBar() {
                           >
                             <span className="flex items-center gap-2">
                               <Icon className="h-3 w-3" />
-                              {option.id}
+                              {option.name} ({option.id})
                             </span>
                             {selectedRatio === option.id && <Check className="h-3 w-3" />}
                           </button>
@@ -452,32 +493,41 @@ export function FloatingPromptBar() {
                         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
                         data-testid="detail-dropdown"
                       >
-                        <span className="text-[#B94E30]">◉</span>
-                        {detailOptions.find(d => d.id === selectedDetail)?.label}
+                        {(() => {
+                          const DetailIcon = DETAIL_LEVELS.find(d => d.id === selectedDetail)?.icon || Circle;
+                          return <DetailIcon className="h-3 w-3 text-[#B94E30]" />;
+                        })()}
+                        {DETAIL_LEVELS.find(d => d.id === selectedDetail)?.name}
                         <ChevronDown className={cn("h-3 w-3 text-white/50 transition-transform", openDropdown === "detail" && "rotate-180")} />
                       </button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
+                      className="w-36 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
                       align="center"
                       sideOffset={8}
                     >
-                      {detailOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          onClick={() => { setSelectedDetail(option.id); setOpenDropdown(null); }}
-                          className={cn(
-                            "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
-                            selectedDetail === option.id
-                              ? "bg-[#B94E30] text-white"
-                              : "text-white/70 hover:text-white hover:bg-white/10"
-                          )}
-                          data-testid={`detail-${option.id}`}
-                        >
-                          {option.label}
-                          {selectedDetail === option.id && <Check className="h-3 w-3" />}
-                        </button>
-                      ))}
+                      {DETAIL_LEVELS.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <button
+                            key={option.id}
+                            onClick={() => { setSelectedDetail(option.id); setOpenDropdown(null); }}
+                            className={cn(
+                              "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                              selectedDetail === option.id
+                                ? "bg-[#B94E30] text-white"
+                                : "text-white/70 hover:text-white hover:bg-white/10"
+                            )}
+                            data-testid={`detail-${option.id}`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Icon className="h-3 w-3" />
+                              {option.name}
+                            </span>
+                            {selectedDetail === option.id && <Check className="h-3 w-3" />}
+                          </button>
+                        );
+                      })}
                     </PopoverContent>
                   </Popover>
 
@@ -487,31 +537,40 @@ export function FloatingPromptBar() {
                         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all"
                         data-testid="style-dropdown-expanded"
                       >
-                        <Palette className="h-3 w-3 text-[#B94E30]" />
-                        {styleOptions.find(s => s.id === selectedStyle)?.label}
+                        {(() => {
+                          const StyleIcon = STYLE_PRESETS.find(s => s.id === selectedStyle)?.icon || Sparkles;
+                          return <StyleIcon className="h-3 w-3 text-[#B94E30]" />;
+                        })()}
+                        {STYLE_PRESETS.find(s => s.id === selectedStyle)?.name}
                         <ChevronDown className={cn("h-3 w-3 text-white/50 transition-transform", openDropdown === "styleExpanded" && "rotate-180")} />
                       </button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-32 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
+                      className="w-44 p-1 bg-black/95 border-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150 max-h-[280px] overflow-y-auto"
                       align="center"
                       sideOffset={8}
                     >
-                      {styleOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          onClick={() => { setSelectedStyle(option.id); setOpenDropdown(null); }}
-                          className={cn(
-                            "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
-                            selectedStyle === option.id
-                              ? "bg-[#B94E30] text-white"
-                              : "text-white/70 hover:text-white hover:bg-white/10"
-                          )}
-                        >
-                          {option.label}
-                          {selectedStyle === option.id && <Check className="h-3 w-3" />}
-                        </button>
-                      ))}
+                      {STYLE_PRESETS.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <button
+                            key={option.id}
+                            onClick={() => { setSelectedStyle(option.id); setOpenDropdown(null); }}
+                            className={cn(
+                              "w-full flex items-center justify-between px-3 py-2 rounded text-xs font-medium transition-all",
+                              selectedStyle === option.id
+                                ? "bg-[#B94E30] text-white"
+                                : "text-white/70 hover:text-white hover:bg-white/10"
+                            )}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Icon className="h-3 w-3" />
+                              {option.name}
+                            </span>
+                            {selectedStyle === option.id && <Check className="h-3 w-3" />}
+                          </button>
+                        );
+                      })}
                     </PopoverContent>
                   </Popover>
 
