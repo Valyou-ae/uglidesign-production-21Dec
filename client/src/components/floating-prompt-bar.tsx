@@ -350,11 +350,6 @@ export function FloatingPromptBar() {
             >
               <div className="px-4 py-3 border-t border-white/10">
                 <div className="flex items-center gap-3 overflow-x-auto no-scrollbar">
-                  <div className="flex items-center gap-1.5 min-w-fit">
-                    <Settings2 className="h-3.5 w-3.5 text-white/40" />
-                    <span className="text-[10px] font-medium text-white/40 uppercase">Options</span>
-                  </div>
-
                   <Popover open={openDropdown === "quality"} onOpenChange={(open) => handleDropdownChange("quality", open)}>
                     <PopoverTrigger asChild>
                       <button
