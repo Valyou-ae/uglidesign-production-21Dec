@@ -29,7 +29,7 @@ import {
 import { userApi } from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
 
-function ThemeToggle({ collapsed }: { collapsed: boolean }) {
+function useTheme() {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
 
   const toggleTheme = () => {
@@ -42,34 +42,75 @@ function ThemeToggle({ collapsed }: { collapsed: boolean }) {
     }
   };
 
-  if (collapsed) {
-    return (
-      <div 
-        onClick={toggleTheme}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-800 cursor-pointer mx-auto hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
-      >
-        {theme === "light" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-      </div>
-    );
-  }
+  return { theme, toggleTheme };
+}
+
+export function ThemeToggleIcon() {
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div 
-      onClick={toggleTheme}
-      className="flex h-9 w-full items-center rounded-full bg-zinc-200 dark:bg-zinc-800 p-1 cursor-pointer relative"
-    >
-      <div 
-        className={cn(
-          "absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-white dark:bg-zinc-600 shadow-sm transition-all duration-300 ease-out",
-          theme === "light" ? "left-1" : "left-[calc(50%)]"
-        )}
-      />
-      <div className="flex-1 flex justify-center items-center z-10 text-zinc-600 dark:text-zinc-400">
-        <Sun className="h-4 w-4" />
-      </div>
-      <div className="flex-1 flex justify-center items-center z-10 text-zinc-600 dark:text-zinc-400">
-        <Moon className="h-4 w-4" />
-      </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div 
+            onClick={toggleTheme}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800/80 backdrop-blur-sm cursor-pointer hover:bg-zinc-700 transition-colors border border-white/10"
+            data-testid="button-theme-toggle"
+          >
+            {theme === "light" ? <Sun className="h-4 w-4 text-zinc-300" /> : <Moon className="h-4 w-4 text-zinc-300" />}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom"><p>{theme === "light" ? "Switch to dark mode" : "Switch to light mode"}</p></TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+interface CreditsIconProps {
+  credits: number;
+  creditsPercentage: number;
+}
+
+function CreditsIcon({ credits, creditsPercentage }: CreditsIconProps) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link href="/billing">
+            <div className="relative h-10 w-10 flex items-center justify-center cursor-pointer rounded-full bg-zinc-800/80 backdrop-blur-sm hover:bg-zinc-700 transition-colors border border-white/10" data-testid="button-credits">
+              <svg className="h-8 w-8 -rotate-90" viewBox="0 0 36 36">
+                <path
+                  className="text-zinc-600"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                />
+                <path
+                  className="text-primary"
+                  strokeDasharray={`${creditsPercentage}, 100`}
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <Coins className="absolute h-3 w-3 text-primary" />
+            </div>
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="bottom"><p>{credits} credits - Click to get more</p></TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function TopRightIcons({ credits, creditsPercentage }: { credits: number; creditsPercentage: number }) {
+  return (
+    <div className="fixed top-4 right-4 z-40 hidden md:flex items-center gap-2">
+      <CreditsIcon credits={credits} creditsPercentage={creditsPercentage} />
+      <ThemeToggleIcon />
     </div>
   );
 }
@@ -343,79 +384,9 @@ export function Sidebar({ className }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Footer */}
-      <div className={cn("pt-4 mt-auto pb-6", collapsed ? "px-3 flex flex-col items-center" : "px-3")}>
-        {!collapsed ? (
-          <div className="flex items-center gap-4 mb-4 px-2 animate-fade-in">
-            <div className="relative h-12 w-12 flex items-center justify-center">
-              <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
-                <path
-                  className="text-sidebar-accent"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                />
-                <path
-                  className="text-primary drop-shadow-md"
-                  strokeDasharray={`${creditsPercentage}, 100`}
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <Coins className="absolute h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <div className="flex items-baseline gap-1">
-                <span className="text-lg font-bold text-sidebar-foreground">{credits}</span>
-                <span className="text-[10px] text-muted-foreground">credits</span>
-              </div>
-              <Link href="/billing">
-                <Button size="sm" className="h-7 text-[10px] rounded-full w-full mt-1 bg-primary hover:bg-primary/90 text-white border-0">
-                  Get More
-                </Button>
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link href="/billing">
-                  <div className="relative h-10 w-10 mb-4 flex items-center justify-center cursor-pointer">
-                    <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
-                      <path
-                        className="text-sidebar-accent"
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                      />
-                      <path
-                        className="text-primary"
-                        strokeDasharray={`${creditsPercentage}, 100`}
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <Coins className="absolute h-3.5 w-3.5 text-primary" />
-                  </div>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right"><p>{credits} credits available</p></TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-        
-        <ThemeToggle collapsed={collapsed} />
-      </div>
     </aside>
+      
+      <TopRightIcons credits={credits} creditsPercentage={creditsPercentage} />
     </>
   );
 }

@@ -141,12 +141,6 @@ function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-muted transition-colors"
-            >
-              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-            </button>
             <Button 
               variant="ghost" 
               className="hidden sm:inline-flex" 
@@ -162,6 +156,13 @@ function Header() {
             >
               Get Started
             </Button>
+            <button
+              onClick={toggleTheme}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-800/80 dark:backdrop-blur-sm cursor-pointer hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors dark:border dark:border-white/10"
+              data-testid="button-theme-toggle-landing"
+            >
+              {theme === "light" ? <Moon className="h-4 w-4 text-zinc-600 dark:text-zinc-300" /> : <Sun className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />}
+            </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 rounded-lg hover:bg-muted"
