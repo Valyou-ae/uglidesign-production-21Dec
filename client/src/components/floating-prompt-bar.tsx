@@ -77,7 +77,7 @@ export function FloatingPromptBar() {
       <motion.div
         layout
         className={cn(
-          "bg-[#1C1C1E]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden",
+          "bg-black backdrop-blur-xl border border-[#B94E30]/40 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden",
           isExpanded ? "rounded-3xl" : "rounded-full"
         )}
         initial={false}
