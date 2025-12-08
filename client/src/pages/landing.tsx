@@ -150,14 +150,14 @@ function Header() {
             <Button 
               variant="ghost" 
               className="hidden sm:inline-flex" 
-              onClick={openLoginPopup}
+              onClick={() => openLoginPopup()}
               data-testid="button-login"
             >
               Log in
             </Button>
             <Button 
               className="bg-primary hover:bg-primary/90" 
-              onClick={openLoginPopup}
+              onClick={() => openLoginPopup()}
               data-testid="button-get-started"
             >
               Get Started

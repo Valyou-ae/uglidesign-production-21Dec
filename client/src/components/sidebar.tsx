@@ -97,7 +97,7 @@ export function Sidebar({ className }: SidebarProps) {
   const totalCreations = stats ? (stats.images + stats.mockups + stats.bgRemoved) : 0;
 
   const navigation = [
-    { name: "Home", shortName: "Home", icon: Home, href: "/", count: null },
+    { name: "Home", shortName: "Home", icon: Home, href: "/discover", count: null },
     { name: "Discover", shortName: "Discover", icon: Compass, href: "/discover", badge: "New" },
     { name: "Image Generator", shortName: "Image", icon: ImageIcon, href: "/image-gen", badge: "5 agents" },
     { name: "Mockup Generator", shortName: "Mockup", icon: Shirt, href: "/mockup", badge: "New" },
@@ -113,8 +113,8 @@ export function Sidebar({ className }: SidebarProps) {
   // Mobile Bottom Navigation
   const MobileNav = () => (
     <div className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-background border-t border-border z-50 flex items-center justify-around px-2 pb-safe">
-      <Link href="/">
-        <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/" ? "text-primary" : "text-muted-foreground")}>
+      <Link href="/discover">
+        <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/discover" ? "text-primary" : "text-muted-foreground")}>
           <Home className="h-6 w-6" />
           <span className="text-[10px] mt-1">Home</span>
         </div>
