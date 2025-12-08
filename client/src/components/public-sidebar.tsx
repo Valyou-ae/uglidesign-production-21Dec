@@ -5,7 +5,6 @@ import {
   Image as ImageIcon, 
   Shirt, 
   Scissors, 
-  Folder, 
   HelpCircle,
   Sun,
   Moon,
@@ -84,7 +83,6 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
     { name: "Image Generator", shortName: "Image", icon: ImageIcon, href: "/image-gen", badge: "5 agents" },
     { name: "Mockup Generator", shortName: "Mockup", icon: Shirt, href: "/mockup", badge: "New" },
     { name: "Background Remover", shortName: "BG", icon: Scissors, href: "/bg-remover" },
-    { name: "My Creations", shortName: "Creations", icon: Folder, href: "/my-creations" },
   ];
 
   const accountNav = [
@@ -128,10 +126,10 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
            <span className="text-[10px] mt-1 font-medium text-foreground">Create</span>
         </div>
       </Link>
-      <Link href="/my-creations">
-        <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/my-creations" ? "text-primary" : "text-muted-foreground")}>
-          <Folder className="h-6 w-6" />
-          <span className="text-[10px] mt-1">Creations</span>
+      <Link href="/help">
+        <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/help" ? "text-primary" : "text-muted-foreground")}>
+          <HelpCircle className="h-6 w-6" />
+          <span className="text-[10px] mt-1">Help</span>
         </div>
       </Link>
       <Link href="/login">
