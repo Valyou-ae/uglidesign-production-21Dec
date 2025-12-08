@@ -192,6 +192,8 @@ export default function ImageGenerator() {
     speed: "quality" as "fast" | "quality"
   });
   const [qualityAutoUpgraded, setQualityAutoUpgraded] = useState(false);
+  const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   
   const { toast } = useToast();
   const { user } = useAuth();
@@ -516,6 +518,30 @@ export default function ImageGenerator() {
     }
   }, [generations, activeFilter]);
 
+  // Generation timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (status === "generating" && generationStartTime) {
+      interval = setInterval(() => {
+        setElapsedSeconds(Math.floor((Date.now() - generationStartTime) / 1000));
+      }, 100);
+    } else if (status !== "generating") {
+      setElapsedSeconds(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [status, generationStartTime]);
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins > 0) {
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${secs}s`;
+  };
+
   const isTextHeavyPrompt = (text: string): boolean => {
     const wordCount = text.trim().split(/\s+/).length;
     const charCount = text.length;
@@ -542,6 +568,8 @@ export default function ImageGenerator() {
     
     setStatus("generating");
     setProgress(0);
+    setGenerationStartTime(Date.now());
+    setElapsedSeconds(0);
     setAgents(AGENTS.map(a => ({ ...a, status: "idle" })));
 
     const generatedImages: GeneratedImage[] = [];
@@ -1214,17 +1242,29 @@ export default function ImageGenerator() {
                 <div className="break-inside-avoid mb-6 relative group rounded-xl overflow-hidden bg-card border border-border shadow-xl animate-in fade-in zoom-in duration-300">
                   <div className="w-full aspect-square bg-gradient-to-br from-[#B94E30] via-[#8B3A24] to-[#664D3F] animate-pulse flex flex-col items-center justify-center relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTAgMzhoNDB2MmgtNDB6Ii8+PHBhdGggZD0iTTAgMGg0MHYyaC00MHoiLz48cGF0aCBkPSJNMCAwdjQwaDJWMHoiLz48cGF0aCBkPSJNMzggMHY0MGgyVjB6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
-                    <Sparkles className="h-12 w-12 text-white animate-spin-slow duration-[3s]" />
-                    <p className="text-white/90 font-medium mt-4 text-sm animate-pulse">Generating masterpiece...</p>
+                    {/* Timer Display */}
+                    <div className="relative">
+                      <div className="h-20 w-20 rounded-full border-2 border-white/20 flex items-center justify-center backdrop-blur-sm bg-white/5">
+                        <motion.div
+                          className="absolute inset-0 rounded-full border-2 border-white/60"
+                          style={{ borderTopColor: 'transparent', borderLeftColor: 'transparent' }}
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                        <span className="text-2xl font-mono font-bold text-white tabular-nums">
+                          {formatTime(elapsedSeconds)}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-white/90 font-medium mt-4 text-sm">{getProgressText()}</p>
                     
                     {/* Animated Loader */}
-                    <div className="w-3/4 mt-3 space-y-1.5">
-                      <p className="text-[10px] font-medium text-white/80 text-center">{getProgressText()}</p>
-                      <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
+                    <div className="w-3/4 mt-3">
+                      <div className="h-1 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
                         <motion.div 
-                          className="h-full bg-white/90 rounded-full w-1/3"
-                          animate={{ x: ["-100%", "300%"] }}
-                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                          className="h-full bg-white/80 rounded-full w-1/4"
+                          animate={{ x: ["-100%", "400%"] }}
+                          transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                         />
                       </div>
                     </div>
