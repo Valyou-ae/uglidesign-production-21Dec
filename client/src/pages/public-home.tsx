@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { 
-  TrendingUp, 
   BadgeCheck, 
   Eye, 
   Heart, 
   Wand2,
-  Loader2,
-  Sparkles
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -518,26 +516,6 @@ export default function PublicHome() {
       <main className="flex-1 flex flex-col relative h-full overflow-y-auto bg-[#F8F8F8] dark:bg-[#0A0A0B] text-[#18181B] dark:text-[#FAFAFA] pb-20 md:pb-0">
         
         <div className="px-4 md:px-8 lg:px-12 py-6 max-w-[1600px] mx-auto w-full">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-[#B94E30]" />
-              <h2 className="text-xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Explore AI Creations</h2>
-              <div className="flex items-center gap-2 px-2.5 py-1 bg-[#16A34A]/10 rounded-full ml-1">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16A34A] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#16A34A]"></span>
-                </span>
-                <span className="text-xs font-medium text-[#16A34A]">Live</span>
-              </div>
-            </div>
-            <Link href="/login">
-              <button className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#B94E30] to-[#E3B436] text-white rounded-full font-medium text-sm hover:shadow-lg hover:shadow-[#B94E30]/25 transition-all">
-                <Sparkles className="h-4 w-4" />
-                Start Creating
-              </button>
-            </Link>
-          </div>
-
           <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-2">
             {displayedItems.map((item, index) => (
               <LazyMasonryCard key={item.id} item={item} index={index} />
