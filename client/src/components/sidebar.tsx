@@ -12,7 +12,6 @@ import {
   CreditCard, 
   HelpCircle,
   ChevronRight,
-  ChevronLeft,
   Sun,
   Moon,
   Compass,
@@ -166,16 +165,6 @@ export function Sidebar({ className }: SidebarProps) {
           className
         )}
       >
-      {/* Collapse Toggle */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-8 h-6 w-6 rounded-full border bg-background shadow-md hover:bg-accent text-muted-foreground z-50 hidden lg:flex"
-      >
-        {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
-      </Button>
-
       {/* Header / Logo */}
       <div className={cn("flex items-center gap-3 px-4 py-6 h-[88px]", collapsed ? "justify-center px-2" : "")}>
         <div className="h-10 w-10 min-w-[40px] rounded-xl bg-gradient-to-br from-[#B94E30] to-[#E3B436] flex items-center justify-center shadow-lg shadow-[#B94E30]/20">
