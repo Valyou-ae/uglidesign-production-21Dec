@@ -65,7 +65,7 @@ function LazyMasonryCard({ item, index }: { item: InspirationItem; index: number
       initial={{ opacity: 0, y: 60 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
       transition={{ duration: 0.5, delay: (index % 8) * 0.05, ease: "easeOut" }}
-      className="break-inside-avoid mb-5"
+      className="break-inside-avoid mb-2"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -538,7 +538,7 @@ export default function PublicHome() {
             </Link>
           </div>
 
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-2">
             {displayedItems.map((item, index) => (
               <LazyMasonryCard key={item.id} item={item} index={index} />
             ))}
