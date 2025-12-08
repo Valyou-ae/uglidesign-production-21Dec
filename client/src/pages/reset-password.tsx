@@ -128,10 +128,10 @@ export default function ResetPassword() {
           
           <div className="text-center lg:text-left">
             <img src={logo} alt="Logo" className="h-12 lg:hidden mx-auto mb-6 object-contain" />
-            <Link href="/login">
-              <Button variant="ghost" className="pl-0 hover:bg-transparent hover:text-primary mb-4 group" data-testid="link-back-to-login">
+            <Link href="/">
+              <Button variant="ghost" className="pl-0 hover:bg-transparent hover:text-primary mb-4 group" data-testid="link-back-to-home">
                 <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                Back to Login
+                Back to Home
               </Button>
             </Link>
             <h2 className="text-3xl font-bold tracking-tight">Set New Password</h2>
@@ -178,10 +178,10 @@ export default function ResetPassword() {
 
               <Button 
                 className="w-full h-11 rounded-xl bg-gradient-to-r from-[#B94E30] to-[#8B3A24] hover:brightness-110 text-white font-bold"
-                onClick={() => setLocation("/login")}
-                data-testid="button-go-to-login"
+                onClick={() => setLocation("/")}
+                data-testid="button-go-to-home"
               >
-                Go to Login
+                Go to Home
               </Button>
             </motion.div>
           ) : (
@@ -251,9 +251,9 @@ export default function ResetPassword() {
 
           <p className="text-center text-sm text-muted-foreground">
             Remember your password?{" "}
-            <Link href="/login">
+            <Link href="/">
               <span className="font-semibold text-primary hover:text-primary/80 cursor-pointer underline-offset-4 hover:underline">
-                Sign in
+                Go to Home
               </span>
             </Link>
           </p>

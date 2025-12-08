@@ -51,7 +51,7 @@ export default function Profile() {
   const handleLogout = async () => {
     try {
       await logout();
-      setLocation("/login");
+      setLocation("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -70,7 +70,7 @@ export default function Profile() {
       <div className="h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-bold mb-4">Please sign in to view your profile</h2>
-          <Button onClick={() => setLocation("/login")}>Sign In</Button>
+          <Button onClick={() => setLocation("/")}>Go to Home</Button>
         </div>
       </div>
     );

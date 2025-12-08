@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
+import { useLoginPopup } from "@/components/login-popup";
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -76,6 +77,7 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
   const [location] = useLocation();
   const [collapsed, setCollapsed] = useState(true);
   const { user, isAuthenticated, logout } = useAuth();
+  const { openLoginPopup } = useLoginPopup();
 
   const navigation: Array<{ name: string; shortName: string; icon: typeof Home; href: string; count?: string | null; badge?: string }> = [
     { name: "Home", shortName: "Home", icon: Home, href: "/" },
@@ -132,14 +134,16 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
           <span className="text-[10px] mt-1">Help</span>
         </div>
       </Link>
-      <Link href="/login">
-        <div className="flex flex-col items-center justify-center p-2 cursor-pointer text-primary">
-          <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#B94E30] to-[#E3B436] flex items-center justify-center">
-            <span className="text-[10px] text-white font-bold">Go</span>
-          </div>
-          <span className="text-[10px] mt-1">Login</span>
+      <button
+        onClick={openLoginPopup}
+        className="flex flex-col items-center justify-center p-2 cursor-pointer text-primary"
+        data-testid="button-mobile-login"
+      >
+        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#B94E30] to-[#E3B436] flex items-center justify-center">
+          <span className="text-[10px] text-white font-bold">Go</span>
         </div>
-      </Link>
+        <span className="text-[10px] mt-1">Login</span>
+      </button>
     </div>
   );
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
+import { useLoginPopup } from "@/components/login-popup";
 import { 
   Sparkles, 
   Shirt, 
@@ -105,6 +106,7 @@ const FAQ = [
 function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const { openLoginPopup } = useLoginPopup();
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -145,16 +147,21 @@ function Header() {
             >
               {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </button>
-            <Link href="/login">
-              <Button variant="ghost" className="hidden sm:inline-flex" data-testid="button-login">
-                Log in
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-primary hover:bg-primary/90" data-testid="button-get-started">
-                Get Started
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              className="hidden sm:inline-flex" 
+              onClick={openLoginPopup}
+              data-testid="button-login"
+            >
+              Log in
+            </Button>
+            <Button 
+              className="bg-primary hover:bg-primary/90" 
+              onClick={openLoginPopup}
+              data-testid="button-get-started"
+            >
+              Get Started
+            </Button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 rounded-lg hover:bg-muted"

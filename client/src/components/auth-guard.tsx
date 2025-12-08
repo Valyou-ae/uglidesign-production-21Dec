@@ -3,13 +3,30 @@ import { Redirect, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/hooks/use-toast";
+import { useLoginPopup } from "@/components/login-popup";
 
 interface GuardProps {
   children: ReactNode;
 }
 
 export function AuthGuard({ children }: GuardProps) {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
+  const { openLoginPopup, isOpen: isPopupOpen } = useLoginPopup();
+  const [location] = useLocation();
+  const popupShownRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !popupShownRef.current) {
+      popupShownRef.current = true;
+      openLoginPopup(location);
+    }
+  }, [isLoading, isAuthenticated, openLoginPopup, location]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      popupShownRef.current = false;
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -20,7 +37,14 @@ export function AuthGuard({ children }: GuardProps) {
   }
 
   if (!isAuthenticated) {
-    return <Redirect to="/login" />;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background" data-testid="auth-waiting">
+        <div className="text-center space-y-4">
+          <Spinner className="size-8 text-primary mx-auto" />
+          <p className="text-muted-foreground">Please sign in to continue</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
@@ -28,7 +52,23 @@ export function AuthGuard({ children }: GuardProps) {
 
 export function AdminGuard({ children }: GuardProps) {
   const { user, isLoading, isAuthenticated } = useAuth();
+  const { openLoginPopup } = useLoginPopup();
+  const [location] = useLocation();
   const toastShownRef = useRef(false);
+  const popupShownRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !popupShownRef.current) {
+      popupShownRef.current = true;
+      openLoginPopup(location);
+    }
+  }, [isLoading, isAuthenticated, openLoginPopup, location]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      popupShownRef.current = false;
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user?.role !== "admin" && !toastShownRef.current) {
@@ -50,11 +90,18 @@ export function AdminGuard({ children }: GuardProps) {
   }
 
   if (!isAuthenticated) {
-    return <Redirect to="/login" />;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background" data-testid="auth-waiting">
+        <div className="text-center space-y-4">
+          <Spinner className="size-8 text-primary mx-auto" />
+          <p className="text-muted-foreground">Please sign in to continue</p>
+        </div>
+      </div>
+    );
   }
 
   if (user?.role !== "admin") {
-    return <Redirect to="/home" />;
+    return <Redirect to="/" />;
   }
 
   return <>{children}</>;

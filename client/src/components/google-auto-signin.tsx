@@ -35,6 +35,15 @@ declare global {
           disableAutoSelect: () => void;
           storeCredential: (credential: { id: string; password: string }, callback?: () => void) => void;
           revoke: (hint: string, callback?: (response: { successful: boolean; error?: string }) => void) => void;
+          renderButton: (element: HTMLElement, config: {
+            type?: string;
+            theme?: string;
+            size?: string;
+            text?: string;
+            shape?: string;
+            logo_alignment?: string;
+            width?: number;
+          }) => void;
         };
       };
     };

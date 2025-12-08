@@ -97,10 +97,10 @@ export default function ForgotPassword() {
           
           <div className="text-center lg:text-left">
             <img src={logo} alt="Logo" className="h-12 lg:hidden mx-auto mb-6 object-contain" />
-            <Link href="/login">
-              <Button variant="ghost" className="pl-0 hover:bg-transparent hover:text-primary mb-4 group" data-testid="link-back-to-login">
+            <Link href="/">
+              <Button variant="ghost" className="pl-0 hover:bg-transparent hover:text-primary mb-4 group" data-testid="link-back-to-home">
                 <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                Back to Login
+                Back to Home
               </Button>
             </Link>
             <h2 className="text-3xl font-bold tracking-tight">Reset Password</h2>
@@ -142,9 +142,9 @@ export default function ForgotPassword() {
                     Try again
                   </button>
                 </p>
-                <Link href="/login">
-                  <Button variant="outline" className="w-full" data-testid="button-return-to-login">
-                    Return to Login
+                <Link href="/">
+                  <Button variant="outline" className="w-full" data-testid="button-return-to-home">
+                    Return to Home
                   </Button>
                 </Link>
               </div>
@@ -193,9 +193,9 @@ export default function ForgotPassword() {
 
           <p className="text-center text-sm text-muted-foreground">
             Remember your password?{" "}
-            <Link href="/login">
+            <Link href="/">
               <span className="font-semibold text-primary hover:text-primary/80 cursor-pointer underline-offset-4 hover:underline">
-                Sign in
+                Go to Home
               </span>
             </Link>
           </p>

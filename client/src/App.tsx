@@ -3,7 +3,8 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthGuard, AdminGuard, GuestGuard } from "@/components/auth-guard";
+import { AuthGuard, AdminGuard } from "@/components/auth-guard";
+import { LoginPopupProvider } from "@/components/login-popup";
 import PublicHome from "@/pages/public-home";
 import Discover from "@/pages/discover";
 import ImageGenerator from "@/pages/image-generator";
@@ -13,10 +14,8 @@ import MyCreations from "@/pages/my-creations";
 import Billing from "@/pages/billing";
 import Settings from "@/pages/settings";
 import HelpSupport from "@/pages/help-support";
-import Login from "@/pages/login";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
-import Signup from "@/pages/signup";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import NewProject from "@/pages/new-project";
@@ -48,17 +47,6 @@ function Router() {
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/help" component={HelpSupport} />
 
-      {/* Guest routes (only for non-authenticated users) */}
-      <Route path="/login">
-        <GuestGuard>
-          <Login />
-        </GuestGuard>
-      </Route>
-      <Route path="/signup">
-        <GuestGuard>
-          <Signup />
-        </GuestGuard>
-      </Route>
 
       {/* Protected routes (require authentication) */}
       <Route path="/discover">
@@ -179,8 +167,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Router />
+        <LoginPopupProvider>
+          <Toaster />
+          <Router />
+        </LoginPopupProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
