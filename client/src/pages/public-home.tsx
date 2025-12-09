@@ -1,147 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { 
   Eye, 
   Heart, 
   Wand2,
   Sparkles
 } from "lucide-react";
-import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { PublicSidebar } from "@/components/public-sidebar";
 import { FloatingPromptBar } from "@/components/floating-prompt-bar";
 import { GoogleAutoSignIn } from "@/components/google-auto-signin";
-
-type AspectRatio = "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
-
-interface ShowcaseImage {
-  id: string;
-  aspectRatio: AspectRatio;
-  image: string;
-  prompt: string;
-  isGenerated?: boolean;
-}
-
-const SAMPLE_IMAGES: ShowcaseImage[] = [
-  { id: "1", aspectRatio: "1:1", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600", prompt: "Luxury watch" },
-  { id: "2", aspectRatio: "16:9", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800", prompt: "Mountain landscape" },
-  { id: "3", aspectRatio: "9:16", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600", prompt: "Fashion portrait" },
-  { id: "4", aspectRatio: "4:3", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600", prompt: "Food photography" },
-  { id: "5", aspectRatio: "3:4", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600", prompt: "Portrait" },
-];
-
-const getAspectRatioClass = (ratio: AspectRatio): string => {
-  switch (ratio) {
-    case "1:1": return "aspect-square";
-    case "16:9": return "aspect-video";
-    case "9:16": return "aspect-[9/16]";
-    case "4:3": return "aspect-[4/3]";
-    case "3:4": return "aspect-[3/4]";
-    default: return "aspect-square";
-  }
-};
-
-interface ImageShowcaseStripProps {
-  generatedImage?: { imageData: string; mimeType: string; aspectRatio: string } | null;
-}
-
-function ImageShowcaseStrip({ generatedImage }: ImageShowcaseStripProps) {
-  const [displayImages, setDisplayImages] = useState<ShowcaseImage[]>(SAMPLE_IMAGES);
-  const [isPaused, setIsPaused] = useState(false);
-  const controls = useAnimationControls();
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (generatedImage) {
-      setDisplayImages(prev => {
-        const newImages = [...prev];
-        const idx = newImages.findIndex(img => img.aspectRatio === generatedImage.aspectRatio);
-        if (idx !== -1) {
-          newImages[idx] = {
-            ...newImages[idx],
-            id: "generated",
-            image: `data:${generatedImage.mimeType};base64,${generatedImage.imageData}`,
-            prompt: "Your AI Creation ✨",
-            isGenerated: true
-          };
-        }
-        return newImages;
-      });
-    }
-  }, [generatedImage]);
-
-  useEffect(() => {
-    const animate = async () => {
-      if (!isPaused) {
-        await controls.start({
-          x: [0, -1200],
-          transition: {
-            x: {
-              repeat: Infinity,
-              repeatType: "loop",
-              duration: 30,
-              ease: "linear",
-            },
-          },
-        });
-      } else {
-        controls.stop();
-      }
-    };
-    animate();
-  }, [controls, isPaused]);
-
-  const duplicatedImages = [...displayImages, ...displayImages, ...displayImages];
-
-  return (
-    <div 
-      ref={containerRef}
-      className="absolute bottom-32 left-0 right-0 overflow-hidden py-4"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      <motion.div 
-        className="flex gap-4 px-4"
-        animate={controls}
-      >
-        {duplicatedImages.map((img, index) => (
-          <motion.div
-            key={`${img.id}-${index}`}
-            className={cn(
-              "flex-shrink-0 relative rounded-xl overflow-hidden",
-              getAspectRatioClass(img.aspectRatio),
-              img.aspectRatio === "1:1" && "w-40",
-              img.aspectRatio === "16:9" && "w-56",
-              img.aspectRatio === "9:16" && "w-28",
-              img.aspectRatio === "4:3" && "w-48",
-              img.aspectRatio === "3:4" && "w-36",
-              img.isGenerated && "ring-2 ring-[#E3B436] ring-offset-2 ring-offset-[#0A0A0B]"
-            )}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.05 }}
-          >
-            <img
-              src={img.image}
-              alt={img.prompt}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300">
-              <div className="absolute bottom-2 left-2 right-2">
-                <p className="text-xs text-white/90 line-clamp-2">{img.prompt}</p>
-              </div>
-            </div>
-            {img.isGenerated && (
-              <div className="absolute top-2 right-2 bg-gradient-to-r from-[#B94E30] to-[#E3B436] px-2 py-1 rounded-full flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-white" />
-                <span className="text-[10px] font-medium text-white">NEW</span>
-              </div>
-            )}
-          </motion.div>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
 
 interface InspirationItem {
   id: number;
@@ -155,6 +23,7 @@ interface InspirationItem {
   category: string;
   aspectRatio: "1:1" | "9:16" | "16:9" | "4:5" | "3:4";
   prompt: string;
+  isGenerated?: boolean;
 }
 
 const aspectRatioToNumber = (ratio: string): number => {
@@ -243,7 +112,10 @@ function JustifiedGalleryCard({ item, rowHeight, index }: { item: InspirationIte
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="group w-full h-full bg-white dark:bg-[#111113] rounded-lg overflow-hidden cursor-pointer hover:shadow-[0_10px_40px_rgba(185,78,48,0.2)] transition-all duration-300">
+      <div className={cn(
+        "group w-full h-full bg-white dark:bg-[#111113] rounded-lg overflow-hidden cursor-pointer hover:shadow-[0_10px_40px_rgba(185,78,48,0.2)] transition-all duration-300",
+        item.isGenerated && "ring-2 ring-[#E3B436] ring-offset-2 ring-offset-[#0A0A0B]"
+      )}>
         <div className="relative w-full h-full overflow-hidden">
           {isVisible ? (
             <>
@@ -263,6 +135,13 @@ function JustifiedGalleryCard({ item, rowHeight, index }: { item: InspirationIte
             </>
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-800 dark:to-zinc-900 animate-pulse" />
+          )}
+          
+          {item.isGenerated && (
+            <div className="absolute top-2 right-2 bg-gradient-to-r from-[#B94E30] to-[#E3B436] px-2 py-1 rounded-full flex items-center gap-1 z-10">
+              <Sparkles className="h-3 w-3 text-white" />
+              <span className="text-[10px] font-medium text-white">NEW</span>
+            </div>
           )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
@@ -308,7 +187,12 @@ function JustifiedGalleryCard({ item, rowHeight, index }: { item: InspirationIte
   );
 }
 
-function JustifiedGallery({ items }: { items: InspirationItem[] }) {
+interface JustifiedGalleryProps {
+  items: InspirationItem[];
+  generatedImage?: { imageData: string; mimeType: string; aspectRatio: string } | null;
+}
+
+function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1200);
@@ -316,6 +200,27 @@ function JustifiedGallery({ items }: { items: InspirationItem[] }) {
   const isPausedRef = useRef(false);
   const animationRef = useRef<number | null>(null);
   const initializedRef = useRef(false);
+
+  const displayItems = useMemo(() => {
+    if (!generatedImage) return items;
+    
+    const generatedItem: InspirationItem = {
+      id: -1,
+      title: "Your AI Creation ✨",
+      image: `data:${generatedImage.mimeType};base64,${generatedImage.imageData}`,
+      creator: "you",
+      verified: false,
+      views: "NEW",
+      likes: "0",
+      uses: "0",
+      category: "Generated",
+      aspectRatio: generatedImage.aspectRatio as "1:1" | "9:16" | "16:9" | "4:5" | "3:4",
+      prompt: "Your generated image",
+      isGenerated: true
+    };
+    
+    return [generatedItem, ...items];
+  }, [items, generatedImage]);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -331,9 +236,9 @@ function JustifiedGallery({ items }: { items: InspirationItem[] }) {
 
   useEffect(() => {
     const targetHeight = containerWidth < 640 ? 180 : containerWidth < 1024 ? 220 : 280;
-    const calculatedRows = calculateJustifiedRows(items, containerWidth, targetHeight, 4);
+    const calculatedRows = calculateJustifiedRows(displayItems, containerWidth, targetHeight, 4);
     setRows(calculatedRows);
-  }, [items, containerWidth]);
+  }, [displayItems, containerWidth]);
 
   useEffect(() => {
     if (!scrollRef.current || rows.length === 0) return;
@@ -742,8 +647,7 @@ export default function PublicHome() {
       <PublicSidebar className="hidden md:flex border-r border-border/50" />
       
       <main className="flex-1 relative h-full overflow-hidden bg-[#0A0A0B]">
-        <JustifiedGallery items={galleryImages} />
-        <ImageShowcaseStrip generatedImage={generatedImage} />
+        <JustifiedGallery items={galleryImages} generatedImage={generatedImage} />
       </main>
 
       <FloatingPromptBar onImageGenerated={handleImageGenerated} />
