@@ -9,10 +9,7 @@ import {
   Moon,
   Compass,
   User,
-  Settings,
-  Layers,
-  Folder,
-  Coins
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -23,7 +20,6 @@ import {
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { useLoginPopup } from "@/components/login-popup";
-import { useQuery } from "@tanstack/react-query";
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -80,33 +76,13 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { openLoginPopup } = useLoginPopup();
 
-  // Fetch user creations count for logged-in users
-  const { data: creationsData } = useQuery<{ images: unknown[] }>({
-    queryKey: ["/api/images"],
-    enabled: isAuthenticated,
-  });
-  const totalCreations = creationsData?.images?.length || 0;
-
-  // Base navigation (always visible)
-  const baseNavigation: Array<{ name: string; shortName: string; icon: typeof Home; href: string; count?: string | null; badge?: string }> = [
+  const navigation: Array<{ name: string; shortName: string; icon: typeof Home; href: string; count?: string | null; badge?: string }> = [
     { name: "Home", shortName: "Home", icon: Home, href: "/" },
     { name: "Discover", shortName: "Discover", icon: Compass, href: "/discover", badge: "New" },
     { name: "Image Generator", shortName: "Image", icon: ImageIcon, href: "/image-gen", badge: "5 agents" },
     { name: "Mockup Generator", shortName: "Mockup", icon: Shirt, href: "/mockup", badge: "New" },
     { name: "Background Remover", shortName: "BG", icon: Scissors, href: "/bg-remover" },
   ];
-
-  // Additional navigation items for logged-in users
-  const authenticatedNavigation: Array<{ name: string; shortName: string; icon: typeof Home; href: string; count?: string | null; badge?: string }> = [
-    { name: "Mood Boards", shortName: "Boards", icon: Layers, href: "/mood-boards" },
-    { name: "My Creations", shortName: "Creations", icon: Folder, href: "/my-creations", count: totalCreations > 0 ? totalCreations.toString() : null },
-    { name: "Credits", shortName: "Credits", icon: Coins, href: "/billing" },
-  ];
-
-  // Combine navigation based on auth status
-  const navigation = isAuthenticated 
-    ? [...baseNavigation, ...authenticatedNavigation]
-    : baseNavigation;
 
   const accountNav = [
     { name: "Settings", shortName: "Settings", icon: Settings, href: "/settings" },
@@ -129,69 +105,36 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
           <span className="text-[10px] mt-1">Home</span>
         </div>
       </Link>
-      {isAuthenticated ? (
-        <>
-          <Link href="/mood-boards">
-            <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/mood-boards" ? "text-primary" : "text-muted-foreground")}>
-              <Layers className="h-6 w-6" />
-              <span className="text-[10px] mt-1">Boards</span>
-            </div>
-          </Link>
-          <Link href="/image-gen">
-            <div className="flex flex-col items-center justify-center -mt-6 cursor-pointer">
-              <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#B94E30] to-[#E3B436] flex items-center justify-center shadow-lg shadow-[#B94E30]/30 border-4 border-background">
-                <ImageIcon className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-[10px] mt-1 font-medium text-foreground">Create</span>
-            </div>
-          </Link>
-          <Link href="/my-creations">
-            <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/my-creations" ? "text-primary" : "text-muted-foreground")}>
-              <Folder className="h-6 w-6" />
-              <span className="text-[10px] mt-1">Creations</span>
-            </div>
-          </Link>
-          <Link href="/billing">
-            <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/billing" ? "text-primary" : "text-muted-foreground")}>
-              <Coins className="h-6 w-6" />
-              <span className="text-[10px] mt-1">Credits</span>
-            </div>
-          </Link>
-        </>
-      ) : (
-        <>
-          <Link href="/discover">
-            <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/discover" ? "text-primary" : "text-muted-foreground")}>
-              <Compass className="h-6 w-6" />
-              <span className="text-[10px] mt-1">Discover</span>
-            </div>
-          </Link>
-          <Link href="/image-gen">
-            <div className="flex flex-col items-center justify-center -mt-6 cursor-pointer">
-              <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#B94E30] to-[#E3B436] flex items-center justify-center shadow-lg shadow-[#B94E30]/30 border-4 border-background">
-                <ImageIcon className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-[10px] mt-1 font-medium text-foreground">Create</span>
-            </div>
-          </Link>
-          <Link href="/settings">
-            <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/settings" ? "text-primary" : "text-muted-foreground")}>
-              <Settings className="h-6 w-6" />
-              <span className="text-[10px] mt-1">Settings</span>
-            </div>
-          </Link>
-          <button
-            onClick={() => openLoginPopup()}
-            className="flex flex-col items-center justify-center p-2 cursor-pointer text-primary"
-            data-testid="button-mobile-login"
-          >
-            <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#B94E30] to-[#E3B436] flex items-center justify-center">
-              <span className="text-[10px] text-white font-bold">Go</span>
-            </div>
-            <span className="text-[10px] mt-1">Login</span>
-          </button>
-        </>
-      )}
+      <Link href="/discover">
+        <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/discover" ? "text-primary" : "text-muted-foreground")}>
+          <Compass className="h-6 w-6" />
+          <span className="text-[10px] mt-1">Discover</span>
+        </div>
+      </Link>
+      <Link href="/image-gen">
+        <div className="flex flex-col items-center justify-center -mt-6 cursor-pointer">
+           <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#B94E30] to-[#E3B436] flex items-center justify-center shadow-lg shadow-[#B94E30]/30 border-4 border-background">
+             <ImageIcon className="h-6 w-6 text-white" />
+           </div>
+           <span className="text-[10px] mt-1 font-medium text-foreground">Create</span>
+        </div>
+      </Link>
+      <Link href="/settings">
+        <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/settings" ? "text-primary" : "text-muted-foreground")}>
+          <Settings className="h-6 w-6" />
+          <span className="text-[10px] mt-1">Settings</span>
+        </div>
+      </Link>
+      <button
+        onClick={() => openLoginPopup()}
+        className="flex flex-col items-center justify-center p-2 cursor-pointer text-primary"
+        data-testid="button-mobile-login"
+      >
+        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#B94E30] to-[#E3B436] flex items-center justify-center">
+          <span className="text-[10px] text-white font-bold">Go</span>
+        </div>
+        <span className="text-[10px] mt-1">Login</span>
+      </button>
     </div>
   );
 
