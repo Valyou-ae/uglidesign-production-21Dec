@@ -149,6 +149,28 @@ export const guestGenerations = pgTable("guest_generations", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const imageLikes = pgTable("image_likes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  imageId: varchar("image_id").references(() => generatedImages.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const galleryImages = pgTable("gallery_images", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  imageUrl: text("image_url").notNull(),
+  creator: text("creator").notNull(),
+  verified: boolean("verified").default(false),
+  category: text("category"),
+  aspectRatio: text("aspect_ratio").default("1:1"),
+  prompt: text("prompt"),
+  likeCount: integer("like_count").default(0).notNull(),
+  viewCount: integer("view_count").default(0).notNull(),
+  useCount: integer("use_count").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -229,3 +251,5 @@ export type MoodBoard = typeof moodBoards.$inferSelect;
 export type InsertMoodBoard = z.infer<typeof insertMoodBoardSchema>;
 export type MoodBoardItem = typeof moodBoardItems.$inferSelect;
 export type InsertMoodBoardItem = z.infer<typeof insertMoodBoardItemSchema>;
+export type ImageLike = typeof imageLikes.$inferSelect;
+export type GalleryImage = typeof galleryImages.$inferSelect;
