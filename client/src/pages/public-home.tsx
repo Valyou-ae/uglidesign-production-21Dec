@@ -197,7 +197,8 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1200);
   const [rows, setRows] = useState<JustifiedRow[]>([]);
-  const isPausedRef = useRef(false);
+  const isHoverPausedRef = useRef(false);
+  const isGenerationPausedRef = useRef(false);
   const animationRef = useRef<number | null>(null);
   const initializedRef = useRef(false);
   const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -242,9 +243,9 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
       }, 100);
       
       // Pause auto-scroll for 5 seconds so user can see their creation
-      isPausedRef.current = true;
+      isGenerationPausedRef.current = true;
       pauseTimeoutRef.current = setTimeout(() => {
-        isPausedRef.current = false;
+        isGenerationPausedRef.current = false;
       }, 5000);
     }
     
@@ -287,7 +288,8 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
     };
 
     const animate = () => {
-      if (!isPausedRef.current && scrollRef.current) {
+      const isPaused = isHoverPausedRef.current || isGenerationPausedRef.current;
+      if (!isPaused && scrollRef.current) {
         const currentScroll = scrollRef.current.scrollTop;
         const maxScroll = scrollRef.current.scrollHeight - scrollRef.current.clientHeight;
         const newScroll = currentScroll + scrollSpeed;
@@ -315,11 +317,11 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
   }, [rows]);
 
   const handleMouseEnter = () => {
-    isPausedRef.current = true;
+    isHoverPausedRef.current = true;
   };
 
   const handleMouseLeave = () => {
-    isPausedRef.current = false;
+    isHoverPausedRef.current = false;
   };
 
   let itemIndex = 0;
