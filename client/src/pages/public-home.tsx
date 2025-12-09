@@ -198,10 +198,8 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
   const [containerWidth, setContainerWidth] = useState(1200);
   const [rows, setRows] = useState<JustifiedRow[]>([]);
   const isHoverPausedRef = useRef(false);
-  const isGenerationPausedRef = useRef(false);
   const animationRef = useRef<number | null>(null);
-  const initializedRef = useRef(false);
-  const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const animationStartedRef = useRef(false);
   const [persistedGeneratedImages, setPersistedGeneratedImages] = useState<InspirationItem[]>([]);
   const lastGeneratedImageRef = useRef<string | null>(null);
 
@@ -235,25 +233,6 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
     return [...items, ...persistedGeneratedImages];
   }, [items, persistedGeneratedImages]);
 
-  // Track scroll height changes to maintain position when new items are added
-  const prevScrollHeightRef = useRef<number>(0);
-  
-  // Preserve scroll position when new generated images are added
-  useEffect(() => {
-    if (scrollRef.current && persistedGeneratedImages.length > 0) {
-      const currentScrollHeight = scrollRef.current.scrollHeight;
-      const heightDiff = currentScrollHeight - prevScrollHeightRef.current;
-      
-      // Only adjust if height actually increased (new content added)
-      if (heightDiff > 0 && prevScrollHeightRef.current > 0) {
-        // Keep scroll position relative - don't jump anywhere
-        // The new image is at the end, scroll will reach it naturally
-      }
-      
-      prevScrollHeightRef.current = currentScrollHeight;
-    }
-  }, [persistedGeneratedImages]);
-
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
@@ -272,38 +251,33 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
     setRows(calculatedRows);
   }, [displayItems, containerWidth]);
 
+  // Start animation only once on mount - never restart when rows change
   useEffect(() => {
-    if (!scrollRef.current || rows.length === 0) return;
+    if (animationStartedRef.current) return;
     
-    const scrollContainer = scrollRef.current;
     const scrollSpeed = 0.3;
 
-    const initAndAnimate = () => {
-      if (!initializedRef.current && scrollContainer.scrollHeight > scrollContainer.clientHeight) {
-        // Only set initial position on first load, never reset
-        initializedRef.current = true;
-      }
-    };
-
     const animate = () => {
-      const isPaused = isHoverPausedRef.current || isGenerationPausedRef.current;
-      if (!isPaused && scrollRef.current) {
+      if (!isHoverPausedRef.current && scrollRef.current) {
         const currentScroll = scrollRef.current.scrollTop;
         const maxScroll = scrollRef.current.scrollHeight - scrollRef.current.clientHeight;
-        const newScroll = currentScroll + scrollSpeed;
         
-        if (newScroll >= maxScroll) {
-          // Smoothly wrap to beginning using modulo instead of hard reset
-          scrollRef.current.scrollTop = newScroll - maxScroll;
-        } else {
-          scrollRef.current.scrollTop = newScroll;
+        if (maxScroll > 0) {
+          const newScroll = currentScroll + scrollSpeed;
+          
+          if (newScroll >= maxScroll) {
+            // Smoothly wrap to beginning
+            scrollRef.current.scrollTop = newScroll - maxScroll;
+          } else {
+            scrollRef.current.scrollTop = newScroll;
+          }
         }
       }
       animationRef.current = requestAnimationFrame(animate);
     };
 
     const timeoutId = setTimeout(() => {
-      initAndAnimate();
+      animationStartedRef.current = true;
       animationRef.current = requestAnimationFrame(animate);
     }, 500);
 
@@ -313,7 +287,7 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [rows]);
+  }, []); // Empty dependency array - run only once on mount
 
   const handleMouseEnter = () => {
     isHoverPausedRef.current = true;
