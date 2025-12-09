@@ -220,10 +220,11 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
       isGenerated: true
     };
     
-    return [generatedItem, ...items];
+    // Append generated image at the end so it appears from bottom
+    return [...items, generatedItem];
   }, [items, generatedImage]);
 
-  // When a new generated image is added, scroll to top and pause
+  // When a new generated image is added, scroll to bottom and pause
   useEffect(() => {
     if (generatedImage && scrollRef.current) {
       // Clear any existing pause timeout
@@ -231,8 +232,14 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
         clearTimeout(pauseTimeoutRef.current);
       }
       
-      // Scroll to top to show the new image
-      scrollRef.current.scrollTop = 0;
+      // Small delay to ensure rows are calculated before scrolling
+      setTimeout(() => {
+        if (scrollRef.current) {
+          // Scroll to bottom to show the new image
+          const maxScroll = scrollRef.current.scrollHeight - scrollRef.current.clientHeight;
+          scrollRef.current.scrollTop = maxScroll;
+        }
+      }, 100);
       
       // Pause auto-scroll for 8 seconds so user can see their creation
       isPausedRef.current = true;
