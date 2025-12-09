@@ -235,36 +235,24 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
     return [...items, ...persistedGeneratedImages];
   }, [items, persistedGeneratedImages]);
 
-  // When a new generated image is added, scroll to bottom and pause
+  // Track scroll height changes to maintain position when new items are added
+  const prevScrollHeightRef = useRef<number>(0);
+  
+  // Preserve scroll position when new generated images are added
   useEffect(() => {
-    if (generatedImage && scrollRef.current) {
-      // Clear any existing pause timeout
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current);
+    if (scrollRef.current && persistedGeneratedImages.length > 0) {
+      const currentScrollHeight = scrollRef.current.scrollHeight;
+      const heightDiff = currentScrollHeight - prevScrollHeightRef.current;
+      
+      // Only adjust if height actually increased (new content added)
+      if (heightDiff > 0 && prevScrollHeightRef.current > 0) {
+        // Keep scroll position relative - don't jump anywhere
+        // The new image is at the end, scroll will reach it naturally
       }
       
-      // Small delay to ensure rows are calculated before scrolling
-      setTimeout(() => {
-        if (scrollRef.current) {
-          // Scroll to bottom to show the new image
-          const maxScroll = scrollRef.current.scrollHeight - scrollRef.current.clientHeight;
-          scrollRef.current.scrollTop = maxScroll;
-        }
-      }, 100);
-      
-      // Pause auto-scroll for 5 seconds so user can see their creation
-      isGenerationPausedRef.current = true;
-      pauseTimeoutRef.current = setTimeout(() => {
-        isGenerationPausedRef.current = false;
-      }, 5000);
+      prevScrollHeightRef.current = currentScrollHeight;
     }
-    
-    return () => {
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current);
-      }
-    };
-  }, [generatedImage]);
+  }, [persistedGeneratedImages]);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -292,7 +280,7 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
 
     const initAndAnimate = () => {
       if (!initializedRef.current && scrollContainer.scrollHeight > scrollContainer.clientHeight) {
-        scrollContainer.scrollTop = 0;
+        // Only set initial position on first load, never reset
         initializedRef.current = true;
       }
     };
@@ -305,7 +293,8 @@ function JustifiedGallery({ items, generatedImage }: JustifiedGalleryProps) {
         const newScroll = currentScroll + scrollSpeed;
         
         if (newScroll >= maxScroll) {
-          scrollRef.current.scrollTop = 0;
+          // Smoothly wrap to beginning using modulo instead of hard reset
+          scrollRef.current.scrollTop = newScroll - maxScroll;
         } else {
           scrollRef.current.scrollTop = newScroll;
         }
