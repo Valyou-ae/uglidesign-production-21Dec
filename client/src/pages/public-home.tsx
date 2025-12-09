@@ -290,8 +290,7 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
   useEffect(() => {
     if (rows.length === 0) return;
     
-    const scrollSpeed = 0.5;
-    let frameCount = 0;
+    const scrollSpeed = 0.15;
 
     const animate = () => {
       if (!isHoverPausedRef.current && scrollRef.current) {
@@ -299,10 +298,8 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
         const scrollHeight = scrollRef.current.scrollHeight;
         const clientHeight = scrollRef.current.clientHeight;
         
-        // Recalculate height on each frame if not set
         if (originalContentHeightRef.current === 0 && scrollHeight > clientHeight) {
           originalContentHeightRef.current = scrollHeight / 2;
-          console.log('Setting halfHeight:', originalContentHeightRef.current, 'scrollHeight:', scrollHeight, 'clientHeight:', clientHeight);
         }
         
         const halfHeight = originalContentHeightRef.current;
@@ -315,21 +312,14 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
           } else {
             scrollRef.current.scrollTop = newScroll;
           }
-          
-          // Log every 100 frames
-          if (frameCount++ % 100 === 0) {
-            console.log('Scrolling:', { currentScroll: newScroll.toFixed(2), halfHeight, scrollHeight, clientHeight });
-          }
         }
       }
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    // Start animation after a short delay to allow images to load
     const timeoutId = setTimeout(() => {
       if (!animationStartedRef.current) {
         animationStartedRef.current = true;
-        console.log('Starting scroll animation, rows:', rows.length);
         animationRef.current = requestAnimationFrame(animate);
       }
     }, 1000);
