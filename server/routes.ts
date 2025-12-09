@@ -178,6 +178,22 @@ export async function registerRoutes(
           profileImageUrl: picture || null,
           role: 'user',
         });
+      } else {
+        // Update existing user's profile image and display name from Google if not set
+        const updates: any = {};
+        if (picture && !user.profileImageUrl) {
+          updates.profileImageUrl = picture;
+        }
+        if (name && !user.displayName) {
+          updates.displayName = name;
+        }
+        // Always update profile image if it changed
+        if (picture && user.profileImageUrl !== picture) {
+          updates.profileImageUrl = picture;
+        }
+        if (Object.keys(updates).length > 0) {
+          user = await storage.updateUserProfile(user.id, updates) || user;
+        }
       }
 
       // Set up passport session using req.login()

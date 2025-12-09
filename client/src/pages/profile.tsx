@@ -76,9 +76,9 @@ export default function Profile() {
     );
   }
 
-  const displayName = user.displayName || user.firstName && user.lastName 
-    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() 
-    : user.username;
+  const displayName = user.displayName || 
+    (user.firstName || user.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : null) || 
+    user.username;
 
   const initials = displayName
     .split(' ')
@@ -137,7 +137,7 @@ export default function Profile() {
             <div className="relative">
               <div className="rounded-full p-1 md:p-1.5 bg-background">
                 <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-xl">
-                  <AvatarImage src="" />
+                  <AvatarImage src={user.profileImageUrl || ""} />
                   <AvatarFallback className="text-4xl bg-gradient-to-br from-[#B94E30] to-[#E3B436] text-white" data-testid="text-user-initials">
                     {initials}
                   </AvatarFallback>
