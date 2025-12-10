@@ -256,16 +256,16 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
   }, [generatedImage]);
 
   const displayItems = useMemo(() => {
-    // Duplicate items to ensure we have enough content to fill the viewport
-    // This prevents the duplicate rows from being visible when content is short
+    // Combine gallery items with any generated images
     const baseItems = [...items, ...persistedGeneratedImages];
-    // Triple the items to ensure enough content for smooth scrolling
-    const duplicatedItems = [
-      ...baseItems.map((item, i) => ({ ...item, id: `${item.id}-a` })),
-      ...baseItems.map((item, i) => ({ ...item, id: `${item.id}-b` })),
-      ...baseItems.map((item, i) => ({ ...item, id: `${item.id}-c` })),
-    ];
-    return duplicatedItems;
+    // Only duplicate if we have few items (to ensure smooth infinite scroll)
+    if (baseItems.length < 20) {
+      return [
+        ...baseItems.map((item) => ({ ...item, id: `${item.id}-a` })),
+        ...baseItems.map((item) => ({ ...item, id: `${item.id}-b` })),
+      ];
+    }
+    return baseItems;
   }, [items, persistedGeneratedImages]);
 
   useEffect(() => {
@@ -454,14 +454,17 @@ export default function PublicHome() {
   const queryClient = useQueryClient();
   const [generatedImage, setGeneratedImage] = useState<{ imageData: string; mimeType: string; aspectRatio: string } | null>(null);
 
-  const { data: galleryData } = useQuery<{ images: any[] }>({
+  const { data: galleryData, isLoading: isGalleryLoading } = useQuery<{ images: any[] }>({
     queryKey: ['/api/gallery'],
     queryFn: async () => {
-      const response = await fetch('/api/gallery');
+      const response = await fetch('/api/gallery', {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch gallery');
       return response.json();
     },
     staleTime: 30000,
+    refetchOnMount: true,
   });
 
   const likeMutation = useMutation({
