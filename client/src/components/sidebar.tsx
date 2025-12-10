@@ -482,44 +482,44 @@ export function Sidebar({ className }: SidebarProps) {
               })}
             </nav>
           </>
-        ) : (
-          /* Login section for non-logged-in users - same position as Settings */
-          <nav className="space-y-1">
-            {collapsed ? (
-              <div
-                onClick={() => openLoginPopup()}
-                className="flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-lg font-medium transition-all cursor-pointer group select-none mx-auto w-[52px] text-white/50 hover:bg-white/10 hover:text-white"
-                data-testid="button-login-sidebar"
-              >
-                <LogIn className="h-5 w-5 flex-shrink-0 transition-all duration-200 group-hover:scale-110 text-white/50 group-hover:text-white" />
-                <span className="text-[9px] font-medium text-white/50 group-hover:text-white">
-                  Login
-                </span>
-              </div>
-            ) : (
-              <div
-                onClick={() => openLoginPopup()}
-                className="flex items-center gap-3 rounded-lg font-medium transition-all cursor-pointer group select-none px-3.5 py-3 text-sm text-white/50 hover:bg-white/10 hover:text-white"
-                data-testid="button-login-sidebar"
-              >
-                <LogIn className="h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 text-white/50 group-hover:text-white" />
-                <span>Login</span>
-              </div>
-            )}
-          </nav>
-        )}
+        ) : null}
 
-        {/* Theme Toggle - inside account section for collapsed state */}
-        {collapsed && (
+        {/* Theme Toggle - inside account section for collapsed state (logged-in users only) */}
+        {user && collapsed && (
           <div className="flex flex-col items-center justify-center py-2 px-2 mx-auto w-[52px]">
             <ThemeToggle collapsed={collapsed} />
           </div>
         )}
       </div>
 
-      {/* Footer - Theme Toggle only */}
-      <div className={cn("mt-auto pb-6", collapsed ? "px-3 flex flex-col items-center pt-2" : "px-3 pt-4")}>
-        {!collapsed && <ThemeToggle collapsed={collapsed} />}
+      {/* Footer - Theme Toggle for logged-in, Login + Theme for non-logged-in */}
+      <div className={cn("mt-auto pb-6", collapsed ? "px-3 flex flex-col items-center pt-2 space-y-2" : "px-3 pt-4 space-y-2")}>
+        {/* Login button for non-logged-in users - at bottom */}
+        {!user && !isLoading && (
+          collapsed ? (
+            <div
+              onClick={() => openLoginPopup()}
+              className="flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-lg font-medium transition-all cursor-pointer group select-none mx-auto w-[52px] text-white/50 hover:bg-white/10 hover:text-white"
+              data-testid="button-login-sidebar"
+            >
+              <LogIn className="h-5 w-5 flex-shrink-0 transition-all duration-200 group-hover:scale-110 text-white/50 group-hover:text-white" />
+              <span className="text-[9px] font-medium text-white/50 group-hover:text-white">
+                Login
+              </span>
+            </div>
+          ) : (
+            <div
+              onClick={() => openLoginPopup()}
+              className="flex items-center gap-3 rounded-lg font-medium transition-all cursor-pointer group select-none px-3.5 py-3 text-sm text-white/50 hover:bg-white/10 hover:text-white"
+              data-testid="button-login-sidebar"
+            >
+              <LogIn className="h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 text-white/50 group-hover:text-white" />
+              <span>Login</span>
+            </div>
+          )
+        )}
+        {/* Theme toggle - for non-logged-in users at bottom, for logged-in expanded view */}
+        {(!user || !collapsed) && <ThemeToggle collapsed={collapsed} />}
       </div>
     </aside>
     </>
