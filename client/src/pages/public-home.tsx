@@ -315,22 +315,21 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
     ));
   };
 
-  const [scrollY, setScrollY] = useState(0);
-  
   useEffect(() => {
-    if (rows.length === 0) return;
+    if (rows.length === 0 || !scrollRef.current) return;
     
     let animationId: number;
     let position = 0;
-    const speed = 0.4;
+    const speed = 0.5;
     
     const animate = () => {
-      if (!isHoverPausedRef.current) {
+      if (!isHoverPausedRef.current && scrollRef.current) {
         position += speed;
-        if (originalContentHeightRef.current > 0 && position >= originalContentHeightRef.current) {
-          position = position - originalContentHeightRef.current;
+        const halfHeight = originalContentHeightRef.current;
+        if (halfHeight > 0 && position >= halfHeight) {
+          position = position - halfHeight;
         }
-        setScrollY(position);
+        scrollRef.current.style.transform = `translateY(-${position}px)`;
       }
       animationId = requestAnimationFrame(animate);
     };
@@ -350,7 +349,6 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
       <div 
         ref={scrollRef}
         className="w-full px-1"
-        style={{ transform: `translateY(-${scrollY}px)` }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
