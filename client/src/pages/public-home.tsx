@@ -254,7 +254,8 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
   }, [generatedImage]);
 
   const displayItems = useMemo(() => {
-    return [...items, ...persistedGeneratedImages];
+    // Prepend generated images so they appear at the start (visible in upcoming scroll rows)
+    return [...persistedGeneratedImages, ...items];
   }, [items, persistedGeneratedImages]);
 
   useEffect(() => {
