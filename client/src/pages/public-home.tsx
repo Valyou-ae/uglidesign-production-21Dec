@@ -222,6 +222,7 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
   const scrollRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1200);
   const [rows, setRows] = useState<JustifiedRow[]>([]);
+  const [contentHeight, setContentHeight] = useState(0);
   const isHoverPausedRef = useRef(false);
   const animationRef = useRef<number | null>(null);
   const animationStartedRef = useRef(false);
@@ -286,17 +287,10 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
         if (scrollRef.current) {
           const totalHeight = scrollRef.current.scrollHeight;
           const newHalfHeight = totalHeight / 2;
-          const prevHalfHeight = originalContentHeightRef.current;
-          
-          // If content height changed and we have a previous height, adjust scroll position
-          if (prevHalfHeight > 0 && newHalfHeight !== prevHalfHeight) {
-            const heightDiff = newHalfHeight - prevHalfHeight;
-            // Content was added - no need to adjust position since it's added at the end
-            // The scroll will naturally continue and the new content will come into view
-          }
           
           originalContentHeightRef.current = newHalfHeight;
           prevContentHeightRef.current = newHalfHeight;
+          setContentHeight(newHalfHeight);
         }
       }, 100);
     }
@@ -364,14 +358,20 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
 
   return (
     <div ref={containerRef} className="w-full h-full overflow-hidden">
+      {/* Viewport wrapper - clips to show only one set of content */}
       <div 
-        ref={scrollRef}
-        className="w-full px-1"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        className="w-full overflow-hidden"
+        style={{ height: contentHeight > 0 ? `${contentHeight}px` : '100%' }}
       >
-        {renderRows('first')}
-        {renderRows('second')}
+        <div 
+          ref={scrollRef}
+          className="w-full px-1"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {renderRows('first')}
+          {renderRows('second')}
+        </div>
       </div>
     </div>
   );
