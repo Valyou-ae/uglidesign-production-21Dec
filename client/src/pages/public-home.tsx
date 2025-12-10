@@ -223,8 +223,11 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
   const [containerWidth, setContainerWidth] = useState(1200);
   const [rows, setRows] = useState<JustifiedRow[]>([]);
   const isHoverPausedRef = useRef(false);
+  const animationRef = useRef<number | null>(null);
+  const animationStartedRef = useRef(false);
   const [persistedGeneratedImages, setPersistedGeneratedImages] = useState<InspirationItem[]>([]);
   const lastGeneratedImageRef = useRef<string | null>(null);
+  const originalContentHeightRef = useRef<number>(0);
 
   useEffect(() => {
     if (generatedImage) {
@@ -272,6 +275,18 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
     setRows(calculatedRows);
   }, [displayItems, containerWidth]);
 
+  useEffect(() => {
+    if (scrollRef.current && rows.length > 0) {
+      // Use setTimeout to ensure DOM has rendered
+      setTimeout(() => {
+        if (scrollRef.current) {
+          const totalHeight = scrollRef.current.scrollHeight;
+          originalContentHeightRef.current = totalHeight / 2;
+        }
+      }, 100);
+    }
+  }, [rows]);
+
   const handleMouseEnter = () => {
     isHoverPausedRef.current = true;
   };
@@ -310,9 +325,7 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
     const animate = () => {
       if (!isHoverPausedRef.current && scrollRef.current) {
         position += speed;
-        // Dynamically calculate half height each frame for accurate wrapping
-        const totalHeight = scrollRef.current.scrollHeight;
-        const halfHeight = totalHeight / 2;
+        const halfHeight = originalContentHeightRef.current;
         if (halfHeight > 0 && position >= halfHeight) {
           position = position - halfHeight;
         }
@@ -323,7 +336,7 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
     
     const timeout = setTimeout(() => {
       animationId = requestAnimationFrame(animate);
-    }, 1500);
+    }, 1000);
     
     return () => {
       clearTimeout(timeout);
@@ -332,7 +345,7 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
   }, [rows]);
 
   return (
-    <div ref={containerRef} className="w-full h-screen overflow-hidden">
+    <div ref={containerRef} className="w-full h-full overflow-hidden">
       <div 
         ref={scrollRef}
         className="w-full px-1"
