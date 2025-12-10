@@ -233,11 +233,12 @@ function JustifiedGallery({ items, generatedImage, onLike }: JustifiedGalleryPro
 
   useEffect(() => {
     if (generatedImage) {
-      const imageKey = `${generatedImage.imageData.slice(0, 50)}`;
-      if (lastGeneratedImageRef.current !== imageKey) {
-        lastGeneratedImageRef.current = imageKey;
+      // Use hash of full image data for unique identification (not just first 50 chars which can be identical for different images)
+      const imageHash = generatedImage.imageData.length.toString() + '-' + generatedImage.imageData.slice(-100);
+      if (lastGeneratedImageRef.current !== imageHash) {
+        lastGeneratedImageRef.current = imageHash;
         const newGeneratedItem: InspirationItem = {
-          id: `generated-${Date.now()}`,
+          id: `generated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           title: "Your AI Creation ✨",
           image: `data:${generatedImage.mimeType};base64,${generatedImage.imageData}`,
           creator: "you",
