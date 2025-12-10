@@ -10,10 +10,26 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  // Serve static files with cache control
+  // JS/CSS files have hashes in names, so they can be cached longer
+  // But we set moderate cache to ensure updates are picked up
+  app.use(express.static(distPath, {
+    etag: false,
+    maxAge: '1h',
+    setHeaders: (res, filePath) => {
+      // HTML files should never be cached
+      if (filePath.endsWith('.html')) {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+      }
+    }
+  }));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }

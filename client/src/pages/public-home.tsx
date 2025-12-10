@@ -377,11 +377,41 @@ const formatViewCount = (count: number): string => {
   return count.toString();
 };
 
+// Fallback images to show if API fails - ensures gallery always loads
+const FALLBACK_GALLERY: InspirationItem[] = [
+  { id: "f1", title: "Mountain Lake", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800", creator: "nature", verified: true, views: "523K", likes: 97301, uses: "38K", category: "Landscape", aspectRatio: "16:9", prompt: "Alpine lake with mountain reflections" },
+  { id: "f2", title: "Majestic Lion", image: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=800", creator: "wildlife", verified: true, views: "456K", likes: 89400, uses: "35K", category: "Wildlife", aspectRatio: "16:9", prompt: "Male lion with golden mane" },
+  { id: "f3", title: "Tropical Beach", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800", creator: "travel", verified: true, views: "476K", likes: 88501, uses: "35K", category: "Landscape", aspectRatio: "16:9", prompt: "Pristine white sand beach" },
+  { id: "f4", title: "Sports Car", image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800", creator: "auto", verified: true, views: "445K", likes: 84200, uses: "33K", category: "Automotive", aspectRatio: "16:9", prompt: "Sleek Italian supercar" },
+  { id: "f5", title: "Tokyo Streets", image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800", creator: "urban", verified: true, views: "398K", likes: 72800, uses: "29K", category: "Street", aspectRatio: "9:16", prompt: "Neon-lit Tokyo alleyway" },
+  { id: "f6", title: "Cherry Blossoms", image: "https://images.unsplash.com/photo-1522383225653-ed111181a951?w=800", creator: "nature", verified: true, views: "342K", likes: 63801, uses: "25K", category: "Nature", aspectRatio: "3:4", prompt: "Pink cherry blossoms in spring" },
+  { id: "f7", title: "Portrait", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800", creator: "portrait", verified: true, views: "312K", likes: 58700, uses: "23K", category: "Portrait", aspectRatio: "4:5", prompt: "Golden hour portrait photography" },
+  { id: "f8", title: "Sneaker", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800", creator: "product", verified: true, views: "287K", likes: 54200, uses: "21K", category: "Product", aspectRatio: "1:1", prompt: "Minimalist sneaker product shot" },
+  { id: "f9", title: "Studio Portrait", image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800", creator: "fashion", verified: true, views: "289K", likes: 53900, uses: "21K", category: "Portrait", aspectRatio: "4:5", prompt: "Professional studio lighting" },
+  { id: "f10", title: "Forest Path", image: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800", creator: "nature", verified: true, views: "267K", likes: 51300, uses: "20K", category: "Landscape", aspectRatio: "3:4", prompt: "Mystical forest in autumn" },
+  { id: "f11", title: "Luxury Watch", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800", creator: "product", verified: true, views: "234K", likes: 45200, uses: "18K", category: "Product", aspectRatio: "1:1", prompt: "Swiss timepiece product photography" },
+  { id: "f12", title: "Abstract Art", image: "https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?w=800", creator: "abstract", verified: true, views: "215K", likes: 41700, uses: "16K", category: "Abstract", aspectRatio: "1:1", prompt: "Fluid art with metallic inks" },
+  { id: "f13", title: "Gourmet Burger", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800", creator: "food", verified: true, views: "189K", likes: 37600, uses: "15K", category: "Food", aspectRatio: "1:1", prompt: "Towering gourmet burger" },
+  { id: "f14", title: "City Lights", image: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800", creator: "urban", verified: false, views: "198K", likes: 36400, uses: "14K", category: "Street", aspectRatio: "16:9", prompt: "Long exposure city street" },
+  { id: "f15", title: "Architecture", image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800", creator: "archi", verified: false, views: "178K", likes: 32100, uses: "12K", category: "Architecture", aspectRatio: "9:16", prompt: "Modern glass skyscraper" },
+  { id: "f16", title: "Coffee Art", image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800", creator: "cafe", verified: false, views: "156K", likes: 29801, uses: "11K", category: "Food", aspectRatio: "1:1", prompt: "Latte art rosetta pattern" },
+];
+
 
 export default function PublicHome() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [generatedImage, setGeneratedImage] = useState<{ imageData: string; mimeType: string; aspectRatio: string } | null>(null);
+
+  const [useFallback, setUseFallback] = useState(false);
+  
+  // Set a timeout to use fallback if API doesn't respond
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setUseFallback(true);
+    }, 3000); // 3 second timeout
+    return () => clearTimeout(timer);
+  }, []);
 
   const { data: galleryData, isLoading: isGalleryLoading } = useQuery<{ images: any[] }>({
     queryKey: ['/api/gallery'],
@@ -399,10 +429,23 @@ export default function PublicHome() {
           },
         });
         
-        // Handle non-OK responses (304 has empty body, can't be parsed)
+        // Handle 304 (CDN cache hit) - return cached data or use localStorage
+        if (response.status === 304) {
+          const cached = queryClient.getQueryData<{ images: any[] }>(['/api/gallery']);
+          if (cached && cached.images.length > 0) {
+            return cached;
+          }
+          // Try localStorage fallback
+          const stored = localStorage.getItem('gallery_cache');
+          if (stored) {
+            return JSON.parse(stored);
+          }
+          return { images: [] };
+        }
+        
+        // Handle other non-OK responses
         if (!response.ok) {
           console.error('Gallery API error:', response.status, response.statusText);
-          // Return cached data from React Query if available
           const cached = queryClient.getQueryData<{ images: any[] }>(['/api/gallery']);
           if (cached && cached.images.length > 0) {
             return cached;
@@ -417,6 +460,12 @@ export default function PublicHome() {
         }
         
         const data = JSON.parse(text);
+        // Store in localStorage for fallback
+        try {
+          localStorage.setItem('gallery_cache', JSON.stringify(data));
+        } catch (e) {
+          // localStorage might be full or disabled
+        }
         return data;
       } catch (error) {
         console.error('Gallery fetch error:', error);
@@ -440,26 +489,33 @@ export default function PublicHome() {
   const galleryImages: InspirationItem[] = useMemo(() => {
     const apiImages = galleryData?.images;
     
-    if (!apiImages || apiImages.length === 0) {
-      return [];
+    // If API returned images, use them
+    if (apiImages && apiImages.length > 0) {
+      return apiImages.map((img: any) => ({
+        id: String(img.id),
+        title: img.title || 'Untitled',
+        image: img.imageUrl,
+        creator: img.creator || 'unknown',
+        verified: Boolean(img.verified),
+        views: formatViewCount(img.viewCount || 0),
+        likes: img.likeCount || 0,
+        uses: formatViewCount(Math.floor((img.likeCount || 0) * 0.4)),
+        category: img.category || 'General',
+        aspectRatio: (img.aspectRatio || '1:1') as "1:1" | "9:16" | "16:9" | "4:5" | "3:4",
+        prompt: img.prompt || '',
+        isLiked: Boolean(img.isLiked)
+      }));
     }
     
-    return apiImages.map((img: any) => ({
-      id: String(img.id),
-      title: img.title || 'Untitled',
-      image: img.imageUrl,
-      creator: img.creator || 'unknown',
-      verified: Boolean(img.verified),
-      views: formatViewCount(img.viewCount || 0),
-      likes: img.likeCount || 0,
-      uses: formatViewCount(Math.floor((img.likeCount || 0) * 0.4)),
-      category: img.category || 'General',
-      aspectRatio: (img.aspectRatio || '1:1') as "1:1" | "9:16" | "16:9" | "4:5" | "3:4",
-      prompt: img.prompt || '',
-      isLiked: Boolean(img.isLiked)
-    }));
-  }, [galleryData]);
+    // If timeout reached and no API data, use fallback
+    if (useFallback) {
+      return FALLBACK_GALLERY;
+    }
+    
+    return [];
+  }, [galleryData, useFallback]);
   
+  // Gallery is ready if we have images from API OR fallback kicked in
   const isGalleryReady = galleryImages.length > 0;
 
   const handleLike = useCallback((imageId: string) => {
