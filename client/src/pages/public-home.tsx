@@ -453,20 +453,27 @@ export default function PublicHome() {
   const { data: galleryData, isLoading: isGalleryLoading } = useQuery<{ images: any[] }>({
     queryKey: ['/api/gallery'],
     queryFn: async () => {
-      const response = await fetch('/api/gallery', {
-        credentials: 'include',
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      });
-      if (!response.ok) throw new Error('Failed to fetch gallery');
-      const data = await response.json();
-      return data;
+      try {
+        const response = await fetch('/api/gallery', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          console.error('Gallery API error:', response.status, response.statusText);
+          return { images: [] };
+        }
+        const data = await response.json();
+        console.log('Gallery API returned:', data?.images?.length, 'images');
+        return data;
+      } catch (error) {
+        console.error('Gallery fetch error:', error);
+        return { images: [] };
+      }
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
-    gcTime: 0,
+    staleTime: 30000,
+    refetchOnMount: true,
   });
 
   const likeMutation = useMutation({
@@ -480,22 +487,27 @@ export default function PublicHome() {
   });
 
   const galleryImages: InspirationItem[] = useMemo(() => {
-    if (!galleryData?.images?.length) {
+    const apiImages = galleryData?.images;
+    
+    if (!apiImages || apiImages.length === 0) {
+      console.log('Using fallback images, galleryData:', galleryData);
       return fallbackGalleryImages;
     }
-    return galleryData.images.map((img: any) => ({
-      id: img.id,
-      title: img.title,
+    
+    console.log('Using API images, count:', apiImages.length);
+    return apiImages.map((img: any) => ({
+      id: String(img.id),
+      title: img.title || 'Untitled',
       image: img.imageUrl,
-      creator: img.creator,
-      verified: img.verified,
+      creator: img.creator || 'unknown',
+      verified: Boolean(img.verified),
       views: formatViewCount(img.viewCount || 0),
       likes: img.likeCount || 0,
       uses: formatViewCount(Math.floor((img.likeCount || 0) * 0.4)),
-      category: img.category,
-      aspectRatio: img.aspectRatio as "1:1" | "9:16" | "16:9" | "4:5" | "3:4",
-      prompt: img.prompt,
-      isLiked: img.isLiked
+      category: img.category || 'General',
+      aspectRatio: (img.aspectRatio || '1:1') as "1:1" | "9:16" | "16:9" | "4:5" | "3:4",
+      prompt: img.prompt || '',
+      isLiked: Boolean(img.isLiked)
     }));
   }, [galleryData]);
 
