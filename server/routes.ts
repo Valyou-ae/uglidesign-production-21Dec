@@ -814,8 +814,9 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/generate/final", requireAuth, async (req, res) => {
+  app.post("/api/generate/final", requireAuth, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const {
         prompt,
         stylePreset = "auto",
@@ -862,11 +863,33 @@ export async function registerRoutes(
       const result = await generateGeminiImage(enhancedPrompt, negativePrompts, speed);
 
       if (result) {
-        sendEvent("final_image", {
-          index: 0,
-          imageData: result.imageData,
-          mimeType: result.mimeType,
-        });
+        const imageUrl = `data:${result.mimeType};base64,${result.imageData}`;
+        
+        try {
+          const savedImage = await storage.createImage({
+            userId,
+            imageUrl,
+            prompt,
+            style: stylePreset,
+            aspectRatio,
+            generationType: "image",
+            isFavorite: false,
+          });
+          
+          sendEvent("final_image", {
+            index: 0,
+            imageData: result.imageData,
+            mimeType: result.mimeType,
+            savedImageId: savedImage.id,
+          });
+        } catch (saveError) {
+          console.error("Failed to save image to database:", saveError);
+          sendEvent("final_image", {
+            index: 0,
+            imageData: result.imageData,
+            mimeType: result.mimeType,
+          });
+        }
       } else {
         sendEvent("image_error", { index: 0, error: "Generation failed" });
       }
