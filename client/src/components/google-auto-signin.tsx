@@ -153,7 +153,7 @@ export function GoogleAutoSignIn({ onSuccess, onError }: GoogleAutoSignInProps) 
                   const errorText = await authResponse.text();
                   if (errorText) {
                     const error = JSON.parse(errorText);
-                    errorMessage = error.message || errorMessage;
+                    errorMessage = error.detail || error.message || errorMessage;
                   }
                 } catch (e) {
                   errorMessage = `Login failed (${authResponse.status})`;

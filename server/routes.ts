@@ -228,9 +228,14 @@ export async function registerRoutes(
           role: user.role,
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google auth error:", error);
-      res.status(500).json({ message: "Authentication failed" });
+      const errorMessage = error?.message || "Unknown error";
+      res.status(500).json({ 
+        message: "Authentication failed", 
+        detail: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      });
     }
   });
 
