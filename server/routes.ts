@@ -164,20 +164,40 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Email not provided by Google" });
       }
 
-      // Check if user exists by email
-      let user = await storage.getUserByEmail(email);
+      // Helper function to retry database operations on DNS failures
+      const retryDbOperation = async <T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> => {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            return await operation();
+          } catch (error: any) {
+            const isDnsError = error?.message?.includes('EAI_AGAIN') || 
+                               error?.message?.includes('ENOTFOUND') ||
+                               error?.code === 'EAI_AGAIN';
+            if (isDnsError && attempt < maxRetries) {
+              console.log(`DNS error on attempt ${attempt}, retrying in ${attempt * 500}ms...`);
+              await new Promise(resolve => setTimeout(resolve, attempt * 500));
+              continue;
+            }
+            throw error;
+          }
+        }
+        throw new Error('Max retries exceeded');
+      };
+
+      // Check if user exists by email (with retry)
+      let user = await retryDbOperation(() => storage.getUserByEmail(email));
 
       if (!user) {
-        // Create new user using upsertUser for full field support
+        // Create new user using upsertUser for full field support (with retry)
         const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(2, 6);
-        user = await storage.upsertUser({
+        user = await retryDbOperation(() => storage.upsertUser({
           id: googleId,
           email,
           username,
           displayName: name || username,
           profileImageUrl: picture || null,
           role: 'user',
-        });
+        }));
       } else {
         // Update existing user's profile image and display name from Google if not set
         const updates: any = {};
@@ -192,7 +212,7 @@ export async function registerRoutes(
           updates.profileImageUrl = picture;
         }
         if (Object.keys(updates).length > 0) {
-          user = await storage.updateUserProfile(user.id, updates) || user;
+          user = await retryDbOperation(() => storage.updateUserProfile(user!.id, updates)) || user;
         }
       }
 
