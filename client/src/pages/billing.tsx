@@ -15,7 +15,7 @@ import { Sidebar } from "@/components/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { userApi } from "@/lib/api";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 
 interface StripeProduct {
   product_id: string;
@@ -231,13 +231,20 @@ export default function Billing() {
                     </span>
                     <span className="text-base text-[#52525B]">/mo</span>
                   </div>
-                  <button 
-                    onClick={() => setActiveModal("plan")}
-                    className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] mt-2 underline decoration-transparent hover:decoration-current transition-all"
-                    data-testid="button-change-plan"
-                  >
-                    {hasSubscription ? 'Manage plan' : 'Upgrade plan'}
-                  </button>
+                  <div className="flex flex-col items-end gap-1 mt-2">
+                    <button 
+                      onClick={() => setActiveModal("plan")}
+                      className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all"
+                      data-testid="button-change-plan"
+                    >
+                      {hasSubscription ? 'Manage plan' : 'Upgrade plan'}
+                    </button>
+                    <Link href="/pricing">
+                      <span className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all cursor-pointer" data-testid="link-view-pricing">
+                        View pricing
+                      </span>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
