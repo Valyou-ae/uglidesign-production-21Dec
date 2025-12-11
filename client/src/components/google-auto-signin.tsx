@@ -120,14 +120,21 @@ export function GoogleAutoSignIn({ onSuccess, onError }: GoogleAutoSignInProps) 
             try {
               console.log("Google sign-in triggered, method:", response.select_by);
               
-              const authResponse = await fetch("/api/auth/google", {
+              // Add timestamp to bypass CDN caching
+              const timestamp = Date.now();
+              const authResponse = await fetch(`/api/auth/google?_t=${timestamp}`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
+                  "Cache-Control": "no-cache, no-store, must-revalidate",
+                  "Pragma": "no-cache",
                 },
                 credentials: "include",
+                cache: "no-store",
                 body: JSON.stringify({ credential: response.credential }),
               });
+
+              console.log("Auth response status:", authResponse.status);
 
               if (authResponse.ok) {
                 console.log("Google sign-in successful");
@@ -141,14 +148,26 @@ export function GoogleAutoSignIn({ onSuccess, onError }: GoogleAutoSignInProps) 
                 window.location.href = pendingPrompt ? "/" : "/discover";
                 return;
               } else {
-                const error = await authResponse.json();
-                console.error("Google auth failed:", error);
-                onError?.(error.message || "Authentication failed");
+                let errorMessage = "Authentication failed";
+                try {
+                  const errorText = await authResponse.text();
+                  if (errorText) {
+                    const error = JSON.parse(errorText);
+                    errorMessage = error.message || errorMessage;
+                  }
+                } catch (e) {
+                  errorMessage = `Login failed (${authResponse.status})`;
+                }
+                console.error("Google auth failed:", errorMessage);
+                alert(`Login failed: ${errorMessage}`);
+                onError?.(errorMessage);
                 isAuthenticatingRef.current = false;
               }
             } catch (error) {
               console.error("Google auth error:", error);
-              onError?.("Authentication failed");
+              const errorMsg = error instanceof Error ? error.message : "Authentication failed";
+              alert(`Login error: ${errorMsg}`);
+              onError?.(errorMsg);
               isAuthenticatingRef.current = false;
             }
           },

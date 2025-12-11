@@ -144,18 +144,29 @@ export function FloatingPromptBar({ onImageGenerated }: FloatingPromptBarProps =
           client_id: clientId,
           callback: async (response: { credential: string }) => {
             try {
-              const authResponse = await fetch("/api/auth/google", {
+              // Add timestamp to bypass CDN caching
+              const timestamp = Date.now();
+              const authResponse = await fetch(`/api/auth/google?_t=${timestamp}`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                  "Content-Type": "application/json",
+                  "Cache-Control": "no-cache, no-store, must-revalidate",
+                  "Pragma": "no-cache",
+                },
                 credentials: "include",
+                cache: "no-store",
                 body: JSON.stringify({ credential: response.credential }),
               });
 
               if (authResponse.ok) {
                 window.location.reload();
+              } else {
+                console.error("Google auth failed:", authResponse.status);
+                alert(`Login failed (${authResponse.status}). Please try again.`);
               }
             } catch (error) {
               console.error("Google auth error:", error);
+              alert("Login error. Please try again.");
             }
           },
           auto_select: false,
