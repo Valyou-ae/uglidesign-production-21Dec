@@ -20,6 +20,7 @@ import {
   insertMoodBoardSchema, 
   insertMoodBoardItemSchema, 
   guestGenerations,
+  // New validation schemas
   uuidSchema,
   promptSchema,
   guestGenerationSchema,
@@ -42,13 +43,13 @@ export async function registerRoutes(
 
   // Credit costs for different operations
   const CREDIT_COSTS = {
-    DRAFT_GENERATION: 0,
-    FINAL_GENERATION: 2,
-    SINGLE_GENERATION: 1,
-    MOCKUP_GENERATION: 3,
-    BG_REMOVAL_STANDARD: 1,
-    BG_REMOVAL_HIGH: 2,
-    BG_REMOVAL_ULTRA: 4,
+    DRAFT_GENERATION: 0,      // Free drafts to encourage exploration
+    FINAL_GENERATION: 2,      // Standard generation
+    SINGLE_GENERATION: 1,     // Quick single generation
+    MOCKUP_GENERATION: 3,     // Mockup per image
+    BG_REMOVAL_STANDARD: 1,   // Standard quality
+    BG_REMOVAL_HIGH: 2,       // High quality
+    BG_REMOVAL_ULTRA: 4,      // Ultra quality
   } as const;
 
   // Helper to check and deduct credits
@@ -86,16 +87,18 @@ export async function registerRoutes(
     
     const message = error.message;
     
+    // Patterns that indicate sensitive information that should not be exposed
     const sensitivePatterns = [
-      /at\s+\S+\s+\(/i,
-      /\/[\w\/]+\.\w+/,
-      /password|secret|key|token/i,
-      /database|sql|query/i,
-      /eai_again|enotfound|econnrefused/i,
-      /helium|neon/i,
-      /internal server/i,
+      /at\s+\S+\s+\(/i,           // Stack traces
+      /\/[\w\/]+\.\w+/,           // File paths
+      /password|secret|key|token/i, // Credentials
+      /database|sql|query/i,      // Database errors
+      /eai_again|enotfound|econnrefused/i, // Network errors
+      /helium|neon/i,             // Infrastructure names
+      /internal server/i,         // Generic internal errors
     ];
     
+    // Check if message contains sensitive patterns
     for (const pattern of sensitivePatterns) {
       if (pattern.test(message)) {
         console.error("Sanitized error (sensitive pattern detected):", message);
@@ -103,6 +106,7 @@ export async function registerRoutes(
       }
     }
     
+    // Allow known safe error messages through
     const safePatterns = [
       /insufficient credits/i,
       /invalid.*input/i,
@@ -120,6 +124,7 @@ export async function registerRoutes(
       }
     }
     
+    // If message is short and doesn't contain sensitive patterns, allow it
     if (message.length < 100 && !/[\/\\]/.test(message)) {
       return message;
     }
@@ -249,23 +254,14 @@ export async function registerRoutes(
         return res.status(500).json({ message: "Google Sign-In not configured" });
       }
 
-      // Decode and verify the JWT token
-      const parts = credential.split('.');
-      if (parts.length !== 3) {
-        return res.status(400).json({ message: "Invalid token format" });
-      }
-
-      const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
+      // Import and use secure token verification
+      const { verifyGoogleToken, isValidGooglePayload } = await import("./googleAuth");
       
-      // Verify the token is for our client
-      if (payload.aud !== clientId) {
-        return res.status(401).json({ message: "Invalid token audience" });
-      }
-
-      // Check token expiration
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp && payload.exp < now) {
-        return res.status(401).json({ message: "Token expired" });
+      // Cryptographically verify the token
+      const payload = await verifyGoogleToken(credential, clientId);
+      
+      if (!isValidGooglePayload(payload)) {
+        return res.status(401).json({ message: "Invalid or expired token" });
       }
 
       const { email, name, picture, sub: googleId } = payload;
@@ -361,12 +357,11 @@ export async function registerRoutes(
         }
       });
     } catch (error: any) {
+      // Log full error internally for debugging
       console.error("Google auth error:", error);
-      const errorMessage = error?.message || "Unknown error";
+      // Return generic message to client - never expose internal error details
       res.status(500).json({ 
-        message: "Authentication failed", 
-        detail: errorMessage,
-        stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+        message: "Authentication failed. Please try again."
       });
     }
   });
@@ -393,6 +388,103 @@ export async function registerRoutes(
         sameSite: "lax"
       });
       res.json({ success: true });
+    }
+  });
+
+  // ============== PASSWORD RESET ROUTES ==============
+
+  app.post("/api/auth/forgot-password", passwordResetLimiter, async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Normalize email
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Check if user exists
+      const user = await storage.getUserByEmail(normalizedEmail);
+
+      // Always return success to prevent email enumeration attacks
+      // But only actually send email if user exists
+      if (user) {
+        // Generate a cryptographically secure token
+        const crypto = await import('crypto');
+        const token = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        
+        // Token expires in 1 hour
+        const expires = new Date(Date.now() + 60 * 60 * 1000);
+        
+        // Store the hashed token
+        await storage.setPasswordResetToken(normalizedEmail, tokenHash, expires);
+
+        // In production, send email here
+        // For now, log the reset link (remove in production!)
+        const resetLink = `${process.env.REPLIT_DOMAINS ? 'https://' + process.env.REPLIT_DOMAINS.split(',')[0] : 'http://localhost:5000'}/reset-password?email=${encodeURIComponent(normalizedEmail)}&token=${token}`;
+        console.log(`[DEV] Password reset link for ${normalizedEmail}: ${resetLink}`);
+      }
+
+      // Always return success (prevents email enumeration)
+      res.json({ 
+        success: true, 
+        message: "If an account exists with this email, you will receive a password reset link." 
+      });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to process request" });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { email, token, newPassword } = req.body;
+
+      if (!email || !token || !newPassword) {
+        return res.status(400).json({ message: "Email, token, and new password are required" });
+      }
+
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Get user with reset token
+      const user = await storage.getUserWithResetToken(normalizedEmail);
+
+      if (!user || !user.passwordResetToken || !user.passwordResetExpires) {
+        return res.status(400).json({ message: "Invalid or expired reset link" });
+      }
+
+      // Check if token expired
+      if (new Date() > user.passwordResetExpires) {
+        await storage.clearPasswordResetToken(user.id);
+        return res.status(400).json({ message: "Reset link has expired. Please request a new one." });
+      }
+
+      // Verify token
+      const crypto = await import('crypto');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+      if (tokenHash !== user.passwordResetToken) {
+        return res.status(400).json({ message: "Invalid reset link" });
+      }
+
+      // Hash new password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+      // Update password and clear reset token
+      await storage.updatePassword(user.id, hashedPassword);
+      await storage.clearPasswordResetToken(user.id);
+
+      res.json({ success: true, message: "Password has been reset successfully" });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
     }
   });
 
@@ -655,8 +747,16 @@ export async function registerRoutes(
 
   app.patch("/api/images/:id/favorite", requireAuth, async (req: any, res) => {
     try {
+      const { id } = req.params;
+      
+      // Validate UUID format
+      const idValidation = uuidSchema.safeParse(id);
+      if (!idValidation.success) {
+        return res.status(400).json({ message: "Invalid image ID format" });
+      }
+      
       const userId = getUserId(req);
-      const image = await storage.toggleImageFavorite(req.params.id, userId);
+      const image = await storage.toggleImageFavorite(id, userId);
       if (!image) {
         return res.status(404).json({ message: "Image not found" });
       }
@@ -668,8 +768,16 @@ export async function registerRoutes(
 
   app.delete("/api/images/:id", requireAuth, async (req: any, res) => {
     try {
+      const { id } = req.params;
+      
+      // Validate UUID format
+      const idValidation = uuidSchema.safeParse(id);
+      if (!idValidation.success) {
+        return res.status(400).json({ message: "Invalid image ID format" });
+      }
+      
       const userId = getUserId(req);
-      const success = await storage.deleteImage(req.params.id, userId);
+      const success = await storage.deleteImage(id, userId);
       if (!success) {
         return res.status(404).json({ message: "Image not found" });
       }
@@ -721,7 +829,7 @@ export async function registerRoutes(
   app.get("/api/gallery", async (req: any, res) => {
     try {
       const images = await storage.getGalleryImages();
-      const userId = req.user?.id;
+      const userId = req.user?.claims?.sub;
       
       let likedImageIds: string[] = [];
       if (userId) {
@@ -742,9 +850,15 @@ export async function registerRoutes(
 
   app.post("/api/gallery/:imageId/like", requireAuth, async (req: any, res) => {
     try {
-      const userId = getUserId(req);
       const { imageId } = req.params;
       
+      // Validate UUID format
+      const idValidation = uuidSchema.safeParse(imageId);
+      if (!idValidation.success) {
+        return res.status(400).json({ message: "Invalid image ID format" });
+      }
+      
+      const userId = getUserId(req);
       const result = await storage.likeGalleryImage(imageId, userId);
       res.json(result);
     } catch (error) {
@@ -822,12 +936,18 @@ export async function registerRoutes(
 
   // ============== GUEST IMAGE GENERATION (NO AUTH) ==============
 
-  app.post("/api/guest/generate-image", async (req, res) => {
+  app.post("/api/guest/generate-image", guestGenerationLimiter, async (req, res) => {
     try {
-      const { prompt, guestId } = req.body;
-      if (!prompt || !guestId) {
-        return res.status(400).json({ message: "Missing prompt or guestId" });
+      // Validate input
+      const validationResult = guestGenerationSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid input", 
+          errors: validationResult.error.errors.map(e => e.message)
+        });
       }
+      
+      const { prompt, guestId } = validationResult.data;
 
       const existing = await db.select().from(guestGenerations).where(eq(guestGenerations.guestId, guestId));
       if (existing.length > 0) {
@@ -848,12 +968,17 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/generate/analyze", requireAuth, async (req, res) => {
+  app.post("/api/generate/analyze", requireAuth, generationRateLimiter, async (req, res) => {
     try {
-      const { prompt } = req.body;
-      if (!prompt || typeof prompt !== "string") {
-        return res.status(400).json({ message: "Prompt is required" });
+      // Validate prompt
+      const promptValidation = promptSchema.safeParse(req.body?.prompt);
+      if (!promptValidation.success) {
+        return res.status(400).json({ 
+          message: promptValidation.error.errors[0]?.message || "Prompt is required" 
+        });
       }
+      
+      const prompt = promptValidation.data;
 
       const analysis = await analyzePrompt(prompt);
       res.json({ analysis });
@@ -863,12 +988,18 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/generate/draft", requireAuth, async (req, res) => {
+  app.post("/api/generate/draft", requireAuth, generationRateLimiter, async (req, res) => {
     try {
-      const { prompt, stylePreset = "auto", aspectRatio = "1:1", detail = "medium", speed = "quality" } = req.body;
-      if (!prompt || typeof prompt !== "string") {
-        return res.status(400).json({ message: "Prompt is required" });
+      // Validate prompt
+      const promptValidation = promptSchema.safeParse(req.body?.prompt);
+      if (!promptValidation.success) {
+        return res.status(400).json({ 
+          message: promptValidation.error.errors[0]?.message || "Prompt is required" 
+        });
       }
+      
+      const prompt = promptValidation.data;
+      const { stylePreset = "auto", aspectRatio = "1:1", detail = "medium", speed = "quality" } = req.body;
 
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
@@ -924,7 +1055,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/generate/final", requireAuth, async (req: any, res) => {
+  app.post("/api/generate/final", requireAuth, generationRateLimiter, async (req: any, res) => {
     try {
       const userId = getUserId(req);
       const {
@@ -940,6 +1071,16 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Prompt is required" });
       }
 
+      // Check credits before starting generation
+      const creditCheck = await checkAndDeductCredits(userId, CREDIT_COSTS.FINAL_GENERATION, "image generation");
+      if (!creditCheck.success) {
+        return res.status(402).json({ 
+          message: creditCheck.error,
+          creditsRequired: CREDIT_COSTS.FINAL_GENERATION,
+          creditsAvailable: creditCheck.credits
+        });
+      }
+
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
@@ -948,6 +1089,9 @@ export async function registerRoutes(
       const sendEvent = (event: string, data: any) => {
         res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
       };
+
+      // Send remaining credits info
+      sendEvent("credits", { remaining: creditCheck.credits, deducted: CREDIT_COSTS.FINAL_GENERATION });
 
       sendEvent("status", { agent: "Text Sentinel", status: "working", message: "Deep analysis..." });
 
@@ -1018,11 +1162,22 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/generate/single", requireAuth, async (req, res) => {
+  app.post("/api/generate/single", requireAuth, generationRateLimiter, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const { prompt, stylePreset = "auto" } = req.body;
       if (!prompt || typeof prompt !== "string") {
         return res.status(400).json({ message: "Prompt is required" });
+      }
+
+      // Check credits before generation
+      const creditCheck = await checkAndDeductCredits(userId, CREDIT_COSTS.SINGLE_GENERATION, "quick generation");
+      if (!creditCheck.success) {
+        return res.status(402).json({ 
+          message: creditCheck.error,
+          creditsRequired: CREDIT_COSTS.SINGLE_GENERATION,
+          creditsAvailable: creditCheck.credits
+        });
       }
 
       const analysis = await analyzePrompt(prompt);
@@ -1045,8 +1200,11 @@ export async function registerRoutes(
           },
           analysis,
           enhancedPrompt,
+          creditsRemaining: creditCheck.credits,
         });
       } else {
+        // Refund credit on failure
+        await storage.addCredits(userId, CREDIT_COSTS.SINGLE_GENERATION);
         res.status(500).json({ message: "Image generation failed" });
       }
     } catch (error) {
@@ -1079,8 +1237,9 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/mockup/generate", requireAuth, async (req, res) => {
+  app.post("/api/mockup/generate", requireAuth, generationRateLimiter, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const {
         designImage,
         productType = "t-shirt",
@@ -1092,6 +1251,16 @@ export async function registerRoutes(
 
       if (!designImage || typeof designImage !== "string") {
         return res.status(400).json({ message: "Design image is required" });
+      }
+
+      // Check and deduct credits before starting
+      const creditCheck = await checkAndDeductCredits(userId, CREDIT_COSTS.MOCKUP_GENERATION, "mockup generation");
+      if (!creditCheck.success) {
+        return res.status(402).json({ 
+          message: creditCheck.error,
+          creditsRequired: CREDIT_COSTS.MOCKUP_GENERATION,
+          creditsAvailable: creditCheck.credits
+        });
       }
 
       res.setHeader("Content-Type", "text/event-stream");
@@ -1144,8 +1313,9 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/mockup/generate-batch", requireAuth, async (req, res) => {
+  app.post("/api/mockup/generate-batch", requireAuth, generationRateLimiter, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const {
         designImage,
         productType = "t-shirt",
@@ -1164,6 +1334,24 @@ export async function registerRoutes(
 
       if (!designImage || typeof designImage !== "string") {
         return res.status(400).json({ message: "Design image is required" });
+      }
+
+      // Calculate total mockups that will be generated
+      const colorsCount = Array.isArray(productColors) ? productColors.length : 1;
+      const anglesCount = Array.isArray(angles) ? angles.length : 1;
+      const sizesCount = Array.isArray(productSizes) && productSizes.length > 0 ? productSizes.length : 1;
+      const totalMockups = colorsCount * anglesCount * sizesCount;
+      const totalCreditCost = totalMockups * CREDIT_COSTS.MOCKUP_GENERATION;
+
+      // Check and deduct credits before starting
+      const creditCheck = await checkAndDeductCredits(userId, totalCreditCost, `batch mockup generation (${totalMockups} images)`);
+      if (!creditCheck.success) {
+        return res.status(402).json({ 
+          message: creditCheck.error,
+          creditsRequired: totalCreditCost,
+          creditsAvailable: creditCheck.credits,
+          totalMockups
+        });
       }
 
       const validOutputQualities = ['standard', 'high', 'ultra'] as const;
@@ -1855,8 +2043,9 @@ export async function registerRoutes(
     validateBackgroundRemovalOptions
   } = await import("./services/backgroundRemover");
 
-  app.post("/api/background-removal", requireAuth, async (req, res) => {
+  app.post("/api/background-removal", requireAuth, generationRateLimiter, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const { image, options } = req.body;
 
       if (!image || typeof image !== "string") {
@@ -1877,23 +2066,47 @@ export async function registerRoutes(
 
       const validatedOptions = validateBackgroundRemovalOptions(options || {});
 
+      // Determine credit cost based on quality
+      const qualityCosts: Record<string, number> = {
+        'standard': CREDIT_COSTS.BG_REMOVAL_STANDARD,
+        'high': CREDIT_COSTS.BG_REMOVAL_HIGH,
+        'ultra': CREDIT_COSTS.BG_REMOVAL_ULTRA,
+      };
+      const creditCost = qualityCosts[validatedOptions.quality] || CREDIT_COSTS.BG_REMOVAL_STANDARD;
+
+      // Check credits before processing
+      const creditCheck = await checkAndDeductCredits(userId, creditCost, "background removal");
+      if (!creditCheck.success) {
+        return res.status(402).json({ 
+          success: false,
+          message: creditCheck.error,
+          creditsRequired: creditCost,
+          creditsAvailable: creditCheck.credits
+        });
+      }
+
       const result = await removeBackground(base64Data, validatedOptions);
+
+      if (!result.success) {
+        // Refund credit on failure
+        await storage.addCredits(userId, creditCost);
+      }
 
       res.json({
         success: result.success,
-        result
+        result,
+        creditsRemaining: result.success ? creditCheck.credits : (creditCheck.credits ?? 0) + creditCost
       });
     } catch (error) {
       console.error("Background removal error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Background removal failed";
       res.status(500).json({ 
         success: false, 
-        message: errorMessage 
+        message: getSafeErrorMessage(error, "Background removal failed")
       });
     }
   });
 
-  app.post("/api/background-removal/batch", requireAuth, async (req, res) => {
+  app.post("/api/background-removal/batch", requireAuth, generationRateLimiter, async (req, res) => {
     try {
       const { images, options } = req.body;
 
@@ -2010,7 +2223,7 @@ export async function registerRoutes(
       res.end();
     } catch (error) {
       console.error("Background removal batch error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Batch processing failed";
+      const errorMessage = getSafeErrorMessage(error, "Batch processing failed");
       
       if (!res.headersSent) {
         res.status(500).json({ 
@@ -2134,16 +2347,22 @@ export async function registerRoutes(
   app.patch("/api/admin/users/:id/role", requireAdmin, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const { role } = req.body;
       
-      if (!role || typeof role !== 'string') {
-        return res.status(400).json({ message: "Role is required" });
+      // Validate UUID format
+      const idValidation = uuidSchema.safeParse(id);
+      if (!idValidation.success) {
+        return res.status(400).json({ message: "Invalid user ID format" });
       }
       
-      const validRoles = ['user', 'admin', 'moderator'];
-      if (!validRoles.includes(role)) {
-        return res.status(400).json({ message: "Invalid role. Must be one of: user, admin, moderator" });
+      // Validate role
+      const roleValidation = updateRoleSchema.safeParse(req.body);
+      if (!roleValidation.success) {
+        return res.status(400).json({ 
+          message: roleValidation.error.errors[0]?.message || "Invalid role" 
+        });
       }
+      
+      const { role } = roleValidation.data;
       
       const user = await storage.updateUserRole(id, role);
       
@@ -2434,9 +2653,15 @@ export async function registerRoutes(
 
   app.delete("/api/prompts/favorites/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = getUserId(req);
       const { id } = req.params;
       
+      // Validate UUID format
+      const idValidation = uuidSchema.safeParse(id);
+      if (!idValidation.success) {
+        return res.status(400).json({ message: "Invalid favorite ID format" });
+      }
+      
+      const userId = getUserId(req);
       await storage.deletePromptFavorite(id, userId);
       res.json({ message: "Prompt favorite deleted successfully" });
     } catch (error) {
@@ -2461,11 +2686,16 @@ export async function registerRoutes(
   app.post("/api/mood-boards", requireAuth, async (req: any, res) => {
     try {
       const userId = getUserId(req);
-      const { name, description } = req.body;
       
-      if (!name || typeof name !== 'string') {
-        return res.status(400).json({ message: "Name is required" });
+      // Validate input
+      const validation = createMoodBoardSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: validation.error.errors[0]?.message || "Invalid input"
+        });
       }
+      
+      const { name, description } = validation.data;
 
       const board = await storage.createMoodBoard(userId, name, description);
       res.status(201).json({ board });
@@ -2479,6 +2709,12 @@ export async function registerRoutes(
     try {
       const userId = getUserId(req);
       const { id } = req.params;
+      
+      // Validate UUID format
+      const idValidation = uuidSchema.safeParse(id);
+      if (!idValidation.success) {
+        return res.status(400).json({ message: "Invalid mood board ID format" });
+      }
       
       const result = await storage.getMoodBoard(userId, id);
       
@@ -2497,9 +2733,26 @@ export async function registerRoutes(
     try {
       const userId = getUserId(req);
       const { id } = req.params;
-      const { name, description } = req.body;
       
-      const board = await storage.updateMoodBoard(userId, id, { name, description });
+      // Validate UUID format
+      const idValidation = uuidSchema.safeParse(id);
+      if (!idValidation.success) {
+        return res.status(400).json({ message: "Invalid mood board ID format" });
+      }
+      
+      // Validate update data (partial - allow either name or description)
+      const { name, description } = req.body;
+      if (name !== undefined && (typeof name !== 'string' || name.length > 100)) {
+        return res.status(400).json({ message: "Name must be a string with max 100 characters" });
+      }
+      if (description !== undefined && (typeof description !== 'string' || description.length > 500)) {
+        return res.status(400).json({ message: "Description must be a string with max 500 characters" });
+      }
+      
+      const board = await storage.updateMoodBoard(userId, id, { 
+        name: name?.trim(), 
+        description: description?.trim() 
+      });
       
       if (!board) {
         return res.status(404).json({ message: "Mood board not found" });
@@ -2516,6 +2769,12 @@ export async function registerRoutes(
     try {
       const userId = getUserId(req);
       const { id } = req.params;
+      
+      // Validate UUID format
+      const idValidation = uuidSchema.safeParse(id);
+      if (!idValidation.success) {
+        return res.status(400).json({ message: "Invalid mood board ID format" });
+      }
       
       await storage.deleteMoodBoard(userId, id);
       res.json({ message: "Mood board deleted successfully" });
