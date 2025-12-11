@@ -138,9 +138,10 @@ export default function Billing() {
   const subscription = subscriptionData?.subscription;
 
   const planDetails = {
-    free: { name: "Free", price: 0, credits: 100 },
+    free: { name: "Free", price: 0, credits: 50 },
+    starter: { name: "Starter", price: 9, credits: 500 },
     pro: { name: "Pro", price: 29, credits: 2000 },
-    business: { name: "Business", price: 79, credits: 10000 },
+    enterprise: { name: "Enterprise", price: -1, credits: -1 },
   };
 
   const activePlan = planDetails[currentPlan as keyof typeof planDetails] || planDetails.free;
@@ -217,7 +218,7 @@ export default function Billing() {
                     </span>
                   </div>
                   <p className="text-sm text-[#71717A] mt-1">
-                    {activePlan.credits.toLocaleString()} credits per month
+                    {activePlan.credits === -1 ? 'Unlimited credits' : `${activePlan.credits.toLocaleString()} credits per month`}
                   </p>
                   <p className="text-[13px] text-[#52525B] mt-3">
                     {hasSubscription ? `Renews ${getRenewalDate()}` : 'No active subscription'}
@@ -225,12 +226,18 @@ export default function Billing() {
                 </div>
                 
                 <div className="text-right">
-                  <div className="flex items-baseline justify-end gap-1">
-                    <span className="text-[28px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">
-                      ${activePlan.price}
-                    </span>
-                    <span className="text-base text-[#52525B]">/mo</span>
-                  </div>
+                  {activePlan.price === -1 ? (
+                    <div className="text-[28px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">
+                      Custom
+                    </div>
+                  ) : (
+                    <div className="flex items-baseline justify-end gap-1">
+                      <span className="text-[28px] font-semibold text-[#18181B] dark:text-[#FAFAFA]">
+                        ${activePlan.price}
+                      </span>
+                      <span className="text-base text-[#52525B]">/mo</span>
+                    </div>
+                  )}
                   <div className="flex flex-col items-end gap-1 mt-2">
                     <button 
                       onClick={() => setActiveModal("plan")}

@@ -28,9 +28,9 @@ const PLANS: PricingPlan[] = [
     description: "Perfect for trying out UGLI",
     price: 0,
     priceYearly: 0,
-    credits: 100,
+    credits: 50,
     features: [
-      { text: "100 credits/month", included: true },
+      { text: "50 credits/month", included: true },
       { text: "Basic image generation", included: true },
       { text: "Standard quality", included: true },
       { text: "Community support", included: true },
@@ -40,6 +40,24 @@ const PLANS: PricingPlan[] = [
       { text: "API access", included: false },
     ],
     cta: "Get Started Free",
+  },
+  {
+    name: "Starter",
+    description: "For hobbyists and creators",
+    price: 9,
+    priceYearly: 90,
+    credits: 500,
+    features: [
+      { text: "500 credits/month", included: true },
+      { text: "All AI generators", included: true },
+      { text: "HD quality exports", included: true },
+      { text: "Background remover", included: true },
+      { text: "Email support", included: true },
+      { text: "Mockup generator", included: false },
+      { text: "Priority queue", included: false },
+      { text: "API access", included: false },
+    ],
+    cta: "Start Starter",
   },
   {
     name: "Pro",
@@ -55,19 +73,19 @@ const PLANS: PricingPlan[] = [
       { text: "Background remover", included: true },
       { text: "Mockup generator", included: true },
       { text: "Priority support", included: true },
-      { text: "Priority queue", included: false },
+      { text: "Priority queue", included: true },
       { text: "API access", included: false },
     ],
-    cta: "Start Pro Trial",
+    cta: "Start Pro",
   },
   {
-    name: "Business",
+    name: "Enterprise",
     description: "For teams and agencies",
-    price: 79,
-    priceYearly: 790,
-    credits: 10000,
+    price: -1,
+    priceYearly: -1,
+    credits: -1,
     features: [
-      { text: "10,000 credits/month", included: true },
+      { text: "Unlimited credits", included: true },
       { text: "All Pro features", included: true },
       { text: "Priority queue", included: true },
       { text: "API access", included: true },
@@ -76,7 +94,7 @@ const PLANS: PricingPlan[] = [
       { text: "Dedicated support", included: true },
       { text: "SLA guarantee", included: true },
     ],
-    cta: "Contact Sales",
+    cta: "Contact Us",
   },
 ];
 
@@ -140,7 +158,7 @@ export default function Pricing() {
             </div>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
             {PLANS.map((plan, index) => (
               <motion.div
                 key={plan.name}
@@ -170,17 +188,30 @@ export default function Pricing() {
                 </div>
                 
                 <div className="mb-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-foreground">
-                      ${billingPeriod === "monthly" ? plan.price : plan.priceYearly}
-                    </span>
-                    <span className="text-muted-foreground">
-                      /{billingPeriod === "monthly" ? "mo" : "yr"}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {plan.credits.toLocaleString()} credits included
-                  </p>
+                  {plan.price === -1 ? (
+                    <>
+                      <div className="text-4xl font-bold text-foreground">
+                        Custom
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Contact us for pricing
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-4xl font-bold text-foreground">
+                          ${billingPeriod === "monthly" ? plan.price : plan.priceYearly}
+                        </span>
+                        <span className="text-muted-foreground">
+                          /{billingPeriod === "monthly" ? "mo" : "yr"}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {plan.credits.toLocaleString()} credits included
+                      </p>
+                    </>
+                  )}
                 </div>
                 
                 <ul className="space-y-3 mb-8 flex-1">
