@@ -281,18 +281,24 @@ export default function Billing() {
                     </div>
                   )}
                   <div className="flex flex-col items-end gap-1 mt-2">
-                    <button 
-                      onClick={() => setActiveModal("plan")}
-                      className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all"
-                      data-testid="button-change-plan"
-                    >
-                      {hasSubscription ? 'Manage plan' : 'Upgrade plan'}
-                    </button>
                     <Link href="/pricing">
-                      <span className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all cursor-pointer" data-testid="link-view-pricing">
-                        View pricing
+                      <span 
+                        className="text-[13px] text-primary hover:text-primary/80 font-medium underline decoration-transparent hover:decoration-current transition-all cursor-pointer"
+                        data-testid="button-change-plan"
+                      >
+                        {hasSubscription ? 'Manage plan' : 'Upgrade plan'}
                       </span>
                     </Link>
+                    {hasSubscription && (
+                      <button 
+                        onClick={handleManageSubscription}
+                        disabled={portalMutation.isPending}
+                        className="text-[13px] text-[#71717A] hover:text-[#18181B] dark:hover:text-[#FAFAFA] underline decoration-transparent hover:decoration-current transition-all"
+                        data-testid="link-manage-stripe"
+                      >
+                        Manage in Stripe
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
