@@ -10,10 +10,6 @@ async function getCredentials(): Promise<{ publishableKey: string; secretKey: st
   const envSecretKey = process.env.STRIPE_SECRET_KEY;
 
   if (envPublishableKey && envSecretKey) {
-    // Log key prefix to help debug (safe to log first 10 chars)
-    const keyPrefix = envSecretKey.substring(0, 10);
-    console.log(`[Stripe] Using key with prefix: ${keyPrefix}...`);
-    
     stripeAvailable = true;
     cachedCredentials = {
       publishableKey: envPublishableKey,
