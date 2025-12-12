@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./use-auth";
+import { userApi } from "@/lib/api";
 
 interface CreditsData {
   credits: number;
@@ -14,12 +15,8 @@ export function useCredits(): CreditsData {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["user", "credits"],
-    queryFn: async () => {
-      const res = await fetch("/api/user/credits", { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch credits");
-      return res.json();
-    },
+    queryKey: ["user", "stats"],
+    queryFn: userApi.getStats,
     enabled: isAuthenticated && !!user,
     staleTime: 1000 * 30,
     refetchOnWindowFocus: true,
@@ -27,7 +24,6 @@ export function useCredits(): CreditsData {
   });
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ["user", "credits"] });
     queryClient.invalidateQueries({ queryKey: ["user", "stats"] });
   };
 
