@@ -990,7 +990,10 @@ export default function ImageGenerator() {
 
   const handlePromptMouseLeave = () => {
     promptTimeoutRef.current = setTimeout(() => {
-      setIsPromptExpanded(false);
+      // Don't collapse if focus is still inside the container
+      if (!promptContainerRef.current?.contains(document.activeElement)) {
+        setIsPromptExpanded(false);
+      }
     }, 400);
   };
 
@@ -1002,7 +1005,25 @@ export default function ImageGenerator() {
   };
 
   const handlePromptBlur = (e: React.FocusEvent) => {
-    if (promptContainerRef.current && !promptContainerRef.current.contains(e.relatedTarget as Node)) {
+    const relatedTarget = e.relatedTarget as HTMLElement | null;
+    
+    // If relatedTarget is null, focus moved outside the document or to non-focusable element
+    // In this case, only collapse after a longer delay and check if still not focused
+    if (!relatedTarget) {
+      promptTimeoutRef.current = setTimeout(() => {
+        // Check if any element inside the container has focus
+        if (!promptContainerRef.current?.contains(document.activeElement)) {
+          setIsPromptExpanded(false);
+        }
+      }, 600);
+      return;
+    }
+    
+    const isInsideContainer = promptContainerRef.current?.contains(relatedTarget);
+    const isInsidePopover = relatedTarget.closest?.('[data-radix-popper-content-wrapper]');
+    const isInsideDropdown = relatedTarget.closest?.('[data-radix-menu-content]');
+    
+    if (!isInsideContainer && !isInsidePopover && !isInsideDropdown) {
       promptTimeoutRef.current = setTimeout(() => {
         setIsPromptExpanded(false);
       }, 400);
@@ -1102,7 +1123,9 @@ export default function ImageGenerator() {
           ref={promptContainerRef}
           onMouseEnter={handlePromptMouseEnter}
           onMouseLeave={handlePromptMouseLeave}
+          onFocus={handlePromptFocus}
           onBlur={handlePromptBlur}
+          onClick={() => setIsPromptExpanded(true)}
           className="fixed bottom-[70px] left-0 right-0 md:relative md:bottom-auto md:top-0 z-[60] bg-background/80 backdrop-blur-xl border-t md:border-t-0 md:border-b border-border px-4 md:px-6 py-3 md:py-4 transition-all order-last md:order-first pb-safe"
         >
           <div className="max-w-[1800px] mx-auto w-full space-y-4">
@@ -1292,6 +1315,23 @@ export default function ImageGenerator() {
               </div>
 
             </div>
+
+            {/* Expand Hint - shows when collapsed */}
+            <AnimatePresence>
+              {!isPromptExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  className="flex items-center justify-center gap-2 text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-1"
+                  onClick={() => setIsPromptExpanded(true)}
+                >
+                  <SlidersHorizontal className="h-3 w-3" />
+                  <span>Tap to adjust settings</span>
+                  <ChevronDown className="h-3 w-3" />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Settings Panel (Expandable on Hover/Focus) */}
             <AnimatePresence mode="sync">
