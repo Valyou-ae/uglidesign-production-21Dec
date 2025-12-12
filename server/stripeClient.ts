@@ -1,9 +1,27 @@
 import Stripe from 'stripe';
 
-let connectionSettings: any;
 let stripeAvailable = false;
+let cachedCredentials: { publishableKey: string; secretKey: string } | null = null;
 
 async function getCredentials(): Promise<{ publishableKey: string; secretKey: string } | null> {
+  if (cachedCredentials) {
+    return cachedCredentials;
+  }
+
+  // First check environment variables (secrets)
+  const envPublishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+  const envSecretKey = process.env.STRIPE_SECRET_KEY;
+
+  if (envPublishableKey && envSecretKey) {
+    stripeAvailable = true;
+    cachedCredentials = {
+      publishableKey: envPublishableKey,
+      secretKey: envSecretKey,
+    };
+    return cachedCredentials;
+  }
+
+  // Fall back to Replit connector if env vars not set
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY
     ? 'repl ' + process.env.REPL_IDENTITY
@@ -34,17 +52,18 @@ async function getCredentials(): Promise<{ publishableKey: string; secretKey: st
 
     const data = await response.json();
     
-    connectionSettings = data.items?.[0];
+    const connectionSettings = data.items?.[0];
 
     if (!connectionSettings || (!connectionSettings.settings?.publishable || !connectionSettings.settings?.secret)) {
       return null;
     }
 
     stripeAvailable = true;
-    return {
+    cachedCredentials = {
       publishableKey: connectionSettings.settings.publishable,
       secretKey: connectionSettings.settings.secret,
     };
+    return cachedCredentials;
   } catch {
     return null;
   }
