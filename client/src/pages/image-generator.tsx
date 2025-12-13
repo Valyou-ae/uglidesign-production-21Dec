@@ -223,6 +223,8 @@ export default function ImageGenerator() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [favoriteName, setFavoriteName] = useState("");
   const [isSavingFavorite, setIsSavingFavorite] = useState(false);
+  const [referenceImage, setReferenceImage] = useState<{ file: File; previewUrl: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { 
     isOpen: isTutorialOpen, 
@@ -1144,36 +1146,70 @@ export default function ImageGenerator() {
                   data-tutorial="prompt-input"
                   className="flex-1 flex items-end gap-2 group min-h-[56px]">
                 
-                {/* Reference Image Trigger with Popover */}
-                <div className="self-end mb-0.5 shrink-0">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-10 w-10 text-muted-foreground hover:text-foreground bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-border/40"
+                {/* Hidden file input for reference image upload */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  className="hidden"
+                  data-testid="input-reference-image"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (referenceImage) {
+                        URL.revokeObjectURL(referenceImage.previewUrl);
+                      }
+                      const previewUrl = URL.createObjectURL(file);
+                      setReferenceImage({ file, previewUrl });
+                      toast({ title: "Image uploaded", description: "Reference image ready for generation." });
+                    }
+                    e.target.value = '';
+                  }}
+                />
+
+                {/* Reference Image Button */}
+                <div className="self-end mb-0.5 shrink-0 flex items-center gap-1">
+                  {referenceImage ? (
+                    <div className="relative group">
+                      <img 
+                        src={referenceImage.previewUrl} 
+                        alt="Reference" 
+                        className="h-10 w-10 rounded-xl object-cover border border-border"
+                        data-testid="img-reference-preview"
+                      />
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          URL.revokeObjectURL(referenceImage.previewUrl);
+                          setReferenceImage(null);
+                        }}
+                        data-testid="button-remove-reference"
+                        className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        <ImageIconLucide className="h-5 w-5" strokeWidth={1.5} />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-auto p-2">
-                      <div className="flex gap-2">
-                        <Button variant="ghost" className="flex flex-col items-center justify-center h-20 w-24 gap-2 text-xs hover:bg-muted hover:text-foreground border border-transparent hover:border-border/50 rounded-xl transition-all">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                            <Upload className="h-4 w-4" />
-                          </div>
-                          Reference
-                        </Button>
-                        <div className="w-px bg-border/50 my-2" />
-                        <Button variant="ghost" className="flex flex-col items-center justify-center h-20 w-24 gap-2 text-xs hover:bg-muted hover:text-foreground border border-transparent hover:border-border/50 rounded-xl transition-all">
-                          <div className="h-8 w-8 rounded-full bg-[#E3B436]/10 flex items-center justify-center text-[#E3B436]">
-                            <RefreshCcw className="h-4 w-4" />
-                          </div>
-                          Remix
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fileInputRef.current?.click();
+                            }}
+                            data-testid="button-upload-reference"
+                            className="h-10 w-10 text-muted-foreground hover:text-foreground bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-border/40"
+                          >
+                            <ImageIconLucide className="h-5 w-5" strokeWidth={1.5} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Upload reference image</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
 
                 {/* Textarea */}
