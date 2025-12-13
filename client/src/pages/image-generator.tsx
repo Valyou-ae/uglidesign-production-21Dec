@@ -66,7 +66,8 @@ import {
   Trophy,
   Crown,
   Medal,
-  Award
+  Award,
+  Eye
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -139,6 +140,8 @@ interface LeaderboardEntry {
   displayName: string | null;
   profileImageUrl: string | null;
   imageCount: number;
+  likeCount: number;
+  viewCount: number;
   rank: number;
 }
 
@@ -1893,9 +1896,19 @@ export default function ImageGenerator() {
                             {creator.displayName || creator.username || "Anonymous"}
                           </p>
                         </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-sm font-semibold text-foreground">{creator.imageCount}</p>
-                          <p className="text-[10px] text-muted-foreground">creations</p>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <ImageIcon className="h-3 w-3" />
+                            <span className="text-xs font-medium">{creator.imageCount}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Heart className="h-3 w-3" />
+                            <span className="text-xs font-medium">{creator.likeCount}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Eye className="h-3 w-3" />
+                            <span className="text-xs font-medium">{creator.viewCount}</span>
+                          </div>
                         </div>
                       </div>
                     ))}

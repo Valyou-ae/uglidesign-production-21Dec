@@ -46,6 +46,7 @@ export const generatedImages = pgTable("generated_images", {
   generationType: text("generation_type").default("image"),
   isFavorite: boolean("is_favorite").default(false),
   isPublic: boolean("is_public").default(false),
+  viewCount: integer("view_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

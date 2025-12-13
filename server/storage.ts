@@ -11,6 +11,7 @@ import {
   moodBoardItems,
   galleryImages,
   galleryImageLikes,
+  imageLikes,
   type User, 
   type InsertUser, 
   type UpdateProfile, 
@@ -121,7 +122,7 @@ export interface IStorage {
   getPublicImages(limit?: number): Promise<GeneratedImage[]>;
   setImageVisibility(imageId: string, userId: string, isPublic: boolean): Promise<GeneratedImage | undefined>;
   
-  getLeaderboard(period: 'weekly' | 'monthly' | 'all-time', limit?: number): Promise<{ userId: string; username: string | null; displayName: string | null; profileImageUrl: string | null; imageCount: number; rank: number }[]>;
+  getLeaderboard(period: 'weekly' | 'monthly' | 'all-time', limit?: number): Promise<{ userId: string; username: string | null; displayName: string | null; profileImageUrl: string | null; imageCount: number; likeCount: number; viewCount: number; rank: number }[]>;
   getReferralStats(userId: string): Promise<{ referralCode: string | null; referredCount: number; bonusCreditsEarned: number }>;
   applyReferralCode(userId: string, referralCode: string): Promise<{ success: boolean; bonusCredits?: number; error?: string }>;
 }
@@ -832,7 +833,7 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
-  async getLeaderboard(period: 'weekly' | 'monthly' | 'all-time', limit: number = 50): Promise<{ userId: string; username: string | null; displayName: string | null; profileImageUrl: string | null; imageCount: number; rank: number }[]> {
+  async getLeaderboard(period: 'weekly' | 'monthly' | 'all-time', limit: number = 50): Promise<{ userId: string; username: string | null; displayName: string | null; profileImageUrl: string | null; imageCount: number; likeCount: number; viewCount: number; rank: number }[]> {
     let startDate: Date | null = null;
     const now = new Date();
     
@@ -849,12 +850,21 @@ export class DatabaseStorage implements IStorage {
             u.username,
             u.display_name,
             u.profile_image_url,
-            COUNT(gi.id) as image_count
+            COALESCE(img_stats.image_count, 0) as image_count,
+            COALESCE(img_stats.like_count, 0) as like_count,
+            COALESCE(img_stats.view_count, 0) as view_count
           FROM ${users} u
-          LEFT JOIN ${generatedImages} gi ON gi.user_id = u.id AND gi.created_at >= ${startDate}
-          GROUP BY u.id, u.username, u.display_name, u.profile_image_url
-          HAVING COUNT(gi.id) > 0
-          ORDER BY image_count DESC
+          INNER JOIN (
+            SELECT 
+              gi.user_id,
+              COUNT(gi.id) as image_count,
+              SUM(gi.view_count) as view_count,
+              (SELECT COUNT(*) FROM ${imageLikes} il WHERE il.image_id IN (SELECT id FROM ${generatedImages} WHERE user_id = gi.user_id AND created_at >= ${startDate})) as like_count
+            FROM ${generatedImages} gi
+            WHERE gi.created_at >= ${startDate}
+            GROUP BY gi.user_id
+          ) img_stats ON img_stats.user_id = u.id
+          ORDER BY img_stats.image_count DESC
           LIMIT ${limit}
         `
       : sql`
@@ -863,12 +873,20 @@ export class DatabaseStorage implements IStorage {
             u.username,
             u.display_name,
             u.profile_image_url,
-            COUNT(gi.id) as image_count
+            COALESCE(img_stats.image_count, 0) as image_count,
+            COALESCE(img_stats.like_count, 0) as like_count,
+            COALESCE(img_stats.view_count, 0) as view_count
           FROM ${users} u
-          LEFT JOIN ${generatedImages} gi ON gi.user_id = u.id
-          GROUP BY u.id, u.username, u.display_name, u.profile_image_url
-          HAVING COUNT(gi.id) > 0
-          ORDER BY image_count DESC
+          INNER JOIN (
+            SELECT 
+              gi.user_id,
+              COUNT(gi.id) as image_count,
+              SUM(gi.view_count) as view_count,
+              (SELECT COUNT(*) FROM ${imageLikes} il WHERE il.image_id IN (SELECT id FROM ${generatedImages} WHERE user_id = gi.user_id)) as like_count
+            FROM ${generatedImages} gi
+            GROUP BY gi.user_id
+          ) img_stats ON img_stats.user_id = u.id
+          ORDER BY img_stats.image_count DESC
           LIMIT ${limit}
         `;
     
@@ -880,6 +898,8 @@ export class DatabaseStorage implements IStorage {
       displayName: row.display_name,
       profileImageUrl: row.profile_image_url,
       imageCount: Number(row.image_count),
+      likeCount: Number(row.like_count),
+      viewCount: Number(row.view_count),
       rank: index + 1,
     }));
   }
