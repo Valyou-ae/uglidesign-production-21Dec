@@ -115,6 +115,9 @@ export interface IStorage {
   likeGalleryImage(imageId: string, userId: string): Promise<{ liked: boolean; likeCount: number }>;
   hasUserLikedImage(imageId: string, userId: string): Promise<boolean>;
   getUserLikedImages(userId: string): Promise<string[]>;
+  
+  getPublicImages(limit?: number): Promise<GeneratedImage[]>;
+  setImageVisibility(imageId: string, userId: string, isPublic: boolean): Promise<GeneratedImage | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -738,6 +741,32 @@ export class DatabaseStorage implements IStorage {
       .from(galleryImageLikes)
       .where(eq(galleryImageLikes.userId, userId));
     return likes.map(l => l.imageId);
+  }
+
+  async getPublicImages(limit: number = 50): Promise<GeneratedImage[]> {
+    return db
+      .select()
+      .from(generatedImages)
+      .where(eq(generatedImages.isPublic, true))
+      .orderBy(desc(generatedImages.createdAt))
+      .limit(limit);
+  }
+
+  async setImageVisibility(imageId: string, userId: string, isPublic: boolean): Promise<GeneratedImage | undefined> {
+    const [image] = await db
+      .select()
+      .from(generatedImages)
+      .where(and(eq(generatedImages.id, imageId), eq(generatedImages.userId, userId)));
+    
+    if (!image) return undefined;
+
+    const [updated] = await db
+      .update(generatedImages)
+      .set({ isPublic })
+      .where(eq(generatedImages.id, imageId))
+      .returning();
+    
+    return updated;
   }
 }
 

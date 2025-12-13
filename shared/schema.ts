@@ -45,6 +45,7 @@ export const generatedImages = pgTable("generated_images", {
   aspectRatio: text("aspect_ratio"),
   generationType: text("generation_type").default("image"),
   isFavorite: boolean("is_favorite").default(false),
+  isPublic: boolean("is_public").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

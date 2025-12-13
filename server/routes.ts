@@ -696,6 +696,33 @@ export async function registerRoutes(
     }
   });
 
+  app.patch("/api/images/:id/visibility", requireAuth, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const { isPublic } = req.body;
+      if (typeof isPublic !== "boolean") {
+        return res.status(400).json({ message: "isPublic must be a boolean" });
+      }
+      const image = await storage.setImageVisibility(req.params.id, userId, isPublic);
+      if (!image) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      res.json({ image });
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.get("/api/images/public", async (req: any, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const images = await storage.getPublicImages(limit);
+      res.json({ images });
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
   app.get("/api/images/calendar", requireAuth, async (req: any, res) => {
     try {
       const userId = getUserId(req);
