@@ -1035,12 +1035,12 @@ export default function ImageGenerator() {
     }
   };
 
-  // Load user's saved images from API or use sample images
+  // Load user's saved images from API or use sample images (limit to 12 for performance)
   useEffect(() => {
     const loadImages = async () => {
       if (user) {
         try {
-          const { images } = await imagesApi.getAll();
+          const { images } = await imagesApi.getAll(12, 0);
           if (images && images.length > 0) {
             const loadedImages: GeneratedImage[] = images.map((img: any) => ({
               id: img.id,
