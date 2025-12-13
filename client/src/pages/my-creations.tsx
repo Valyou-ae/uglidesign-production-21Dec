@@ -541,9 +541,9 @@ export default function MyCreations() {
           {/* FAVORITES CONTENT */}
           <div className="flex-1 pb-10">
             {isLoading ? (
-              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-3">
                 {[200, 280, 180, 240, 160, 220, 300, 190].map((height, i) => (
-                  <div key={i} className="rounded-xl overflow-hidden bg-card border border-border animate-pulse break-inside-avoid mb-5">
+                  <div key={i} className="rounded-xl overflow-hidden bg-card border border-border animate-pulse break-inside-avoid mb-3">
                     <div className="bg-muted/50" style={{ height: `${height}px` }} />
                     <div className="p-3 space-y-2">
                       <div className="h-4 bg-muted/50 rounded w-3/4" />
@@ -655,7 +655,7 @@ export default function MyCreations() {
               </div>
             ) : (
               /* MASONRY VIEW - CSS Columns for natural aspect ratios */
-              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-3">
                 {filteredItems.map((item) => {
                   const typeConfig = getTypeConfig(item.type);
                   const TypeIcon = typeConfig.icon;
@@ -666,7 +666,7 @@ export default function MyCreations() {
                       key={item.id}
                       onClick={() => selectMode ? toggleSelection(item.id) : setSelectedItem(item)}
                       className={cn(
-                        "break-inside-avoid mb-5 relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border transition-all duration-200",
+                        "break-inside-avoid mb-3 relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border transition-all duration-200",
                         !selectMode && "hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]",
                         selectMode && selectedItems.includes(item.id) 
                           ? "border-[#F59E0B] ring-4 ring-[#F59E0B]/15" 
