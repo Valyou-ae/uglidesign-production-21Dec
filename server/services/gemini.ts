@@ -234,9 +234,19 @@ Respond with JSON:
 export async function generateImage(
   prompt: string,
   negativePrompts: string[],
-  speed: "fast" | "quality" = "quality"
+  speed: "fast" | "quality" = "quality",
+  aspectRatio: string = "1:1"
 ): Promise<GeneratedImageResult | null> {
   try {
+    const aspectRatioMap: Record<string, string> = {
+      "1:1": "1:1",
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "4:3": "4:3",
+      "3:4": "3:4"
+    };
+    const validAspectRatio = aspectRatioMap[aspectRatio] || "1:1";
+    
     const fullPrompt = negativePrompts.length > 0
       ? `${prompt}\n\nAvoid: ${negativePrompts.join(", ")}`
       : prompt;
@@ -248,7 +258,8 @@ export async function generateImage(
       contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
-      },
+        aspectRatio: validAspectRatio,
+      } as any,
     });
 
     const candidates = response.candidates;

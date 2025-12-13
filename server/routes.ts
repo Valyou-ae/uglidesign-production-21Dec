@@ -1065,7 +1065,7 @@ export async function registerRoutes(
 
       sendEvent("status", { agent: "Visual Synthesizer", status: "working", message: "Generating image..." });
 
-      const result = await generateGeminiImage(enhancedPrompt, negativePrompts, speed);
+      const result = await generateGeminiImage(enhancedPrompt, negativePrompts, speed, aspectRatio);
 
       if (result) {
         sendEvent("image", {
@@ -1135,7 +1135,7 @@ export async function registerRoutes(
 
       sendEvent("status", { agent: "Visual Synthesizer", status: "working", message: "Generating image..." });
 
-      const result = await generateGeminiImage(enhancedPrompt, negativePrompts, speed);
+      const result = await generateGeminiImage(enhancedPrompt, negativePrompts, speed, aspectRatio);
 
       if (result) {
         const imageUrl = `data:${result.mimeType};base64,${result.imageData}`;
