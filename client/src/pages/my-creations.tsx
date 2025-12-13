@@ -541,10 +541,10 @@ export default function MyCreations() {
           {/* FAVORITES CONTENT */}
           <div className="flex-1 pb-10">
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="rounded-xl overflow-hidden bg-card border border-border animate-pulse">
-                    <div className="aspect-square bg-muted/50" />
+              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+                {[200, 280, 180, 240, 160, 220, 300, 190].map((height, i) => (
+                  <div key={i} className="rounded-xl overflow-hidden bg-card border border-border animate-pulse break-inside-avoid mb-5">
+                    <div className="bg-muted/50" style={{ height: `${height}px` }} />
                     <div className="p-3 space-y-2">
                       <div className="h-4 bg-muted/50 rounded w-3/4" />
                       <div className="h-3 bg-muted/30 rounded w-1/2" />
@@ -654,13 +654,8 @@ export default function MyCreations() {
                 ))}
               </div>
             ) : (
-              /* GRID / MASONRY VIEW */
-              <div className={cn(
-                "grid gap-5",
-                viewMode === "grid" 
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
-                  : "columns-1 sm:columns-2 lg:columns-3 xl:columns-4 space-y-5 block" // Simple masonry using columns
-              )}>
+              /* MASONRY VIEW - CSS Columns for natural aspect ratios */
+              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
                 {filteredItems.map((item) => {
                   const typeConfig = getTypeConfig(item.type);
                   const TypeIcon = typeConfig.icon;
@@ -671,23 +666,20 @@ export default function MyCreations() {
                       key={item.id}
                       onClick={() => selectMode ? toggleSelection(item.id) : setSelectedItem(item)}
                       className={cn(
-                        "break-inside-avoid relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border transition-all duration-200",
-                        viewMode === "masonry" ? "mb-6" : "h-full",
+                        "break-inside-avoid mb-5 relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border transition-all duration-200",
                         !selectMode && "hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]",
                         selectMode && selectedItems.includes(item.id) 
                           ? "border-[#F59E0B] ring-4 ring-[#F59E0B]/15" 
                           : ""
                       )}
                     >
-                      {/* Image Container */}
-                      <div className={cn(
-                        "w-full relative overflow-hidden bg-muted/20",
-                        viewMode === "grid" ? "aspect-square" : ""
-                      )}>
+                      {/* Image Container - Natural aspect ratio */}
+                      <div className="w-full relative overflow-hidden bg-muted/20">
                         <img 
                           src={item.src} 
                           alt={item.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-auto object-cover"
+                          loading="lazy"
                         />
                         
                         {/* Type Badge (Top Left) */}

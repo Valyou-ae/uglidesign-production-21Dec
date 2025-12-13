@@ -1721,16 +1721,16 @@ export default function ImageGenerator() {
                   </Button>
                 </div>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-6 gap-3">
                   {generations.slice(0, 6).map((gen) => (
                     <motion.div 
                       key={gen.id}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       onClick={() => setSelectedImage(gen)}
-                      className="relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border hover:border-primary/50 hover:shadow-lg transition-all aspect-square"
+                      className="relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border hover:border-primary/50 hover:shadow-lg transition-all break-inside-avoid mb-3"
                     >
-                      <img src={gen.src} alt={gen.prompt} className="w-full h-full object-cover" />
+                      <img src={gen.src} alt={gen.prompt} className="w-full h-auto object-cover" loading="lazy" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
                         <div className="flex items-center gap-1">
                           <Button 
