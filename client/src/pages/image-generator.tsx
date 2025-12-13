@@ -224,6 +224,7 @@ export default function ImageGenerator() {
   const [favoriteName, setFavoriteName] = useState("");
   const [isSavingFavorite, setIsSavingFavorite] = useState(false);
   const [referenceImage, setReferenceImage] = useState<{ file: File; previewUrl: string } | null>(null);
+  const [imageMode, setImageMode] = useState<"reference" | "remix">("reference");
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { 
@@ -1170,26 +1171,65 @@ export default function ImageGenerator() {
                   />
                   
                   {referenceImage ? (
-                    <div className="relative group">
-                      <img 
-                        src={referenceImage.previewUrl} 
-                        alt="Reference" 
-                        className="h-10 w-10 rounded-xl object-cover border border-border"
-                        data-testid="img-reference-preview"
-                      />
-                      <button 
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          URL.revokeObjectURL(referenceImage.previewUrl);
-                          setReferenceImage(null);
-                        }}
-                        data-testid="button-remove-reference"
-                        className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-2.5 w-2.5" />
-                      </button>
+                    <div className="flex items-center gap-1.5">
+                      {/* Thumbnail with remove button */}
+                      <div className="relative group">
+                        <img 
+                          src={referenceImage.previewUrl} 
+                          alt={imageMode === "reference" ? "Reference" : "Remix"} 
+                          className="h-10 w-10 rounded-lg object-cover border border-border"
+                          data-testid="img-reference-preview"
+                        />
+                        <button 
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            URL.revokeObjectURL(referenceImage.previewUrl);
+                            setReferenceImage(null);
+                          }}
+                          data-testid="button-remove-reference"
+                          className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                      
+                      {/* Mode Selector - Reference / Remix toggle */}
+                      <div className="flex items-center bg-muted/60 rounded-lg p-0.5 border border-border/50">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setImageMode("reference");
+                          }}
+                          data-testid="button-mode-reference"
+                          className={cn(
+                            "px-2 py-1 text-[11px] font-medium rounded-md transition-all",
+                            imageMode === "reference" 
+                              ? "bg-background text-foreground shadow-sm" 
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Reference
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setImageMode("remix");
+                          }}
+                          data-testid="button-mode-remix"
+                          className={cn(
+                            "px-2 py-1 text-[11px] font-medium rounded-md transition-all",
+                            imageMode === "remix" 
+                              ? "bg-background text-foreground shadow-sm" 
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Remix
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <TooltipProvider>
