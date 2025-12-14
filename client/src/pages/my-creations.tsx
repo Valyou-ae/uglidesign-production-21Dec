@@ -682,9 +682,9 @@ export default function MyCreations() {
                           loading="lazy"
                         />
                         
-                        {/* Type Badge (Top Left) */}
-                        <div className="absolute top-3 left-3 z-10">
-                           {selectMode ? (
+                        {/* Selection Checkbox (Top Left) - Only shown in select mode */}
+                        {selectMode && (
+                          <div className="absolute top-3 left-3 z-10">
                             <div className={cn(
                               "h-6 w-6 rounded-md border-2 flex items-center justify-center transition-all backdrop-blur-md",
                               selectedItems.includes(item.id)
@@ -693,13 +693,8 @@ export default function MyCreations() {
                             )}>
                               {selectedItems.includes(item.id) && <Check className="h-3.5 w-3.5 text-white" />}
                             </div>
-                           ) : (
-                            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10">
-                              <TypeIcon className="h-3.5 w-3.5" style={{ color: typeConfig.color }} />
-                              <span className="text-[11px] font-bold text-white uppercase">{typeConfig.label}</span>
-                            </div>
-                           )}
-                        </div>
+                          </div>
+                        )}
 
                         {/* Overlay (Matches Image Generator) */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-5">
