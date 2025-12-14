@@ -2393,13 +2393,12 @@ export async function registerRoutes(
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
-      
-      const allUsers = await storage.getAllUsers();
-      const totalUsers = allUsers.length;
+      const offset = (page - 1) * limit;
+
+      // Optimized: Use database-level pagination instead of loading all users
+      const { users: paginatedUsers, total: totalUsers } = await storage.getAllUsers(limit, offset);
       const totalPages = Math.ceil(totalUsers / limit);
-      const startIndex = (page - 1) * limit;
-      const paginatedUsers = allUsers.slice(startIndex, startIndex + limit);
-      
+
       const safeUsers = paginatedUsers.map(user => ({
         id: user.id,
         username: user.username,
@@ -2411,7 +2410,7 @@ export async function registerRoutes(
         profileImageUrl: user.profileImageUrl,
         createdAt: user.createdAt
       }));
-      
+
       res.json({
         users: safeUsers,
         pagination: {
@@ -2463,10 +2462,15 @@ export async function registerRoutes(
   });
 
   // CRM Contacts
-  app.get("/api/admin/crm/contacts", requireAdmin, async (_req: any, res) => {
+  app.get("/api/admin/crm/contacts", requireAdmin, async (req: any, res) => {
     try {
-      const contacts = await storage.getContacts();
-      res.json({ contacts });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = (page - 1) * limit;
+
+      // Optimized: Use database-level pagination
+      const { contacts, total } = await storage.getContacts(limit, offset);
+      res.json({ contacts, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
       console.error("Admin contacts fetch error:", error);
       res.status(500).json({ message: "Failed to fetch contacts" });
@@ -2542,10 +2546,15 @@ export async function registerRoutes(
   });
 
   // CRM Deals
-  app.get("/api/admin/crm/deals", requireAdmin, async (_req: any, res) => {
+  app.get("/api/admin/crm/deals", requireAdmin, async (req: any, res) => {
     try {
-      const deals = await storage.getDeals();
-      res.json({ deals });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = (page - 1) * limit;
+
+      // Optimized: Use database-level pagination
+      const { deals, total } = await storage.getDeals(limit, offset);
+      res.json({ deals, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
       console.error("Admin deals fetch error:", error);
       res.status(500).json({ message: "Failed to fetch deals" });
@@ -2621,10 +2630,15 @@ export async function registerRoutes(
   });
 
   // CRM Activities
-  app.get("/api/admin/crm/activities", requireAdmin, async (_req: any, res) => {
+  app.get("/api/admin/crm/activities", requireAdmin, async (req: any, res) => {
     try {
-      const activities = await storage.getActivities();
-      res.json({ activities });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = (page - 1) * limit;
+
+      // Optimized: Use database-level pagination
+      const { activities, total } = await storage.getActivities(limit, offset);
+      res.json({ activities, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
       console.error("Admin activities fetch error:", error);
       res.status(500).json({ message: "Failed to fetch activities" });

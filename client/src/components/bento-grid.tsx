@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { 
-  Sparkles, 
-  Shirt, 
-  Scissors, 
-  ArrowRight, 
-  Image as ImageIcon, 
-  Clock, 
-  TrendingUp, 
-  Zap, 
-  Plus, 
-  Upload, 
-  Layers, 
-  Link as LinkIcon, 
+import { useState, useMemo, useCallback } from "react";
+import {
+  Sparkles,
+  Shirt,
+  Scissors,
+  ArrowRight,
+  Image as ImageIcon,
+  Clock,
+  TrendingUp,
+  Zap,
+  Plus,
+  Upload,
+  Layers,
+  Link as LinkIcon,
   Shuffle,
   RefreshCw
 } from "lucide-react";
@@ -23,19 +23,46 @@ import { useQuery } from "@tanstack/react-query";
 import { userApi } from "@/lib/api";
 import { useImages } from "@/hooks/use-images";
 
+// Optimized: Cache timestamp to avoid creating new Date on every call
+let cachedNow: number | null = null;
+let cacheExpiry = 0;
+
 function formatTimeAgo(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
+  const now = Date.now();
+  // Refresh cache every second
+  if (!cachedNow || now > cacheExpiry) {
+    cachedNow = now;
+    cacheExpiry = now + 1000;
+  }
+
+  const diffMs = cachedNow - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
-  
+
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays} days ago`;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
+
+// Optimized: Fisher-Yates shuffle (unbiased) - moved outside component
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+// Optimized: Moved outside component to prevent recreation on every render
+const PROJECT_CARD_COLORS = {
+  image: "border-[#B94E30]/50 hover:shadow-[#B94E30]/20",
+  mockup: "border-[#664D3F]/50 hover:shadow-[#664D3F]/20",
+  bg: "border-[#E3B436]/50 hover:shadow-[#E3B436]/20",
+} as const;
 
 // Assets
 import project1 from "@assets/generated_images/abstract_creative_digital_art_of_a_beach_sunset_with_geometric_overlays.png";
@@ -168,12 +195,7 @@ function QuickAction({ icon: Icon, label, href }: any) {
 }
 
 function ProjectCard({ image, title, time, type, delay, prompt, journey, restoreImage }: any) {
-  const colors = {
-    image: "border-[#B94E30]/50 hover:shadow-[#B94E30]/20",
-    mockup: "border-[#664D3F]/50 hover:shadow-[#664D3F]/20",
-    bg: "border-[#E3B436]/50 hover:shadow-[#E3B436]/20",
-  };
-
+  // Use the constant defined outside the component
   let linkHref = "#";
   if (type === "image") {
     linkHref = `/image-gen?prompt=${encodeURIComponent(prompt || title)}`;
@@ -191,7 +213,7 @@ function ProjectCard({ image, title, time, type, delay, prompt, journey, restore
         transition={{ duration: 0.5, delay }}
         className={cn(
           "group relative aspect-square rounded-2xl overflow-hidden border border-border cursor-pointer hover:border-2 transition-all duration-300 hover:shadow-lg",
-          colors[type as keyof typeof colors]
+          PROJECT_CARD_COLORS[type as keyof typeof PROJECT_CARD_COLORS]
         )}
       >
         <img src={image} alt={title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -220,14 +242,15 @@ export function BentoGrid() {
   
   const timeSaved = stats ? Math.round((stats.total * 3) / 60 * 10) / 10 : 0;
 
-  const handleRefreshSuggestions = () => {
+  const handleRefreshSuggestions = useCallback(() => {
     setIsRefreshing(true);
-    
-    const shuffled = [...SUGGESTIONS_POOL].sort(() => 0.5 - Math.random());
+
+    // Optimized: Use Fisher-Yates shuffle instead of biased sort
+    const shuffled = shuffleArray(SUGGESTIONS_POOL);
     setSuggestions(shuffled.slice(0, 3));
 
     setTimeout(() => setIsRefreshing(false), 500);
-  };
+  }, []);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-10">

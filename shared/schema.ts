@@ -34,7 +34,11 @@ export const users = pgTable("users", {
   passwordResetExpires: timestamp("password_reset_expires"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_users_referred_by").on(table.referredBy),
+  index("idx_users_stripe_customer_id").on(table.stripeCustomerId),
+  index("idx_users_created_at").on(table.createdAt),
+]);
 
 export const generatedImages = pgTable("generated_images", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -48,7 +52,12 @@ export const generatedImages = pgTable("generated_images", {
   isPublic: boolean("is_public").default(false),
   viewCount: integer("view_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_generated_images_user_id").on(table.userId),
+  index("idx_generated_images_created_at").on(table.createdAt),
+  index("idx_generated_images_user_created").on(table.userId, table.createdAt),
+  index("idx_generated_images_is_public").on(table.isPublic),
+]);
 
 export const affiliateCommissions = pgTable("affiliate_commissions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -58,7 +67,10 @@ export const affiliateCommissions = pgTable("affiliate_commissions", {
   status: text("status").notNull().default("pending"),
   stripeSessionId: text("stripe_session_id").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_affiliate_commissions_affiliate_user_id").on(table.affiliateUserId),
+  index("idx_affiliate_commissions_status").on(table.status),
+]);
 
 export const withdrawalRequests = pgTable("withdrawal_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -70,7 +82,10 @@ export const withdrawalRequests = pgTable("withdrawal_requests", {
   accountNumber: text("account_number").notNull(),
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_withdrawal_requests_user_id").on(table.userId),
+  index("idx_withdrawal_requests_status").on(table.status),
+]);
 
 export const crmContacts = pgTable("crm_contacts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -85,7 +100,11 @@ export const crmContacts = pgTable("crm_contacts", {
   tags: jsonb("tags").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_crm_contacts_user_id").on(table.userId),
+  index("idx_crm_contacts_status").on(table.status),
+  index("idx_crm_contacts_created_at").on(table.createdAt),
+]);
 
 export const crmDeals = pgTable("crm_deals", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -98,7 +117,11 @@ export const crmDeals = pgTable("crm_deals", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_crm_deals_contact_id").on(table.contactId),
+  index("idx_crm_deals_stage").on(table.stage),
+  index("idx_crm_deals_created_at").on(table.createdAt),
+]);
 
 export const crmActivities = pgTable("crm_activities", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -110,7 +133,11 @@ export const crmActivities = pgTable("crm_activities", {
   dueDate: timestamp("due_date"),
   completed: boolean("completed").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_crm_activities_contact_id").on(table.contactId),
+  index("idx_crm_activities_deal_id").on(table.dealId),
+  index("idx_crm_activities_created_at").on(table.createdAt),
+]);
 
 export const promptFavorites = pgTable("prompt_favorites", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -157,14 +184,20 @@ export const imageLikes = pgTable("image_likes", {
   imageId: varchar("image_id").references(() => generatedImages.id).notNull(),
   userId: varchar("user_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_image_likes_image_id").on(table.imageId),
+  index("idx_image_likes_user_id").on(table.userId),
+]);
 
 export const galleryImageLikes = pgTable("gallery_image_likes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   imageId: varchar("image_id").notNull(),
   userId: varchar("user_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_gallery_image_likes_image_id").on(table.imageId),
+  index("idx_gallery_image_likes_user_id").on(table.userId),
+]);
 
 export const galleryImages = pgTable("gallery_images", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

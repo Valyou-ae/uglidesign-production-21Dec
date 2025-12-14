@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { imagesApi } from "@/lib/api";
 
@@ -44,7 +45,11 @@ export function useImages() {
     },
   });
 
-  const allImages = data?.pages.flatMap(page => page.images) || [];
+  // Optimized: Memoize flatMap to prevent recalculation on every render
+  const allImages = useMemo(
+    () => data?.pages.flatMap(page => page.images) || [],
+    [data?.pages]
+  );
   const total = data?.pages[0]?.total || 0;
 
   return {

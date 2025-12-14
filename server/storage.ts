@@ -75,27 +75,27 @@ export interface IStorage {
   updatePassword(userId: string, hashedPassword: string): Promise<User | undefined>;
   clearPasswordResetToken(userId: string): Promise<void>;
 
-  getContacts(): Promise<CrmContact[]>;
+  getContacts(limit?: number, offset?: number): Promise<{ contacts: CrmContact[]; total: number }>;
   getContact(id: string): Promise<CrmContact | undefined>;
   createContact(data: InsertContact): Promise<CrmContact>;
   updateContact(id: string, data: Partial<InsertContact>): Promise<CrmContact | undefined>;
   deleteContact(id: string): Promise<void>;
 
-  getDeals(): Promise<CrmDeal[]>;
+  getDeals(limit?: number, offset?: number): Promise<{ deals: CrmDeal[]; total: number }>;
   getDeal(id: string): Promise<CrmDeal | undefined>;
   getDealsByContact(contactId: string): Promise<CrmDeal[]>;
   createDeal(data: InsertDeal): Promise<CrmDeal>;
   updateDeal(id: string, data: Partial<InsertDeal>): Promise<CrmDeal | undefined>;
   deleteDeal(id: string): Promise<void>;
 
-  getActivities(): Promise<CrmActivity[]>;
+  getActivities(limit?: number, offset?: number): Promise<{ activities: CrmActivity[]; total: number }>;
   getActivitiesByContact(contactId: string): Promise<CrmActivity[]>;
   getActivitiesByDeal(dealId: string): Promise<CrmActivity[]>;
   createActivity(data: InsertActivity): Promise<CrmActivity>;
   updateActivity(id: string, data: Partial<InsertActivity>): Promise<CrmActivity | undefined>;
   deleteActivity(id: string): Promise<void>;
 
-  getAllUsers(): Promise<User[]>;
+  getAllUsers(limit?: number, offset?: number): Promise<{ users: User[]; total: number }>;
   updateUserRole(userId: string, role: string): Promise<User | undefined>;
   getAnalytics(): Promise<{ totalUsers: number; totalImages: number; totalCommissions: number }>;
   
@@ -259,40 +259,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserStats(userId: string): Promise<{ images: number; mockups: number; bgRemoved: number; total: number }> {
-    const [totalResult] = await db
-      .select({ count: count() })
+    // Optimized: Single query with CASE statements instead of 4 separate queries
+    const [result] = await db
+      .select({
+        total: count(),
+        images: sql<number>`COUNT(CASE WHEN ${generatedImages.generationType} IS NULL OR ${generatedImages.generationType} = 'image' THEN 1 END)`,
+        mockups: sql<number>`COUNT(CASE WHEN ${generatedImages.generationType} = 'mockup' THEN 1 END)`,
+        bgRemoved: sql<number>`COUNT(CASE WHEN ${generatedImages.generationType} = 'bg-removed' THEN 1 END)`,
+      })
       .from(generatedImages)
       .where(eq(generatedImages.userId, userId));
-    
-    const [imageResult] = await db
-      .select({ count: count() })
-      .from(generatedImages)
-      .where(and(
-        eq(generatedImages.userId, userId),
-        sql`(${generatedImages.generationType} IS NULL OR ${generatedImages.generationType} = 'image')`
-      ));
-    
-    const [mockupResult] = await db
-      .select({ count: count() })
-      .from(generatedImages)
-      .where(and(
-        eq(generatedImages.userId, userId),
-        eq(generatedImages.generationType, 'mockup')
-      ));
-    
-    const [bgRemovedResult] = await db
-      .select({ count: count() })
-      .from(generatedImages)
-      .where(and(
-        eq(generatedImages.userId, userId),
-        eq(generatedImages.generationType, 'bg-removed')
-      ));
-    
+
     return {
-      images: imageResult?.count || 0,
-      mockups: mockupResult?.count || 0,
-      bgRemoved: bgRemovedResult?.count || 0,
-      total: totalResult?.count || 0
+      images: Number(result?.images) || 0,
+      mockups: Number(result?.mockups) || 0,
+      bgRemoved: Number(result?.bgRemoved) || 0,
+      total: result?.total || 0
     };
   }
 
@@ -326,22 +308,36 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTotalEarnings(userId: string): Promise<number> {
-    const commissions = await this.getCommissionsByUserId(userId);
-    return commissions.reduce((total, c) => total + c.amount, 0);
+    // Optimized: Use DB SUM() instead of fetching all records
+    const [result] = await db
+      .select({ total: sql<number>`COALESCE(SUM(${affiliateCommissions.amount}), 0)` })
+      .from(affiliateCommissions)
+      .where(eq(affiliateCommissions.affiliateUserId, userId));
+    return Number(result?.total) || 0;
   }
 
   async getPendingPayout(userId: string): Promise<number> {
-    const commissions = await this.getCommissionsByUserId(userId);
-    return commissions
-      .filter(c => c.status === 'pending')
-      .reduce((total, c) => total + c.amount, 0);
+    // Optimized: Use DB SUM() with filter instead of fetching all records
+    const [result] = await db
+      .select({ total: sql<number>`COALESCE(SUM(${affiliateCommissions.amount}), 0)` })
+      .from(affiliateCommissions)
+      .where(and(
+        eq(affiliateCommissions.affiliateUserId, userId),
+        eq(affiliateCommissions.status, 'pending')
+      ));
+    return Number(result?.total) || 0;
   }
 
   async getTotalWithdrawn(userId: string): Promise<number> {
-    const withdrawals = await this.getWithdrawalsByUserId(userId);
-    return withdrawals
-      .filter(w => w.status === 'completed')
-      .reduce((total, w) => total + w.amount, 0);
+    // Optimized: Use DB SUM() with filter instead of fetching all records
+    const [result] = await db
+      .select({ total: sql<number>`COALESCE(SUM(${withdrawalRequests.amount}), 0)` })
+      .from(withdrawalRequests)
+      .where(and(
+        eq(withdrawalRequests.userId, userId),
+        eq(withdrawalRequests.status, 'completed')
+      ));
+    return Number(result?.total) || 0;
   }
 
   async getReferredUsers(userId: string): Promise<User[]> {
@@ -427,11 +423,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId));
   }
 
-  async getContacts(): Promise<CrmContact[]> {
-    return db
+  async getContacts(limit: number = 100, offset: number = 0): Promise<{ contacts: CrmContact[]; total: number }> {
+    // Optimized: Added pagination
+    const [totalResult] = await db.select({ count: count() }).from(crmContacts);
+    const total = totalResult?.count || 0;
+
+    const contacts = await db
       .select()
       .from(crmContacts)
-      .orderBy(desc(crmContacts.createdAt));
+      .orderBy(desc(crmContacts.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return { contacts, total };
   }
 
   async getContact(id: string): Promise<CrmContact | undefined> {
@@ -474,11 +478,19 @@ export class DatabaseStorage implements IStorage {
     await db.delete(crmContacts).where(eq(crmContacts.id, id));
   }
 
-  async getDeals(): Promise<CrmDeal[]> {
-    return db
+  async getDeals(limit: number = 100, offset: number = 0): Promise<{ deals: CrmDeal[]; total: number }> {
+    // Optimized: Added pagination
+    const [totalResult] = await db.select({ count: count() }).from(crmDeals);
+    const total = totalResult?.count || 0;
+
+    const deals = await db
       .select()
       .from(crmDeals)
-      .orderBy(desc(crmDeals.createdAt));
+      .orderBy(desc(crmDeals.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return { deals, total };
   }
 
   async getDeal(id: string): Promise<CrmDeal | undefined> {
@@ -518,11 +530,19 @@ export class DatabaseStorage implements IStorage {
     await db.delete(crmDeals).where(eq(crmDeals.id, id));
   }
 
-  async getActivities(): Promise<CrmActivity[]> {
-    return db
+  async getActivities(limit: number = 100, offset: number = 0): Promise<{ activities: CrmActivity[]; total: number }> {
+    // Optimized: Added pagination
+    const [totalResult] = await db.select({ count: count() }).from(crmActivities);
+    const total = totalResult?.count || 0;
+
+    const activities = await db
       .select()
       .from(crmActivities)
-      .orderBy(desc(crmActivities.createdAt));
+      .orderBy(desc(crmActivities.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return { activities, total };
   }
 
   async getActivitiesByContact(contactId: string): Promise<CrmActivity[]> {
@@ -562,11 +582,19 @@ export class DatabaseStorage implements IStorage {
     await db.delete(crmActivities).where(eq(crmActivities.id, id));
   }
 
-  async getAllUsers(): Promise<User[]> {
-    return db
+  async getAllUsers(limit: number = 100, offset: number = 0): Promise<{ users: User[]; total: number }> {
+    // Optimized: Added pagination to prevent loading all users at once
+    const [totalResult] = await db.select({ count: count() }).from(users);
+    const total = totalResult?.count || 0;
+
+    const userList = await db
       .select()
       .from(users)
-      .orderBy(desc(users.createdAt));
+      .orderBy(desc(users.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return { users: userList, total };
   }
 
   async updateUserRole(userId: string, role: string): Promise<User | undefined> {
@@ -647,9 +675,14 @@ export class DatabaseStorage implements IStorage {
   async getImageCountsByMonth(userId: string, year: number, month: number): Promise<{ date: string; count: number; type: string }[]> {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59, 999);
-    
-    const images = await db
-      .select()
+
+    // Optimized: Use GROUP BY in database instead of fetching all images and processing in memory
+    const results = await db
+      .select({
+        date: sql<string>`DATE(${generatedImages.createdAt})::text`,
+        type: sql<string>`COALESCE(${generatedImages.generationType}, 'image')`,
+        count: count(),
+      })
       .from(generatedImages)
       .where(
         and(
@@ -657,30 +690,15 @@ export class DatabaseStorage implements IStorage {
           gte(generatedImages.createdAt, startDate),
           lte(generatedImages.createdAt, endDate)
         )
-      );
-    
-    const countsByDateAndType: Record<string, Record<string, number>> = {};
-    
-    for (const image of images) {
-      const dateKey = image.createdAt.toISOString().split('T')[0];
-      const type = image.generationType || 'image';
-      
-      if (!countsByDateAndType[dateKey]) {
-        countsByDateAndType[dateKey] = {};
-      }
-      
-      countsByDateAndType[dateKey][type] = (countsByDateAndType[dateKey][type] || 0) + 1;
-    }
-    
-    const result: { date: string; count: number; type: string }[] = [];
-    
-    for (const [date, types] of Object.entries(countsByDateAndType)) {
-      for (const [type, count] of Object.entries(types)) {
-        result.push({ date, count, type });
-      }
-    }
-    
-    return result.sort((a, b) => a.date.localeCompare(b.date));
+      )
+      .groupBy(sql`DATE(${generatedImages.createdAt})`, generatedImages.generationType)
+      .orderBy(sql`DATE(${generatedImages.createdAt})`);
+
+    return results.map(r => ({
+      date: r.date,
+      count: r.count,
+      type: r.type,
+    }));
   }
 
   async createPromptFavorite(favorite: InsertPromptFavorite): Promise<PromptFavorite> {
@@ -880,62 +898,50 @@ export class DatabaseStorage implements IStorage {
   async getLeaderboard(period: 'weekly' | 'monthly' | 'all-time', limit: number = 50): Promise<{ userId: string; username: string | null; displayName: string | null; profileImageUrl: string | null; imageCount: number; likeCount: number; viewCount: number; rank: number }[]> {
     let startDate: Date | null = null;
     const now = new Date();
-    
+
     if (period === 'weekly') {
       startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     } else if (period === 'monthly') {
       startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
-    
+
+    // Optimized: Use LEFT JOIN instead of correlated subqueries for like_count
     const query = startDate
       ? sql`
-          SELECT 
+          SELECT
             u.id as user_id,
             u.username,
             u.display_name,
             u.profile_image_url,
-            COALESCE(img_stats.image_count, 0) as image_count,
-            COALESCE(img_stats.like_count, 0) as like_count,
-            COALESCE(img_stats.view_count, 0) as view_count
+            COUNT(DISTINCT gi.id) as image_count,
+            COUNT(DISTINCT il.id) as like_count,
+            COALESCE(SUM(gi.view_count), 0) as view_count
           FROM ${users} u
-          INNER JOIN (
-            SELECT 
-              gi.user_id,
-              COUNT(gi.id) as image_count,
-              SUM(gi.view_count) as view_count,
-              (SELECT COUNT(*) FROM ${imageLikes} il WHERE il.image_id IN (SELECT id FROM ${generatedImages} WHERE user_id = gi.user_id AND created_at >= ${startDate})) as like_count
-            FROM ${generatedImages} gi
-            WHERE gi.created_at >= ${startDate}
-            GROUP BY gi.user_id
-          ) img_stats ON img_stats.user_id = u.id
-          ORDER BY img_stats.image_count DESC
+          INNER JOIN ${generatedImages} gi ON gi.user_id = u.id AND gi.created_at >= ${startDate}
+          LEFT JOIN ${imageLikes} il ON il.image_id = gi.id
+          GROUP BY u.id, u.username, u.display_name, u.profile_image_url
+          ORDER BY image_count DESC
           LIMIT ${limit}
         `
       : sql`
-          SELECT 
+          SELECT
             u.id as user_id,
             u.username,
             u.display_name,
             u.profile_image_url,
-            COALESCE(img_stats.image_count, 0) as image_count,
-            COALESCE(img_stats.like_count, 0) as like_count,
-            COALESCE(img_stats.view_count, 0) as view_count
+            COUNT(DISTINCT gi.id) as image_count,
+            COUNT(DISTINCT il.id) as like_count,
+            COALESCE(SUM(gi.view_count), 0) as view_count
           FROM ${users} u
-          INNER JOIN (
-            SELECT 
-              gi.user_id,
-              COUNT(gi.id) as image_count,
-              SUM(gi.view_count) as view_count,
-              (SELECT COUNT(*) FROM ${imageLikes} il WHERE il.image_id IN (SELECT id FROM ${generatedImages} WHERE user_id = gi.user_id)) as like_count
-            FROM ${generatedImages} gi
-            GROUP BY gi.user_id
-          ) img_stats ON img_stats.user_id = u.id
-          ORDER BY img_stats.image_count DESC
+          INNER JOIN ${generatedImages} gi ON gi.user_id = u.id
+          LEFT JOIN ${imageLikes} il ON il.image_id = gi.id
+          GROUP BY u.id, u.username, u.display_name, u.profile_image_url
+          ORDER BY image_count DESC
           LIMIT ${limit}
         `;
-    
+
     const results = await db.execute(query);
-    
+
     return (results.rows as any[]).map((row, index) => ({
       userId: row.user_id,
       username: row.username,
