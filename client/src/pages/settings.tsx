@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { 
   Search, 
   User, 
@@ -248,12 +249,15 @@ function ProfileSettings() {
   const { toast } = useToast();
   const { profile, updateProfile, isUpdating } = useSettings();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [socialLinkUrls, setSocialLinkUrls] = useState<string[]>(["", "", "", ""]);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     setFirstName(profile.firstName || "");
@@ -267,6 +271,48 @@ function ProfileSettings() {
       setSocialLinkUrls(["", "", "", ""]);
     }
   }, [profile]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
+      toast({ title: "Invalid file type", description: "Please upload a JPG, PNG, GIF, or WebP image.", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Please upload an image under 2MB.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      setIsUploadingPhoto(true);
+      const { userApi } = await import("@/lib/api");
+      const result = await userApi.uploadProfilePhoto(file);
+      queryClient.setQueryData(["auth", "me"], { user: result.user });
+      toast({ title: "Photo uploaded", description: "Your profile photo has been updated." });
+    } catch (error: any) {
+      toast({ title: "Upload failed", description: error.message || "Failed to upload photo", variant: "destructive" });
+    } finally {
+      setIsUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    try {
+      setIsUploadingPhoto(true);
+      const { userApi } = await import("@/lib/api");
+      const result = await userApi.removeProfilePhoto();
+      queryClient.setQueryData(["auth", "me"], { user: result.user });
+      toast({ title: "Photo removed", description: "Your profile photo has been removed." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to remove photo", variant: "destructive" });
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
 
   const socialLinksConfig = [
     { icon: Globe, label: "Website", placeholder: "https://yourwebsite.com" },
@@ -316,16 +362,45 @@ function ProfileSettings() {
         <h3 className="text-[15px] font-semibold text-[#18181B] dark:text-[#FAFAFA] mb-4">Profile Photo</h3>
         <div className="flex items-center gap-5">
           <div className="w-20 h-20 rounded-full bg-[#F4F4F5] dark:bg-[#1F1F25] flex items-center justify-center overflow-hidden border border-[#E4E4E7] dark:border-[#2A2A30]">
-            <User className="h-8 w-8 text-[#71717A] dark:text-[#52525B]" />
+            {user?.profileImageUrl ? (
+              <img 
+                src={user.profileImageUrl} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+                data-testid="img-profile-photo"
+              />
+            ) : (
+              <User className="h-8 w-8 text-[#71717A] dark:text-[#52525B]" />
+            )}
           </div>
           <div className="flex flex-col gap-2">
-            <button className="flex items-center gap-2 px-4 py-2.5 bg-[#F4F4F5] dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-[10px] text-[13px] font-semibold text-[#18181B] dark:text-[#FAFAFA] hover:bg-[#E4E4E7] dark:hover:bg-[#2A2A30] transition-colors">
-              <Upload className="h-4 w-4" />
-              Upload photo
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handlePhotoUpload}
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              className="hidden"
+              data-testid="input-profile-photo"
+            />
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingPhoto}
+              data-testid="button-upload-photo"
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#F4F4F5] dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-[10px] text-[13px] font-semibold text-[#18181B] dark:text-[#FAFAFA] hover:bg-[#E4E4E7] dark:hover:bg-[#2A2A30] transition-colors disabled:opacity-50"
+            >
+              {isUploadingPhoto ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              {isUploadingPhoto ? "Uploading..." : "Upload photo"}
             </button>
-            <button className="text-[13px] text-[#71717A] hover:text-[#DC2626] transition-colors text-left ml-1">
-              Remove photo
-            </button>
+            {user?.profileImageUrl && (
+              <button 
+                onClick={handleRemovePhoto}
+                disabled={isUploadingPhoto}
+                data-testid="button-remove-photo"
+                className="text-[13px] text-[#71717A] hover:text-[#DC2626] transition-colors text-left ml-1 disabled:opacity-50"
+              >
+                Remove photo
+              </button>
+            )}
             <p className="text-xs text-[#71717A] dark:text-[#52525B] mt-1">JPG, PNG or GIF. Max 2MB.</p>
           </div>
         </div>

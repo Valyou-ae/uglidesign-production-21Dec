@@ -61,6 +61,30 @@ export const userApi = {
       body: JSON.stringify(data),
     }),
 
+  uploadProfilePhoto: async (file: File): Promise<{ profileImageUrl: string; user: any }> => {
+    const formData = new FormData();
+    formData.append("photo", file);
+    
+    const response = await fetch("/api/user/profile/photo", {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to upload photo");
+    }
+    
+    return data;
+  },
+
+  removeProfilePhoto: () =>
+    fetchApi<{ user: any }>("/user/profile/photo", {
+      method: "DELETE",
+    }),
+
   getStats: () =>
     fetchApi<{ images: number; mockups: number; bgRemoved: number; total: number; credits: number }>("/user/stats"),
 };

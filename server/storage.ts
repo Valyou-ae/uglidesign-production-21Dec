@@ -159,6 +159,7 @@ export class DatabaseStorage implements IStorage {
     if (data.bio !== undefined) updateData.bio = data.bio;
     if (data.affiliateCode !== undefined) updateData.affiliateCode = data.affiliateCode;
     if (data.socialLinks !== undefined) updateData.socialLinks = data.socialLinks as { label: string; url: string }[];
+    if (data.profileImageUrl !== undefined) updateData.profileImageUrl = data.profileImageUrl;
     
     const [user] = await db
       .update(users)

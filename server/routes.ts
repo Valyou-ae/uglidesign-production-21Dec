@@ -438,6 +438,149 @@ export async function registerRoutes(
     }
   });
 
+  // Profile photo upload endpoint
+  app.post("/api/user/profile/photo", requireAuth, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      
+      // Check content type
+      const contentType = req.headers['content-type'] || '';
+      if (!contentType.includes('multipart/form-data')) {
+        return res.status(400).json({ message: "Content-Type must be multipart/form-data" });
+      }
+
+      // Parse multipart data manually (simple implementation)
+      const chunks: Buffer[] = [];
+      for await (const chunk of req) {
+        chunks.push(chunk);
+      }
+      const buffer = Buffer.concat(chunks);
+      
+      // Find boundary
+      const boundaryMatch = contentType.match(/boundary=(.+)/);
+      if (!boundaryMatch) {
+        return res.status(400).json({ message: "No boundary found" });
+      }
+      const boundary = boundaryMatch[1];
+      
+      // Parse parts
+      const parts = buffer.toString('binary').split(`--${boundary}`);
+      let fileData: Buffer | null = null;
+      let fileName = '';
+      let mimeType = '';
+      
+      for (const part of parts) {
+        if (part.includes('Content-Disposition: form-data')) {
+          const contentDispMatch = part.match(/Content-Disposition: form-data;[^]*name="([^"]+)"(?:;[^]*filename="([^"]+)")?/);
+          if (contentDispMatch && contentDispMatch[2]) {
+            fileName = contentDispMatch[2];
+            const contentTypeMatch = part.match(/Content-Type: ([^\r\n]+)/);
+            mimeType = contentTypeMatch ? contentTypeMatch[1].trim() : 'application/octet-stream';
+            
+            // Find where content starts (after double CRLF)
+            const contentStart = part.indexOf('\r\n\r\n') + 4;
+            const contentEnd = part.lastIndexOf('\r\n');
+            if (contentStart > 4 && contentEnd > contentStart) {
+              fileData = Buffer.from(part.substring(contentStart, contentEnd), 'binary');
+            }
+          }
+        }
+      }
+      
+      if (!fileData || !fileName) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      
+      // Validate file type
+      if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(mimeType)) {
+        return res.status(400).json({ message: "Invalid file type. Only JPG, PNG, GIF, and WebP are allowed." });
+      }
+      
+      // Validate file size (2MB limit)
+      if (fileData.length > 2 * 1024 * 1024) {
+        return res.status(400).json({ message: "File too large. Maximum size is 2MB." });
+      }
+      
+      // Generate unique filename
+      const fs = await import('fs/promises');
+      const extension = fileName.split('.').pop() || 'jpg';
+      const uniqueFileName = `profile_${userId}_${Date.now()}.${extension}`;
+      const uploadDir = path.resolve(process.cwd(), 'attached_assets', 'profile_photos');
+      
+      // Ensure directory exists
+      await fs.mkdir(uploadDir, { recursive: true });
+      
+      // Save file
+      const filePath = path.join(uploadDir, uniqueFileName);
+      await fs.writeFile(filePath, fileData);
+      
+      // Generate URL
+      const profileImageUrl = `/attached_assets/profile_photos/${uniqueFileName}`;
+      
+      // Update user profile
+      const user = await storage.updateUserProfile(userId, { profileImageUrl });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ 
+        profileImageUrl,
+        user: { 
+          id: user.id, 
+          username: user.username,
+          email: user.email,
+          displayName: user.displayName,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          bio: user.bio,
+          profileImageUrl: user.profileImageUrl,
+          socialLinks: user.socialLinks || [],
+          affiliateCode: user.affiliateCode,
+          role: user.role,
+          createdAt: user.createdAt
+        } 
+      });
+    } catch (error) {
+      console.error("Profile photo upload error:", error);
+      res.status(500).json({ message: "Failed to upload profile photo" });
+    }
+  });
+
+  // Remove profile photo endpoint
+  app.delete("/api/user/profile/photo", requireAuth, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      
+      // Update user profile to remove photo
+      const user = await storage.updateUserProfile(userId, { profileImageUrl: null });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username,
+          email: user.email,
+          displayName: user.displayName,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          bio: user.bio,
+          profileImageUrl: user.profileImageUrl,
+          socialLinks: user.socialLinks || [],
+          affiliateCode: user.affiliateCode,
+          role: user.role,
+          createdAt: user.createdAt
+        } 
+      });
+    } catch (error) {
+      console.error("Profile photo removal error:", error);
+      res.status(500).json({ message: "Failed to remove profile photo" });
+    }
+  });
+
   // ============== USER STATS ROUTES ==============
 
   app.get("/api/user/stats", requireAuth, async (req: any, res) => {
