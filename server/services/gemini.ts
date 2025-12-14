@@ -193,7 +193,7 @@ export { keyManager, GeminiKeyManager };
 export const MODELS = {
   FAST_ANALYSIS: "gemini-2.0-flash",
   DEEP_ANALYSIS: "gemini-2.0-flash",
-  IMAGE_DRAFT: "imagen-4.0-generate-001",
+  IMAGE_DRAFT: "gemini-2.5-flash-preview-05-20",
   IMAGE_PREMIUM: "gemini-3-pro-image-preview",
 } as const;
 
