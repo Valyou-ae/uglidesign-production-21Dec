@@ -1778,8 +1778,18 @@ export default function Discover() {
     const fetchPublicImages = async () => {
       try {
         setIsLoadingCommunity(true);
-        const response = await imagesApi.getPublic(50);
-        const publicItems: InspirationItem[] = (response.images || []).map((img: any, index: number) => ({
+        const timestamp = Date.now();
+        const response = await fetch(`/api/images/public?limit=50&_t=${timestamp}`, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+        });
+        const data = await response.json();
+        const publicItems: InspirationItem[] = (data.images || []).map((img: any, index: number) => ({
           id: 10000 + index,
           title: img.prompt?.slice(0, 40) + (img.prompt?.length > 40 ? '...' : '') || 'Community Creation',
           image: img.imageUrl,
