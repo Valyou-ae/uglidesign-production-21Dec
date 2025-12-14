@@ -31,16 +31,40 @@ import {
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import { getFromCache, CACHE_TTL } from "./cache";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  
+
+  // Health check endpoints for load balancer and Kubernetes
+  app.get('/health', (_req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  app.get('/ready', async (_req, res) => {
+    try {
+      // Test database connectivity
+      await db.execute(sql`SELECT 1`);
+      res.json({
+        status: 'ready',
+        timestamp: new Date().toISOString(),
+        checks: { database: 'ok' }
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: 'not-ready',
+        timestamp: new Date().toISOString(),
+        checks: { database: 'failed' }
+      });
+    }
+  });
+
   // Serve attached_assets folder for user-uploaded images
   app.use('/attached_assets', express.static(path.resolve(process.cwd(), 'attached_assets')));
-  
+
   await setupAuth(app);
 
   const isTestMode = process.env.TEST_MODE === "true";
@@ -932,19 +956,24 @@ export async function registerRoutes(
 
   app.get("/api/gallery", async (req: any, res) => {
     try {
-      const images = await storage.getGalleryImages();
+      // Cache gallery images for 5 minutes to reduce DB load
+      const images = await getFromCache(
+        'gallery:images',
+        CACHE_TTL.GALLERY_IMAGES,
+        () => storage.getGalleryImages()
+      );
       const userId = req.user?.id;
-      
+
       let likedImageIds: string[] = [];
       if (userId) {
         likedImageIds = await storage.getUserLikedImages(userId);
       }
-      
+
       const imagesWithLikeStatus = images.map(img => ({
         ...img,
         isLiked: likedImageIds.includes(img.id)
       }));
-      
+
       res.json({ images: imagesWithLikeStatus });
     } catch (error) {
       console.error("Gallery error:", error);
@@ -1047,12 +1076,17 @@ export async function registerRoutes(
     try {
       const period = (req.query.period as 'weekly' | 'monthly' | 'all-time') || 'all-time';
       const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-      
+
       if (!['weekly', 'monthly', 'all-time'].includes(period)) {
         return res.status(400).json({ message: "Invalid period. Use 'weekly', 'monthly', or 'all-time'" });
       }
-      
-      const leaderboard = await storage.getLeaderboard(period, limit);
+
+      // Cache leaderboard for 1 minute to reduce DB load
+      const leaderboard = await getFromCache(
+        `leaderboard:${period}:${limit}`,
+        CACHE_TTL.LEADERBOARD,
+        () => storage.getLeaderboard(period, limit)
+      );
       res.json({ leaderboard, period });
     } catch (error) {
       console.error("Leaderboard error:", error);

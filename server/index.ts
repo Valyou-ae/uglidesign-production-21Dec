@@ -8,9 +8,15 @@ import { WebhookHandlers } from './webhookHandlers';
 import helmet from 'helmet';
 import cors from 'cors';
 import { logger } from './logger';
+import { pool } from './db';
 
 const app = express();
 const httpServer = createServer(app);
+
+// Production HTTP timeout configuration
+httpServer.setTimeout(30000);           // 30s socket timeout
+httpServer.keepAliveTimeout = 65000;    // Keep-alive timeout (> ALB default of 60s)
+httpServer.headersTimeout = 66000;      // Must be > keepAliveTimeout
 
 const stripeLogger = logger.child({ source: 'stripe' });
 
@@ -211,4 +217,37 @@ async function initStripe() {
       log(`serving on port ${port}`);
     },
   );
+
+  // Graceful shutdown handler
+  let isShuttingDown = false;
+  const gracefulShutdown = async (signal: string) => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
+    logger.info(`${signal} received, starting graceful shutdown...`, { source: 'shutdown' });
+
+    // Stop accepting new connections
+    httpServer.close(async () => {
+      logger.info('HTTP server closed', { source: 'shutdown' });
+
+      try {
+        // Close database connection pool
+        await pool.end();
+        logger.info('Database pool closed', { source: 'shutdown' });
+      } catch (error) {
+        logger.error('Error closing database pool', error as Error, { source: 'shutdown' });
+      }
+
+      process.exit(0);
+    });
+
+    // Force shutdown after 30 seconds if graceful shutdown fails
+    setTimeout(() => {
+      logger.error('Graceful shutdown timeout, forcing exit', undefined, { source: 'shutdown' });
+      process.exit(1);
+    }, 30000);
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 })();
