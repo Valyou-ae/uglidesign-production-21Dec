@@ -241,6 +241,28 @@ export const insertWithdrawalSchema = createInsertSchema(withdrawalRequests).omi
   status: true,
 });
 
+// Enhanced withdrawal validation with stricter banking field checks
+export const withdrawalRequestSchema = z.object({
+  amount: z.number()
+    .positive("Amount must be positive")
+    .max(100000, "Amount exceeds maximum withdrawal limit"),
+  accountHolderName: z.string()
+    .min(2, "Account holder name is required")
+    .max(100, "Account holder name too long")
+    .regex(/^[a-zA-Z\s'-]+$/, "Account holder name contains invalid characters")
+    .transform(s => s.trim()),
+  bankName: z.string()
+    .min(2, "Bank name is required")
+    .max(100, "Bank name too long")
+    .transform(s => s.trim()),
+  routingNumber: z.string()
+    .regex(/^\d{9}$/, "Routing number must be exactly 9 digits"),
+  accountNumber: z.string()
+    .min(4, "Account number too short")
+    .max(17, "Account number too long")
+    .regex(/^\d+$/, "Account number must contain only digits"),
+});
+
 export const insertContactSchema = createInsertSchema(crmContacts).omit({
   id: true,
   createdAt: true,
@@ -282,6 +304,7 @@ export type GeneratedImage = typeof generatedImages.$inferSelect;
 export type InsertImage = z.infer<typeof insertImageSchema>;
 export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect;
 export type InsertWithdrawal = z.infer<typeof insertWithdrawalSchema>;
+export type WithdrawalRequestInput = z.infer<typeof withdrawalRequestSchema>;
 export type AffiliateCommission = typeof affiliateCommissions.$inferSelect;
 export type CrmContact = typeof crmContacts.$inferSelect;
 export type InsertContact = z.infer<typeof insertContactSchema>;

@@ -11,16 +11,17 @@ import {
   guestGenerationLimiter,
   adminRateLimiter 
 } from "./rateLimiter";
-import { 
-  insertImageSchema, 
-  insertWithdrawalSchema, 
-  updateProfileSchema, 
-  insertContactSchema, 
-  insertDealSchema, 
-  insertActivitySchema, 
-  insertPromptFavoriteSchema, 
-  insertMoodBoardSchema, 
-  insertMoodBoardItemSchema, 
+import {
+  insertImageSchema,
+  insertWithdrawalSchema,
+  withdrawalRequestSchema,
+  updateProfileSchema,
+  insertContactSchema,
+  insertDealSchema,
+  insertActivitySchema,
+  insertPromptFavoriteSchema,
+  insertMoodBoardSchema,
+  insertMoodBoardItemSchema,
   guestGenerations,
   uuidSchema,
   promptSchema,
@@ -30,16 +31,73 @@ import {
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import { getFromCache, CACHE_TTL } from "./cache";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  
+
+  // Health check endpoints for load balancer and Kubernetes
+  app.get('/health', (_req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  app.get('/ready', async (_req, res) => {
+    try {
+      // Test database connectivity
+      await db.execute(sql`SELECT 1`);
+      res.json({
+        status: 'ready',
+        timestamp: new Date().toISOString(),
+        checks: { database: 'ok' }
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: 'not-ready',
+        timestamp: new Date().toISOString(),
+        checks: { database: 'failed' }
+      });
+    }
+  });
+
+  // Gemini API key stats endpoint for monitoring (admin-only)
+  app.get('/api/admin/gemini-stats', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { keyManager } = await import('./services/gemini');
+      const stats = keyManager.getStats();
+
+      res.json({
+        ...stats,
+        timestamp: new Date().toISOString(),
+        estimatedCapacity: {
+          // Image generation is limited by IPM (images per minute), not RPM
+          paidTier1_IPM: stats.availableKeys * 10,      // ~10 images/min per key
+          paidTier1_RPM: stats.availableKeys * 1000,    // ~1000 requests/min per key
+          tier2_IPM: stats.availableKeys * 50,          // Estimated higher IPM
+          enterprise_IPM: stats.availableKeys * 500,    // Custom enterprise limits
+        }
+      });
+    } catch (error) {
+      console.error("Gemini stats error:", error);
+      res.status(500).json({ message: "Failed to get Gemini stats" });
+    }
+  });
+
   // Serve attached_assets folder for user-uploaded images
   app.use('/attached_assets', express.static(path.resolve(process.cwd(), 'attached_assets')));
-  
+
   await setupAuth(app);
 
   const isTestMode = process.env.TEST_MODE === "true";
@@ -55,6 +113,21 @@ export async function registerRoutes(
     BG_REMOVAL_HIGH: 2,
     BG_REMOVAL_ULTRA: 4,
   } as const;
+
+  // Helper to safely parse and validate pagination parameters
+  const parsePagination = (query: { limit?: string; offset?: string; page?: string }, defaults: { limit: number; maxLimit: number }) => {
+    const limit = Math.min(Math.max(1, parseInt(query.limit as string) || defaults.limit), defaults.maxLimit);
+    let offset = 0;
+    if (query.page) {
+      const page = Math.max(1, parseInt(query.page as string) || 1);
+      offset = (page - 1) * limit;
+    } else if (query.offset) {
+      offset = Math.max(0, parseInt(query.offset as string) || 0);
+    }
+    // Cap offset to prevent excessive values
+    offset = Math.min(offset, 100000);
+    return { limit, offset };
+  };
 
   // Helper to check and deduct credits
   const checkAndDeductCredits = async (
@@ -772,8 +845,7 @@ export async function registerRoutes(
   app.get("/api/images", requireAuth, async (req: any, res) => {
     try {
       const userId = getUserId(req);
-      const limit = parseInt(req.query.limit as string) || 20;
-      const offset = parseInt(req.query.offset as string) || 0;
+      const { limit, offset } = parsePagination(req.query, { limit: 20, maxLimit: 100 });
       const { images, total } = await storage.getImagesByUserId(userId, limit, offset);
       
       // Return images with URL paths instead of full base64 for faster loading
@@ -868,7 +940,7 @@ export async function registerRoutes(
 
   app.get("/api/images/public", async (req: any, res) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 50;
+      const { limit } = parsePagination(req.query, { limit: 50, maxLimit: 100 });
       const images = await storage.getPublicImages(limit);
       res.json({ images });
     } catch (error) {
@@ -917,19 +989,24 @@ export async function registerRoutes(
 
   app.get("/api/gallery", async (req: any, res) => {
     try {
-      const images = await storage.getGalleryImages();
+      // Cache gallery images for 5 minutes to reduce DB load
+      const images = await getFromCache(
+        'gallery:images',
+        CACHE_TTL.GALLERY_IMAGES,
+        () => storage.getGalleryImages()
+      );
       const userId = req.user?.id;
-      
+
       let likedImageIds: string[] = [];
       if (userId) {
         likedImageIds = await storage.getUserLikedImages(userId);
       }
-      
+
       const imagesWithLikeStatus = images.map(img => ({
         ...img,
         isLiked: likedImageIds.includes(img.id)
       }));
-      
+
       res.json({ images: imagesWithLikeStatus });
     } catch (error) {
       console.error("Gallery error:", error);
@@ -984,29 +1061,24 @@ export async function registerRoutes(
   app.post("/api/affiliate/withdraw", requireAuth, async (req: any, res) => {
     try {
       const userId = getUserId(req);
-      
-      // Convert user-entered dollars to cents for storage
-      const amountInCents = Math.round(req.body.amount * 100);
-      
-      const withdrawalData = insertWithdrawalSchema.parse({
-        ...req.body,
-        amount: amountInCents,
-        userId,
-      });
 
-      if (!withdrawalData.bankName || !withdrawalData.accountNumber || !withdrawalData.accountHolderName) {
-        return res.status(400).json({ message: "Bank name, account number, and account holder name are required" });
-      }
+      // Validate input with strict banking validation
+      const validatedInput = withdrawalRequestSchema.parse(req.body);
+
+      // Convert user-entered dollars to cents for storage
+      const amountInCents = Math.round(validatedInput.amount * 100);
 
       // Get pending payout (available for withdrawal) in cents
       const pendingPayout = await storage.getPendingPayout(userId);
-      if (withdrawalData.amount > pendingPayout) {
+      if (amountInCents > pendingPayout) {
         return res.status(400).json({ message: "Withdrawal amount exceeds available balance" });
       }
 
-      if (withdrawalData.amount <= 0) {
-        return res.status(400).json({ message: "Withdrawal amount must be greater than zero" });
-      }
+      const withdrawalData = insertWithdrawalSchema.parse({
+        ...validatedInput,
+        amount: amountInCents,
+        userId,
+      });
 
       const withdrawal = await storage.createWithdrawalRequest(withdrawalData);
       res.json({ withdrawal: { ...withdrawal, amount: withdrawal.amount / 100 } });
@@ -1037,12 +1109,17 @@ export async function registerRoutes(
     try {
       const period = (req.query.period as 'weekly' | 'monthly' | 'all-time') || 'all-time';
       const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-      
+
       if (!['weekly', 'monthly', 'all-time'].includes(period)) {
         return res.status(400).json({ message: "Invalid period. Use 'weekly', 'monthly', or 'all-time'" });
       }
-      
-      const leaderboard = await storage.getLeaderboard(period, limit);
+
+      // Cache leaderboard for 1 minute to reduce DB load
+      const leaderboard = await getFromCache(
+        `leaderboard:${period}:${limit}`,
+        CACHE_TTL.LEADERBOARD,
+        () => storage.getLeaderboard(period, limit)
+      );
       res.json({ leaderboard, period });
     } catch (error) {
       console.error("Leaderboard error:", error);
@@ -1118,7 +1195,7 @@ export async function registerRoutes(
 
   // ============== GUEST IMAGE GENERATION (NO AUTH) ==============
 
-  app.post("/api/guest/generate-image", async (req, res) => {
+  app.post("/api/guest/generate-image", guestGenerationLimiter, async (req, res) => {
     try {
       const { prompt, guestId } = req.body;
       if (!prompt || !guestId) {
@@ -1220,7 +1297,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/generate/final", requireAuth, async (req: any, res) => {
+  app.post("/api/generate/final", requireAuth, generationRateLimiter, async (req: any, res) => {
     try {
       const userId = getUserId(req);
       const {
@@ -1314,7 +1391,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/generate/single", requireAuth, async (req, res) => {
+  app.post("/api/generate/single", requireAuth, generationRateLimiter, async (req, res) => {
     try {
       const { prompt, stylePreset = "auto" } = req.body;
       if (!prompt || typeof prompt !== "string") {
@@ -2391,9 +2468,7 @@ export async function registerRoutes(
   // User Management
   app.get("/api/admin/users", requireAdmin, async (req: any, res) => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 20;
-      const offset = (page - 1) * limit;
+      const { limit, offset } = parsePagination(req.query, { limit: 20, maxLimit: 100 });
 
       // Optimized: Use database-level pagination instead of loading all users
       const { users: paginatedUsers, total: totalUsers } = await storage.getAllUsers(limit, offset);
@@ -2464,12 +2539,11 @@ export async function registerRoutes(
   // CRM Contacts
   app.get("/api/admin/crm/contacts", requireAdmin, async (req: any, res) => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 50;
-      const offset = (page - 1) * limit;
+      const { limit, offset } = parsePagination(req.query, { limit: 50, maxLimit: 200 });
 
       // Optimized: Use database-level pagination
       const { contacts, total } = await storage.getContacts(limit, offset);
+      const page = Math.floor(offset / limit) + 1;
       res.json({ contacts, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
       console.error("Admin contacts fetch error:", error);
@@ -2548,12 +2622,11 @@ export async function registerRoutes(
   // CRM Deals
   app.get("/api/admin/crm/deals", requireAdmin, async (req: any, res) => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 50;
-      const offset = (page - 1) * limit;
+      const { limit, offset } = parsePagination(req.query, { limit: 50, maxLimit: 200 });
 
       // Optimized: Use database-level pagination
       const { deals, total } = await storage.getDeals(limit, offset);
+      const page = Math.floor(offset / limit) + 1;
       res.json({ deals, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
       console.error("Admin deals fetch error:", error);
@@ -2632,12 +2705,11 @@ export async function registerRoutes(
   // CRM Activities
   app.get("/api/admin/crm/activities", requireAdmin, async (req: any, res) => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 50;
-      const offset = (page - 1) * limit;
+      const { limit, offset } = parsePagination(req.query, { limit: 50, maxLimit: 200 });
 
       // Optimized: Use database-level pagination
       const { activities, total } = await storage.getActivities(limit, offset);
+      const page = Math.floor(offset / limit) + 1;
       res.json({ activities, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
       console.error("Admin activities fetch error:", error);
@@ -2837,11 +2909,18 @@ export async function registerRoutes(
 
   app.post("/api/mood-boards/:id/items", requireAuth, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const { id } = req.params;
       const { imageId, positionX, positionY, width, height, zIndex } = req.body;
-      
+
       if (!imageId) {
         return res.status(400).json({ message: "Image ID is required" });
+      }
+
+      // Verify board ownership before adding item
+      const isOwner = await storage.verifyBoardOwnership(userId, id);
+      if (!isOwner) {
+        return res.status(404).json({ message: "Mood board not found" });
       }
 
       const item = await storage.addItemToBoard(id, imageId, {
@@ -2851,7 +2930,7 @@ export async function registerRoutes(
         height,
         zIndex,
       });
-      
+
       res.status(201).json({ item });
     } catch (error) {
       console.error("Add item to board error:", error);
@@ -2861,9 +2940,16 @@ export async function registerRoutes(
 
   app.patch("/api/mood-boards/:boardId/items/:itemId", requireAuth, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const { itemId } = req.params;
       const { positionX, positionY, width, height, zIndex } = req.body;
-      
+
+      // Verify item belongs to a board owned by user
+      const isOwner = await storage.verifyBoardItemOwnership(userId, itemId);
+      if (!isOwner) {
+        return res.status(404).json({ message: "Board item not found" });
+      }
+
       const item = await storage.updateBoardItem(itemId, {
         positionX,
         positionY,
@@ -2871,11 +2957,11 @@ export async function registerRoutes(
         height,
         zIndex,
       });
-      
+
       if (!item) {
         return res.status(404).json({ message: "Board item not found" });
       }
-      
+
       res.json({ item });
     } catch (error) {
       console.error("Update board item error:", error);
@@ -2885,8 +2971,15 @@ export async function registerRoutes(
 
   app.delete("/api/mood-boards/:boardId/items/:itemId", requireAuth, async (req: any, res) => {
     try {
+      const userId = getUserId(req);
       const { itemId } = req.params;
-      
+
+      // Verify item belongs to a board owned by user
+      const isOwner = await storage.verifyBoardItemOwnership(userId, itemId);
+      if (!isOwner) {
+        return res.status(404).json({ message: "Board item not found" });
+      }
+
       await storage.removeItemFromBoard(itemId);
       res.json({ message: "Item removed from board successfully" });
     } catch (error) {

@@ -115,9 +115,11 @@ export interface IStorage {
   getMoodBoard(userId: string, boardId: string): Promise<{ board: MoodBoard; items: (MoodBoardItem & { image: GeneratedImage })[] } | undefined>;
   updateMoodBoard(userId: string, boardId: string, data: { name?: string; description?: string }): Promise<MoodBoard | undefined>;
   deleteMoodBoard(userId: string, boardId: string): Promise<void>;
+  verifyBoardOwnership(userId: string, boardId: string): Promise<boolean>;
   addItemToBoard(boardId: string, imageId: string, position: { positionX: number; positionY: number; width?: number; height?: number; zIndex?: number }): Promise<MoodBoardItem>;
   updateBoardItem(itemId: string, position: { positionX?: number; positionY?: number; width?: number; height?: number; zIndex?: number }): Promise<MoodBoardItem | undefined>;
   removeItemFromBoard(itemId: string): Promise<void>;
+  verifyBoardItemOwnership(userId: string, itemId: string): Promise<boolean>;
 
   getGalleryImages(): Promise<GalleryImage[]>;
   likeGalleryImage(imageId: string, userId: string): Promise<{ liked: boolean; likeCount: number }>;
@@ -780,6 +782,23 @@ export class DatabaseStorage implements IStorage {
   async deleteMoodBoard(userId: string, boardId: string): Promise<void> {
     await db.delete(moodBoardItems).where(eq(moodBoardItems.boardId, boardId));
     await db.delete(moodBoards).where(and(eq(moodBoards.id, boardId), eq(moodBoards.userId, userId)));
+  }
+
+  async verifyBoardOwnership(userId: string, boardId: string): Promise<boolean> {
+    const [board] = await db
+      .select({ id: moodBoards.id })
+      .from(moodBoards)
+      .where(and(eq(moodBoards.id, boardId), eq(moodBoards.userId, userId)));
+    return !!board;
+  }
+
+  async verifyBoardItemOwnership(userId: string, itemId: string): Promise<boolean> {
+    const [item] = await db
+      .select({ id: moodBoardItems.id })
+      .from(moodBoardItems)
+      .innerJoin(moodBoards, eq(moodBoardItems.boardId, moodBoards.id))
+      .where(and(eq(moodBoardItems.id, itemId), eq(moodBoards.userId, userId)));
+    return !!item;
   }
 
   async addItemToBoard(boardId: string, imageId: string, position: { positionX: number; positionY: number; width?: number; height?: number; zIndex?: number }): Promise<MoodBoardItem> {

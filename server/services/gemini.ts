@@ -1,8 +1,194 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 
-const genAI = new GoogleGenAI({ 
-  apiKey: process.env.GEMINI_API_KEY || process.env.AI_INTEGRATIONS_GEMINI_API_KEY || ""
-});
+/**
+ * Round-Robin API Key Load Balancer for Gemini
+ * Supports multiple API keys for high-throughput image generation
+ *
+ * Configuration:
+ * - GEMINI_API_KEYS: Comma-separated list of API keys (preferred for multiple keys)
+ * - GEMINI_API_KEY: Single API key fallback
+ * - AI_INTEGRATIONS_GEMINI_API_KEY: Alternative single key fallback
+ *
+ * Gemini API Rate Limits (as of Dec 2025):
+ * - Free tier: 15 RPM, 2 IPM (images/min)
+ * - Paid Tier 1: ~1000 RPM, ~10 IPM (images/min)
+ * - Tier 2 ($250+ spend): ~2000 RPM, higher IPM
+ * - Enterprise: Custom limits negotiable
+ *
+ * For high-concurrency image generation, IPM is the bottleneck:
+ * - Paid Tier 1 (10 IPM): 1 key = ~10 images/min
+ * - For 100 concurrent image requests: ~10 keys minimum
+ * - For 1000 concurrent: ~100 keys or Tier 2/Enterprise
+ */
+
+interface APIKeyState {
+  client: GoogleGenAI;
+  key: string;
+  requestCount: number;
+  errorCount: number;
+  lastError: Date | null;
+  rateLimitedUntil: Date | null;
+}
+
+class GeminiKeyManager {
+  private keys: APIKeyState[] = [];
+  private currentIndex = 0;
+  private readonly RATE_LIMIT_BACKOFF_MS = 60000; // 1 minute backoff on rate limit
+  private readonly MAX_CONSECUTIVE_ERRORS = 5;
+
+  constructor() {
+    this.initializeKeys();
+  }
+
+  private initializeKeys(): void {
+    // Parse multiple keys from comma-separated env var
+    const multipleKeys = process.env.GEMINI_API_KEYS?.split(',')
+      .map(k => k.trim())
+      .filter(k => k.length > 0) || [];
+
+    // Fallback to single key if no multiple keys configured
+    if (multipleKeys.length === 0) {
+      const singleKey = process.env.GEMINI_API_KEY ||
+                        process.env.AI_INTEGRATIONS_GEMINI_API_KEY ||
+                        "";
+      if (singleKey) {
+        multipleKeys.push(singleKey);
+      }
+    }
+
+    if (multipleKeys.length === 0) {
+      console.warn("[GeminiKeyManager] No API keys configured. Image generation will fail.");
+      return;
+    }
+
+    // Initialize client instances for each key
+    for (const key of multipleKeys) {
+      this.keys.push({
+        client: new GoogleGenAI({ apiKey: key }),
+        key: key.slice(0, 8) + '***', // Masked key for logging
+        requestCount: 0,
+        errorCount: 0,
+        lastError: null,
+        rateLimitedUntil: null,
+      });
+    }
+
+    console.log(`[GeminiKeyManager] Initialized with ${this.keys.length} API key(s)`);
+  }
+
+  /**
+   * Get the next available API client using round-robin selection
+   * Skips keys that are currently rate-limited or have too many consecutive errors
+   */
+  getNextClient(): GoogleGenAI {
+    if (this.keys.length === 0) {
+      throw new Error("No Gemini API keys configured");
+    }
+
+    const now = new Date();
+    const startIndex = this.currentIndex;
+
+    // Try to find an available key using round-robin
+    do {
+      const keyState = this.keys[this.currentIndex];
+      this.currentIndex = (this.currentIndex + 1) % this.keys.length;
+
+      // Check if key is rate limited
+      if (keyState.rateLimitedUntil && keyState.rateLimitedUntil > now) {
+        continue;
+      }
+
+      // Check if key has too many consecutive errors
+      if (keyState.errorCount >= this.MAX_CONSECUTIVE_ERRORS) {
+        // Reset error count if enough time has passed
+        if (keyState.lastError && (now.getTime() - keyState.lastError.getTime()) > this.RATE_LIMIT_BACKOFF_MS) {
+          keyState.errorCount = 0;
+        } else {
+          continue;
+        }
+      }
+
+      keyState.requestCount++;
+      return keyState.client;
+    } while (this.currentIndex !== startIndex);
+
+    // If all keys are unavailable, use the first one anyway (will likely fail but lets us track)
+    console.warn("[GeminiKeyManager] All API keys are rate-limited or erroring. Using first key.");
+    this.keys[0].requestCount++;
+    return this.keys[0].client;
+  }
+
+  /**
+   * Report a successful request for a client
+   */
+  reportSuccess(client: GoogleGenAI): void {
+    const keyState = this.keys.find(k => k.client === client);
+    if (keyState) {
+      keyState.errorCount = 0;
+      keyState.rateLimitedUntil = null;
+    }
+  }
+
+  /**
+   * Report a rate limit error for a client
+   */
+  reportRateLimit(client: GoogleGenAI): void {
+    const keyState = this.keys.find(k => k.client === client);
+    if (keyState) {
+      keyState.rateLimitedUntil = new Date(Date.now() + this.RATE_LIMIT_BACKOFF_MS);
+      console.warn(`[GeminiKeyManager] Key ${keyState.key} rate limited until ${keyState.rateLimitedUntil.toISOString()}`);
+    }
+  }
+
+  /**
+   * Report a generic error for a client
+   */
+  reportError(client: GoogleGenAI, error: Error): void {
+    const keyState = this.keys.find(k => k.client === client);
+    if (keyState) {
+      keyState.errorCount++;
+      keyState.lastError = new Date();
+
+      // Check if it's a rate limit error
+      const errorMessage = error.message?.toLowerCase() || '';
+      if (errorMessage.includes('rate') || errorMessage.includes('429') || errorMessage.includes('quota')) {
+        this.reportRateLimit(client);
+      }
+    }
+  }
+
+  /**
+   * Get statistics about key usage
+   */
+  getStats(): { totalKeys: number; availableKeys: number; totalRequests: number } {
+    const now = new Date();
+    const availableKeys = this.keys.filter(k =>
+      (!k.rateLimitedUntil || k.rateLimitedUntil <= now) &&
+      k.errorCount < this.MAX_CONSECUTIVE_ERRORS
+    ).length;
+
+    const totalRequests = this.keys.reduce((sum, k) => sum + k.requestCount, 0);
+
+    return {
+      totalKeys: this.keys.length,
+      availableKeys,
+      totalRequests,
+    };
+  }
+}
+
+// Singleton instance
+const keyManager = new GeminiKeyManager();
+
+// For backwards compatibility - get the next available client
+const genAI = {
+  get models() {
+    return keyManager.getNextClient().models;
+  }
+};
+
+// Export key manager for advanced usage
+export { keyManager, GeminiKeyManager };
 
 export const MODELS = {
   FAST_ANALYSIS: "gemini-2.0-flash",
@@ -237,6 +423,8 @@ export async function generateImage(
   speed: "fast" | "quality" = "quality",
   aspectRatio: string = "1:1"
 ): Promise<GeneratedImageResult | null> {
+  const client = keyManager.getNextClient();
+
   try {
     const aspectRatioMap: Record<string, string> = {
       "1:1": "1:1",
@@ -246,14 +434,14 @@ export async function generateImage(
       "3:4": "3:4"
     };
     const validAspectRatio = aspectRatioMap[aspectRatio] || "1:1";
-    
+
     const fullPrompt = negativePrompts.length > 0
       ? `${prompt}\n\nAvoid: ${negativePrompts.join(", ")}`
       : prompt;
 
     const model = speed === "fast" ? MODELS.IMAGE_GENERATION_FAST : MODELS.IMAGE_GENERATION;
 
-    const response = await genAI.models.generateContent({
+    const response = await client.models.generateContent({
       model,
       contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
       config: {
@@ -288,6 +476,7 @@ export async function generateImage(
     }
 
     if (imageData) {
+      keyManager.reportSuccess(client);
       return {
         imageData,
         mimeType,
@@ -299,6 +488,7 @@ export async function generateImage(
     return null;
   } catch (error) {
     console.error("Image generation failed:", error);
+    keyManager.reportError(client, error as Error);
     return null;
   }
 }
@@ -573,12 +763,14 @@ export async function generateMockup(
   prompt: string,
   negativePrompts: string[]
 ): Promise<GeneratedImageResult | null> {
+  const client = keyManager.getNextClient();
+
   try {
     const fullPrompt = negativePrompts.length > 0
       ? `${prompt}\n\nApply the provided design image onto the product accurately. Maintain the design's colors and details.\n\nAvoid: ${negativePrompts.join(", ")}`
       : `${prompt}\n\nApply the provided design image onto the product accurately. Maintain the design's colors and details.`;
 
-    const response = await genAI.models.generateContent({
+    const response = await client.models.generateContent({
       model: MODELS.IMAGE_GENERATION,
       contents: [
         {
@@ -627,6 +819,7 @@ export async function generateMockup(
     }
 
     if (imageData) {
+      keyManager.reportSuccess(client);
       return {
         imageData,
         mimeType,
@@ -638,6 +831,7 @@ export async function generateMockup(
     return null;
   } catch (error) {
     console.error("Mockup generation failed:", error);
+    keyManager.reportError(client, error as Error);
     return null;
   }
 }
@@ -650,6 +844,8 @@ export async function generateAISeamlessPattern(
   imageBase64: string,
   mimeType: string = "image/png"
 ): Promise<GeneratedImageResult | null> {
+  const client = keyManager.getNextClient();
+
   const prompt = `Transform this design into a SEAMLESS TILEABLE PATTERN.
 
 CRITICAL REQUIREMENTS:
@@ -668,7 +864,7 @@ TECHNICAL SPECIFICATIONS:
 Generate a beautiful, creative seamless pattern based on this design:`;
 
   try {
-    const response = await genAI.models.generateContent({
+    const response = await client.models.generateContent({
       model: MODELS.IMAGE_GENERATION,
       contents: [
         {
@@ -717,6 +913,7 @@ Generate a beautiful, creative seamless pattern based on this design:`;
     }
 
     if (imageData) {
+      keyManager.reportSuccess(client);
       return {
         imageData,
         mimeType: resultMimeType,
@@ -728,6 +925,7 @@ Generate a beautiful, creative seamless pattern based on this design:`;
     return null;
   } catch (error) {
     console.error("AI seamless pattern generation failed:", error);
+    keyManager.reportError(client, error as Error);
     return null;
   }
 }
