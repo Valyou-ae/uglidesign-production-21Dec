@@ -51,6 +51,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
   const [remixed, setRemixed] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -94,6 +95,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
     e.stopPropagation();
     await navigator.clipboard.writeText(item.prompt);
     setCopied(true);
+    toast({ title: "Prompt copied!", description: "The prompt has been copied to your clipboard." });
     setTimeout(() => setCopied(false), 2000);
     
     if (item.isGalleryImage) {
@@ -108,6 +110,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
     e.stopPropagation();
     await navigator.clipboard.writeText(item.prompt);
     setRemixed(true);
+    toast({ title: "Prompt copied!", description: "Go to Image Creation to create your own variant." });
     setTimeout(() => setRemixed(false), 2000);
     
     if (item.isGalleryImage) {
