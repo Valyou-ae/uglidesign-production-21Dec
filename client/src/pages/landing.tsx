@@ -18,10 +18,12 @@ import {
   Moon,
   Loader2,
   Heart,
-  Wand2
+  Wand2,
+  Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { galleryApi } from "@/lib/api";
 
 type AspectRatio = "1:1" | "16:9" | "4:5" | "3:4";
 
@@ -31,6 +33,16 @@ interface SampleImage {
   image: string;
   prompt: string;
   isGenerated?: boolean;
+  isGalleryImage?: boolean;
+  views?: number;
+  likes?: number;
+  uses?: number;
+}
+
+function formatCount(num: number): string {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
 }
 
 const SAMPLE_IMAGES: SampleImage[] = [
@@ -360,6 +372,27 @@ function ImageScroller({ generatedImage, onLogin }: ImageScrollerProps) {
   const controls = useAnimationControls();
 
   useEffect(() => {
+    galleryApi.getAll()
+      .then(result => {
+        if (result.images && result.images.length > 0) {
+          const galleryImages: SampleImage[] = result.images.slice(0, 12).map((img: any) => ({
+            id: String(img.id),
+            aspectRatio: (img.aspectRatio || "1:1") as AspectRatio,
+            image: img.imageUrl,
+            prompt: img.prompt || "AI Generated",
+            isGalleryImage: true,
+            views: img.viewCount || 0,
+            likes: img.likeCount || 0,
+            uses: img.useCount || 0
+          }));
+          const merged = [...galleryImages, ...SAMPLE_IMAGES.slice(0, Math.max(0, 6 - galleryImages.length))];
+          setDisplayImages(merged.length > 0 ? merged : SAMPLE_IMAGES);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (generatedImage) {
       setDisplayImages(prev => {
         const newImages = [...prev];
@@ -447,6 +480,22 @@ function ImageScroller({ generatedImage, onLogin }: ImageScrollerProps) {
                       <Sparkles className="h-3 w-3" />
                       Your Creation
                     </span>
+                  )}
+                  {item.isGalleryImage && (
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="flex items-center gap-1 text-[10px] text-white/80">
+                        <Eye className="h-3 w-3" />
+                        {formatCount(item.views || 0)}
+                      </span>
+                      <span className="flex items-center gap-1 text-[10px] text-white/80">
+                        <Heart className="h-3 w-3" />
+                        {formatCount(item.likes || 0)}
+                      </span>
+                      <span className="flex items-center gap-1 text-[10px] text-white/80">
+                        <Wand2 className="h-3 w-3" />
+                        {formatCount(item.uses || 0)}
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>

@@ -1262,6 +1262,19 @@ export async function registerRoutes(
 
   // ============== GUEST IMAGE GENERATION (NO AUTH) ==============
 
+  const GUEST_GALLERY_USER_ID = "guest-gallery-user";
+
+  async function ensureGuestGalleryUser() {
+    let guestUser = await storage.getUser(GUEST_GALLERY_USER_ID);
+    if (!guestUser) {
+      guestUser = await storage.upsertUser({
+        id: GUEST_GALLERY_USER_ID,
+        username: "UGLI Gallery",
+      });
+    }
+    return guestUser;
+  }
+
   app.post("/api/guest/generate-image", guestGenerationLimiter, async (req, res) => {
     try {
       const { prompt, guestId } = req.body;
@@ -1280,6 +1293,18 @@ export async function registerRoutes(
       }
 
       await db.insert(guestGenerations).values({ guestId });
+
+      await ensureGuestGalleryUser();
+      const imageUrl = `data:${result.mimeType};base64,${result.imageData}`;
+      await storage.createImage({
+        userId: GUEST_GALLERY_USER_ID,
+        imageUrl,
+        prompt,
+        style: "auto",
+        aspectRatio: "1:1",
+        generationType: "image",
+        isPublic: true,
+      });
 
       return res.json({ imageData: result.imageData, mimeType: result.mimeType });
     } catch (error) {
