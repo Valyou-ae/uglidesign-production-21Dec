@@ -960,7 +960,8 @@ export default function ImageGenerator() {
             stylePreset: settings.style, 
             aspectRatio: settings.aspectRatio,
             detail: settings.detail,
-            speed: settings.speed
+            speed: settings.speed,
+            imageCount: parseInt(settings.variations)
           },
           handleEvent
         );
@@ -973,7 +974,8 @@ export default function ImageGenerator() {
             aspectRatio: settings.aspectRatio,
             enableCuration: settings.aiCuration,
             detail: settings.detail,
-            speed: settings.speed
+            speed: settings.speed,
+            imageCount: parseInt(settings.variations)
           },
           handleEvent
         );

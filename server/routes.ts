@@ -1360,10 +1360,12 @@ export async function registerRoutes(
 
   app.post("/api/generate/draft", requireAuth, async (req, res) => {
     try {
-      const { prompt, stylePreset = "auto", aspectRatio = "1:1", detail = "medium", speed = "quality" } = req.body;
+      const { prompt, stylePreset = "auto", aspectRatio = "1:1", detail = "medium", speed = "quality", imageCount = 1 } = req.body;
       if (!prompt || typeof prompt !== "string") {
         return res.status(400).json({ message: "Prompt is required" });
       }
+
+      const count = Math.min(Math.max(1, parseInt(imageCount) || 1), 4);
 
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
@@ -1393,23 +1395,28 @@ export async function registerRoutes(
       sendEvent("enhancement", { enhancedPrompt, negativePrompts });
       sendEvent("status", { agent: "Style Architect", status: "complete", message: "Prompt enhanced" });
 
-      sendEvent("status", { agent: "Visual Synthesizer", status: "working", message: "Generating image..." });
+      sendEvent("status", { agent: "Visual Synthesizer", status: "working", message: `Generating ${count} image${count > 1 ? 's' : ''}...` });
 
-      const result = await generateGeminiImage(enhancedPrompt, negativePrompts, speed, aspectRatio, "draft", analysis.hasTextRequest);
+      let successCount = 0;
+      for (let i = 0; i < count; i++) {
+        sendEvent("progress", { completed: i, total: count });
+        const result = await generateGeminiImage(enhancedPrompt, negativePrompts, speed, aspectRatio, "draft", analysis.hasTextRequest);
 
-      if (result) {
-        sendEvent("image", {
-          index: 0,
-          imageData: result.imageData,
-          mimeType: result.mimeType,
-          progress: "1/1",
-        });
-      } else {
-        sendEvent("image_error", { index: 0, error: "Generation failed" });
+        if (result) {
+          successCount++;
+          sendEvent("image", {
+            index: i,
+            imageData: result.imageData,
+            mimeType: result.mimeType,
+            progress: `${i + 1}/${count}`,
+          });
+        } else {
+          sendEvent("image_error", { index: i, error: "Generation failed" });
+        }
       }
 
       sendEvent("status", { agent: "Visual Synthesizer", status: "complete", message: "Generation complete" });
-      sendEvent("complete", { message: "Draft generation complete", totalImages: result ? 1 : 0 });
+      sendEvent("complete", { message: "Draft generation complete", totalImages: successCount });
 
       res.end();
     } catch (error) {
@@ -1429,11 +1436,14 @@ export async function registerRoutes(
         aspectRatio = "1:1",
         detail = "medium",
         speed = "quality",
+        imageCount = 1,
       } = req.body;
 
       if (!prompt || typeof prompt !== "string") {
         return res.status(400).json({ message: "Prompt is required" });
       }
+
+      const count = Math.min(Math.max(1, parseInt(imageCount) || 1), 4);
 
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
@@ -1463,46 +1473,53 @@ export async function registerRoutes(
       sendEvent("enhancement", { enhancedPrompt, negativePrompts });
       sendEvent("status", { agent: "Style Architect", status: "complete", message: "Master prompt ready" });
 
-      sendEvent("status", { agent: "Visual Synthesizer", status: "working", message: "Generating image..." });
+      sendEvent("status", { agent: "Visual Synthesizer", status: "working", message: `Generating ${count} image${count > 1 ? 's' : ''}...` });
 
-      const result = await generateGeminiImage(enhancedPrompt, negativePrompts, speed, aspectRatio, qualityLevel as "draft" | "premium", analysis.hasTextRequest);
+      let successCount = 0;
+      for (let i = 0; i < count; i++) {
+        sendEvent("progress", { completed: i, total: count });
+        const result = await generateGeminiImage(enhancedPrompt, negativePrompts, speed, aspectRatio, qualityLevel as "draft" | "premium", analysis.hasTextRequest);
 
-      if (result) {
-        const imageUrl = `data:${result.mimeType};base64,${result.imageData}`;
-        
-        try {
-          const savedImage = await storage.createImage({
-            userId,
-            imageUrl,
-            prompt,
-            style: stylePreset,
-            aspectRatio,
-            generationType: "image",
-            isFavorite: false,
-          });
+        if (result) {
+          successCount++;
+          const imageUrl = `data:${result.mimeType};base64,${result.imageData}`;
           
-          sendEvent("final_image", {
-            index: 0,
-            imageData: result.imageData,
-            mimeType: result.mimeType,
-            savedImageId: savedImage.id,
-          });
-        } catch (saveError) {
-          console.error("Failed to save image to database:", saveError);
-          sendEvent("final_image", {
-            index: 0,
-            imageData: result.imageData,
-            mimeType: result.mimeType,
-          });
+          try {
+            const savedImage = await storage.createImage({
+              userId,
+              imageUrl,
+              prompt,
+              style: stylePreset,
+              aspectRatio,
+              generationType: "image",
+              isFavorite: false,
+            });
+            
+            sendEvent("final_image", {
+              index: i,
+              imageData: result.imageData,
+              mimeType: result.mimeType,
+              savedImageId: savedImage.id,
+              progress: `${i + 1}/${count}`,
+            });
+          } catch (saveError) {
+            console.error("Failed to save image to database:", saveError);
+            sendEvent("final_image", {
+              index: i,
+              imageData: result.imageData,
+              mimeType: result.mimeType,
+              progress: `${i + 1}/${count}`,
+            });
+          }
+        } else {
+          sendEvent("image_error", { index: i, error: "Generation failed" });
         }
-      } else {
-        sendEvent("image_error", { index: 0, error: "Generation failed" });
       }
 
       sendEvent("status", { agent: "Visual Synthesizer", status: "complete", message: "Generation complete" });
       sendEvent("complete", {
         message: "Final generation complete",
-        totalImages: result ? 1 : 0,
+        totalImages: successCount,
       });
 
       res.end();
