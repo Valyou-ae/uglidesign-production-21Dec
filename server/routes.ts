@@ -834,16 +834,18 @@ export async function registerRoutes(
 
       const image = await storage.createImage(imageData);
       
-      // Also save to gallery for discover page
-      const user = await storage.getUser(userId);
-      await storage.createGalleryImage({
-        title: imageData.prompt?.slice(0, 100) || "AI Generated Image",
-        imageUrl: imageData.imageUrl,
-        creator: user?.displayName || user?.username || "UGLI User",
-        category: "ai-generated",
-        aspectRatio: imageData.aspectRatio || "1:1",
-        prompt: imageData.prompt || "",
-      });
+      // Only save to gallery for discover page if image is public
+      if (imageData.isPublic) {
+        const user = await storage.getUser(userId);
+        await storage.createGalleryImage({
+          title: imageData.prompt?.slice(0, 100) || "AI Generated Image",
+          imageUrl: imageData.imageUrl,
+          creator: user?.displayName || user?.username || "UGLI User",
+          category: "ai-generated",
+          aspectRatio: imageData.aspectRatio || "1:1",
+          prompt: imageData.prompt || "",
+        });
+      }
       
       // Invalidate gallery cache so new image appears immediately
       await invalidateCache('gallery:images');
