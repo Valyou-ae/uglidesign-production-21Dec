@@ -186,11 +186,15 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
               </div>
               <button
                 onClick={handleLike}
+                disabled={!item.isGalleryImage}
+                title={item.isGalleryImage ? (liked ? "Unlike" : "Like") : "Like community creations only"}
                 className={cn(
                   "flex items-center gap-1 text-xs transition-colors",
+                  !item.isGalleryImage && "opacity-50 cursor-not-allowed",
                   liked 
                     ? "text-red-500" 
-                    : "text-[#71717A] dark:text-[#52525B] hover:text-red-500"
+                    : "text-[#71717A] dark:text-[#52525B]",
+                  item.isGalleryImage && !liked && "hover:text-red-500"
                 )}
                 data-testid={`button-like-${item.id}`}
               >
