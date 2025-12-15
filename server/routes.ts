@@ -392,9 +392,11 @@ export async function registerRoutes(
         // Update existing user's profile image and display name from Google if not set
         const updates: any = {};
         
-        // Only set Google profile picture if user doesn't have any profile image
-        // Don't overwrite custom uploaded profile images
-        if (picture && !user.profileImageUrl) {
+        // Check if user has a custom uploaded profile image (local path)
+        const hasCustomUpload = user.profileImageUrl?.startsWith('/attached_assets/');
+        
+        // Update Google profile picture only if user doesn't have one, or if they're using a Google URL (not custom upload)
+        if (picture && !hasCustomUpload && user.profileImageUrl !== picture) {
           updates.profileImageUrl = picture;
         }
         
