@@ -19,11 +19,13 @@ import {
   Loader2,
   Heart,
   Wand2,
-  Eye
+  Eye,
+  Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { galleryApi } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 type AspectRatio = "1:1" | "16:9" | "4:5" | "3:4";
 
@@ -370,6 +372,19 @@ function ImageScroller({ generatedImage, onLogin }: ImageScrollerProps) {
   const [displayImages, setDisplayImages] = useState<SampleImage[]>(SAMPLE_IMAGES);
   const [isPaused, setIsPaused] = useState(false);
   const controls = useAnimationControls();
+  const { toast } = useToast();
+
+  const handleCopyPrompt = async (prompt: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await navigator.clipboard.writeText(prompt);
+    toast({ title: "Prompt copied!", description: "The prompt has been copied to your clipboard." });
+  };
+
+  const handleRemix = async (prompt: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await navigator.clipboard.writeText(prompt);
+    toast({ title: "Prompt copied!", description: "Go to Image Creation to create your own variant." });
+  };
 
   useEffect(() => {
     galleryApi.getAll()
@@ -491,10 +506,23 @@ function ImageScroller({ generatedImage, onLogin }: ImageScrollerProps) {
                         <Heart className="h-3 w-3" />
                         {formatCount(item.likes || 0)}
                       </span>
-                      <span className="flex items-center gap-1 text-[10px] text-white/80">
+                      <button
+                        onClick={(e) => handleRemix(item.prompt, e)}
+                        className="flex items-center gap-1 text-[10px] text-white/80 hover:text-primary transition-colors"
+                        title="Remix - Create your own variant"
+                        data-testid={`button-remix-${item.id}`}
+                      >
                         <Wand2 className="h-3 w-3" />
                         {formatCount(item.uses || 0)}
-                      </span>
+                      </button>
+                      <button
+                        onClick={(e) => handleCopyPrompt(item.prompt, e)}
+                        className="flex items-center gap-1 text-[10px] text-white/80 hover:text-primary transition-colors"
+                        title="Copy prompt"
+                        data-testid={`button-copy-${item.id}`}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </button>
                     </div>
                   )}
                 </div>
