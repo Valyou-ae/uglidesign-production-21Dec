@@ -884,8 +884,8 @@ export async function registerRoutes(
   // Supports both authenticated users and guests via session
   app.get("/api/images/:id/image", async (req: any, res) => {
     try {
-      // Get userId from authenticated user OR guestId from session
-      const userId = req.user?.id || (req.session as any)?.guestId;
+      // Get userId from authenticated user (claims.sub) OR guestId from session
+      const userId = req.user?.claims?.sub || (req.session as any)?.guestId;
       
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
