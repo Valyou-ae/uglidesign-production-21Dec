@@ -446,13 +446,21 @@ export async function generateImage(
     
     console.log(`[Image Generation] Using model: ${model} (quality: ${qualityLevel}, hasText: ${hasTextRequest})`);
 
+    // Build config with optimizations for speed
+    const config: any = {
+      responseModalities: [Modality.TEXT, Modality.IMAGE],
+      aspectRatio: validAspectRatio,
+    };
+    
+    // For premium model, disable thinking to reduce latency
+    if (qualityLevel === "premium") {
+      config.thinkingConfig = { thinkingBudget: 0 };
+    }
+
     const response = await client.models.generateContent({
       model,
       contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
-      config: {
-        responseModalities: [Modality.TEXT, Modality.IMAGE],
-        aspectRatio: validAspectRatio,
-      } as any,
+      config,
     });
 
     const candidates = response.candidates;
@@ -795,7 +803,8 @@ export async function generateMockup(
       ],
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
-      },
+        thinkingConfig: { thinkingBudget: 0 },
+      } as any,
     });
 
     const candidates = response.candidates;
@@ -889,7 +898,8 @@ Generate a beautiful, creative seamless pattern based on this design:`;
       ],
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
-      },
+        thinkingConfig: { thinkingBudget: 0 },
+      } as any,
     });
 
     const candidates = response.candidates;
