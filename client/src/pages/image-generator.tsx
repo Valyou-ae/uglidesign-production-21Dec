@@ -846,7 +846,7 @@ export default function ImageGenerator() {
       if (type === "progress" && data.completed !== undefined && data.total !== undefined) {
         const progressPercent = Math.round((data.completed / data.total) * 100);
         setProgress(prev => Math.max(prev, progressPercent));
-        setImageProgress({ current: data.completed + 1, total: data.total });
+        setImageProgress({ current: data.completed, total: data.total });
         totalExpected = data.total;
       }
 
