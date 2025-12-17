@@ -201,6 +201,7 @@ export const galleryImageLikes = pgTable("gallery_image_likes", {
 
 export const galleryImages = pgTable("gallery_images", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sourceImageId: varchar("source_image_id"),
   title: text("title").notNull(),
   imageUrl: text("image_url").notNull(),
   creator: text("creator").notNull(),

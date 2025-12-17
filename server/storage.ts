@@ -123,7 +123,9 @@ export interface IStorage {
 
   getGalleryImages(): Promise<GalleryImage[]>;
   getGalleryImageById(imageId: string): Promise<GalleryImage | undefined>;
-  createGalleryImage(data: { title: string; imageUrl: string; creator: string; category?: string; aspectRatio?: string; prompt?: string }): Promise<GalleryImage>;
+  getGalleryImageBySourceId(sourceImageId: string): Promise<GalleryImage | undefined>;
+  createGalleryImage(data: { title: string; imageUrl: string; creator: string; category?: string; aspectRatio?: string; prompt?: string; sourceImageId?: string }): Promise<GalleryImage>;
+  deleteGalleryImageBySourceId(sourceImageId: string): Promise<void>;
   likeGalleryImage(imageId: string, userId: string): Promise<{ liked: boolean; likeCount: number }>;
   hasUserLikedImage(imageId: string, userId: string): Promise<boolean>;
   getUserLikedImages(userId: string): Promise<string[]>;
@@ -850,10 +852,11 @@ export class DatabaseStorage implements IStorage {
     return image || undefined;
   }
 
-  async createGalleryImage(data: { title: string; imageUrl: string; creator: string; category?: string; aspectRatio?: string; prompt?: string }): Promise<GalleryImage> {
+  async createGalleryImage(data: { title: string; imageUrl: string; creator: string; category?: string; aspectRatio?: string; prompt?: string; sourceImageId?: string }): Promise<GalleryImage> {
     const [image] = await db
       .insert(galleryImages)
       .values({
+        sourceImageId: data.sourceImageId,
         title: data.title,
         imageUrl: data.imageUrl,
         creator: data.creator,
@@ -863,6 +866,26 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return image;
+  }
+
+  async deleteGalleryImageBySourceId(sourceImageId: string): Promise<void> {
+    // First get the gallery image to delete associated likes
+    const [galleryImage] = await db
+      .select()
+      .from(galleryImages)
+      .where(eq(galleryImages.sourceImageId, sourceImageId));
+    
+    if (galleryImage) {
+      // Delete associated likes
+      await db.delete(galleryImageLikes).where(eq(galleryImageLikes.imageId, galleryImage.id));
+      // Delete the gallery image
+      await db.delete(galleryImages).where(eq(galleryImages.id, galleryImage.id));
+    }
+  }
+
+  async getGalleryImageBySourceId(sourceImageId: string): Promise<GalleryImage | undefined> {
+    const [image] = await db.select().from(galleryImages).where(eq(galleryImages.sourceImageId, sourceImageId));
+    return image || undefined;
   }
 
   async incrementGalleryImageView(imageId: string): Promise<GalleryImage | undefined> {
@@ -952,6 +975,31 @@ export class DatabaseStorage implements IStorage {
       .set({ isPublic })
       .where(eq(generatedImages.id, imageId))
       .returning();
+    
+    // Handle gallery sync
+    if (isPublic) {
+      // Check if already in gallery
+      const existingGalleryImage = await this.getGalleryImageBySourceId(imageId);
+      if (!existingGalleryImage) {
+        // Get user info for creator name
+        const user = await this.getUser(userId);
+        const creatorName = user?.displayName || user?.username || "UGLI User";
+        
+        // Add to gallery
+        await this.createGalleryImage({
+          sourceImageId: imageId,
+          title: image.prompt?.slice(0, 100) || "AI Generated Image",
+          imageUrl: image.imageUrl,
+          creator: creatorName,
+          category: image.style || "ai-generated",
+          aspectRatio: image.aspectRatio || "1:1",
+          prompt: image.prompt || "",
+        });
+      }
+    } else {
+      // Remove from gallery
+      await this.deleteGalleryImageBySourceId(imageId);
+    }
     
     return updated;
   }

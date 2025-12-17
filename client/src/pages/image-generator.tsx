@@ -133,6 +133,7 @@ type GeneratedImage = {
   isNew?: boolean;
   isFavorite?: boolean;
   alreadySaved?: boolean;  // For images already saved by backend (premium mode)
+  isPublic?: boolean;  // Whether image is visible in public gallery
 };
 
 interface LeaderboardEntry {
@@ -476,11 +477,11 @@ export default function ImageGenerator() {
       const savedImage = response.image;
       setGenerations(prev => prev.map(g => 
         g.id === image.id 
-          ? { ...g, id: String(savedImage.id), isFavorite: savedImage.isFavorite || false } 
+          ? { ...g, id: String(savedImage.id), isFavorite: savedImage.isFavorite || false, isPublic: savedImage.isPublic || false } 
           : g
       ));
       if (selectedImage && selectedImage.id === image.id) {
-        setSelectedImage(prev => prev ? { ...prev, id: String(savedImage.id), isFavorite: savedImage.isFavorite || false } : null);
+        setSelectedImage(prev => prev ? { ...prev, id: String(savedImage.id), isFavorite: savedImage.isFavorite || false, isPublic: savedImage.isPublic || false } : null);
       }
       toast({ title: "Saved to Library", description: "Image has been saved to your creations." });
     } catch (error) {
@@ -520,6 +521,47 @@ export default function ImageGenerator() {
         setSelectedImage(prev => prev ? { ...prev, isFavorite: prevFavorite } : null);
       }
       toast({ title: "Failed", description: "Could not update favorite status.", variant: "destructive" });
+    }
+  };
+
+  const toggleVisibility = async (id: string, currentIsPublic: boolean) => {
+    if (!user) {
+      toast({ title: "Please log in", description: "You need to be logged in to change visibility.", variant: "destructive" });
+      return;
+    }
+    
+    if (id.startsWith("sample-") || isUnsavedImage(id)) {
+      toast({ title: "Save First", description: "Save the image before changing visibility.", className: "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-900/50 dark:text-amber-400" });
+      return;
+    }
+    
+    const newIsPublic = !currentIsPublic;
+    
+    // Optimistic update
+    setGenerations(prev => prev.map(g => g.id === id ? { ...g, isPublic: newIsPublic } : g));
+    if (selectedImage && selectedImage.id === id) {
+      setSelectedImage(prev => prev ? { ...prev, isPublic: newIsPublic } : null);
+    }
+    
+    try {
+      const response = await imagesApi.setVisibility(id, newIsPublic);
+      // Use server response to confirm final state
+      const confirmedIsPublic = response.image?.isPublic ?? newIsPublic;
+      setGenerations(prev => prev.map(g => g.id === id ? { ...g, isPublic: confirmedIsPublic } : g));
+      if (selectedImage && selectedImage.id === id) {
+        setSelectedImage(prev => prev ? { ...prev, isPublic: confirmedIsPublic } : null);
+      }
+      toast({ 
+        title: confirmedIsPublic ? "Image is now Public" : "Image is now Private", 
+        description: confirmedIsPublic ? "This image will appear in the public gallery." : "This image is only visible to you." 
+      });
+    } catch (error) {
+      // Rollback on error
+      setGenerations(prev => prev.map(g => g.id === id ? { ...g, isPublic: currentIsPublic } : g));
+      if (selectedImage && selectedImage.id === id) {
+        setSelectedImage(prev => prev ? { ...prev, isPublic: currentIsPublic } : null);
+      }
+      toast({ title: "Failed", description: "Could not update visibility.", variant: "destructive" });
     }
   };
 
@@ -1185,7 +1227,8 @@ export default function ImageGenerator() {
               style: img.style || "auto",
               aspectRatio: img.aspectRatio || "1:1",
               timestamp: new Date(img.createdAt).toLocaleDateString(),
-              isFavorite: img.isFavorite || false
+              isFavorite: img.isFavorite || false,
+              isPublic: img.isPublic || false
             }));
             setGenerations(loadedImages);
             return;
@@ -2228,6 +2271,25 @@ export default function ImageGenerator() {
                       <div className="flex justify-between py-2 border-b border-border">
                         <span className="text-xs text-muted-foreground">Seed</span>
                         <span className="text-xs font-medium text-foreground font-mono">82739103</span>
+                      </div>
+                    </div>
+
+                    {/* Visibility Toggle */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Visibility</label>
+                      <div className="flex items-center justify-between bg-muted/30 rounded-xl p-4 border border-border">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium text-foreground">Public</span>
+                          <p className="text-[10px] text-muted-foreground">
+                            {selectedImage.isPublic ? "Visible to everyone on home & discovery" : "Only visible to you"}
+                          </p>
+                        </div>
+                        <Switch
+                          checked={selectedImage.isPublic || false}
+                          onCheckedChange={() => toggleVisibility(selectedImage.id, selectedImage.isPublic || false)}
+                          data-testid="switch-visibility"
+                          className="data-[state=checked]:bg-[#B94E30]"
+                        />
                       </div>
                     </div>
                   </div>

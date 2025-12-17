@@ -841,6 +841,7 @@ export async function registerRoutes(
       if (imageData.isPublic) {
         const user = await storage.getUser(userId);
         await storage.createGalleryImage({
+          sourceImageId: image.id,
           title: imageData.prompt?.slice(0, 100) || "AI Generated Image",
           imageUrl: imageData.imageUrl,
           creator: user?.displayName || user?.username || "UGLI User",
@@ -959,6 +960,8 @@ export async function registerRoutes(
       if (!image) {
         return res.status(404).json({ message: "Image not found" });
       }
+      // Invalidate gallery cache to reflect visibility change
+      await invalidateCache('gallery:images');
       res.json({ image });
     } catch (error) {
       res.status(500).json({ message: "Server error" });
@@ -1441,6 +1444,7 @@ export async function registerRoutes(
               if (isPublic) {
                 try {
                   await storage.createGalleryImage({
+                    sourceImageId: savedImage.id,
                     title: prompt.substring(0, 100),
                     imageUrl,
                     creator: userId,
@@ -1588,6 +1592,7 @@ export async function registerRoutes(
               if (isPublic) {
                 try {
                   await storage.createGalleryImage({
+                    sourceImageId: savedImage.id,
                     title: prompt.substring(0, 100),
                     imageUrl,
                     creator: userId,
