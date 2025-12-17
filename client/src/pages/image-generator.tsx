@@ -457,7 +457,13 @@ export default function ImageGenerator() {
   };
 
   const isUnsavedImage = (id: string): boolean => {
-    return id.includes('-') && !id.startsWith('sample-');
+    // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (36 chars, 5 groups)
+    // Temporary IDs are like "temp-123456" or "gen-123456"
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    // If it's a valid UUID, it's saved in the database
+    if (uuidPattern.test(id)) return false;
+    // Otherwise check if it's a temp/generated ID (not a sample)
+    return !id.startsWith('sample-');
   };
 
   const saveToLibrary = async (image: GeneratedImage) => {
