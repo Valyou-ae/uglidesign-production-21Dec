@@ -837,7 +837,7 @@ export default function MyCreations() {
               onClick={e => e.stopPropagation()}
             >
               {/* Left: Image */}
-              <div className="w-full h-[40vh] md:h-auto md:flex-1 bg-muted/20 flex items-center justify-center p-4 md:p-8 relative group bg-checkerboard">
+              <div className="w-full h-[40vh] md:h-auto md:flex-1 bg-muted/20 flex items-center justify-center p-4 md:p-8 relative group">
                 <img 
                   src={selectedItem.src} 
                   alt={selectedItem.name} 
