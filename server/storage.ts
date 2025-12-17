@@ -125,7 +125,7 @@ export interface IStorage {
   getGalleryImageById(imageId: string): Promise<GalleryImage | undefined>;
   getGalleryImageBySourceId(sourceImageId: string): Promise<GalleryImage | undefined>;
   createGalleryImage(data: { title: string; imageUrl: string; creator: string; category?: string; aspectRatio?: string; prompt?: string; sourceImageId?: string }): Promise<GalleryImage>;
-  deleteGalleryImageBySourceId(sourceImageId: string): Promise<void>;
+  deleteGalleryImageBySourceId(sourceImageId: string, imageUrl?: string): Promise<void>;
   likeGalleryImage(imageId: string, userId: string): Promise<{ liked: boolean; likeCount: number }>;
   hasUserLikedImage(imageId: string, userId: string): Promise<boolean>;
   getUserLikedImages(userId: string): Promise<string[]>;
@@ -868,12 +868,20 @@ export class DatabaseStorage implements IStorage {
     return image;
   }
 
-  async deleteGalleryImageBySourceId(sourceImageId: string): Promise<void> {
-    // First get the gallery image to delete associated likes
-    const [galleryImage] = await db
+  async deleteGalleryImageBySourceId(sourceImageId: string, imageUrl?: string): Promise<void> {
+    // First try to find by sourceImageId
+    let [galleryImage] = await db
       .select()
       .from(galleryImages)
       .where(eq(galleryImages.sourceImageId, sourceImageId));
+    
+    // Fallback: try to find by imageUrl for older images without sourceImageId
+    if (!galleryImage && imageUrl) {
+      [galleryImage] = await db
+        .select()
+        .from(galleryImages)
+        .where(eq(galleryImages.imageUrl, imageUrl));
+    }
     
     if (galleryImage) {
       // Delete associated likes
@@ -997,8 +1005,8 @@ export class DatabaseStorage implements IStorage {
         });
       }
     } else {
-      // Remove from gallery
-      await this.deleteGalleryImageBySourceId(imageId);
+      // Remove from gallery - pass imageUrl as fallback for older images without sourceImageId
+      await this.deleteGalleryImageBySourceId(imageId, image.imageUrl);
     }
     
     return updated;
