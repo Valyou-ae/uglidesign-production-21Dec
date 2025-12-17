@@ -6,7 +6,6 @@ import {
   Heart, 
   Wand2,
   Loader2,
-  Users,
   Copy,
   Check,
   Clock
@@ -188,20 +187,12 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity" />
           
-          <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
-            {item.createdAt && (
-              <div className="flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full">
-                <Clock className="h-3 w-3 text-[#E3B436]" />
-                <span className="text-[10px] font-medium text-white">{formatTimeAgo(new Date(item.createdAt))}</span>
-              </div>
-            )}
-            {item.category === 'Community' && (
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-[#B94E30]/90 backdrop-blur-sm rounded-full">
-                <Users className="h-3 w-3 text-white" />
-                <span className="text-[10px] font-medium text-white">Community</span>
-              </div>
-            )}
-          </div>
+          {item.createdAt && (
+            <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full z-10">
+              <Clock className="h-3 w-3 text-[#E3B436]" />
+              <span className="text-[10px] font-medium text-white">{formatTimeAgo(new Date(item.createdAt))}</span>
+            </div>
+          )}
           
           <div className="absolute bottom-0 left-0 right-0 p-4">
             <h3 className="text-base font-semibold text-white truncate drop-shadow-lg">{item.title}</h3>
