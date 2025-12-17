@@ -92,6 +92,7 @@ export default function MyCreations() {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<ItemType | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const { toast } = useToast();
   
   // Fetch images from backend API
@@ -971,16 +972,18 @@ export default function MyCreations() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 text-xs gap-1.5"
+                          className="h-7 text-xs gap-1.5 cursor-pointer"
                           onClick={() => {
                             const shareUrl = `${window.location.origin}/share/${selectedItem.id}`;
                             navigator.clipboard.writeText(shareUrl);
+                            setLinkCopied(true);
                             toast({ title: "Link Copied!", description: "Share link copied to clipboard" });
+                            setTimeout(() => setLinkCopied(false), 2000);
                           }}
                           data-testid="button-copy-share-link"
                         >
-                          <Share2 className="h-3.5 w-3.5" />
-                          Copy Link
+                          {linkCopied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
+                          {linkCopied ? "Copied!" : "Copy Link"}
                         </Button>
                       </div>
                     )}
