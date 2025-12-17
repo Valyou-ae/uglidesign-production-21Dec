@@ -833,26 +833,50 @@ export default function ImageGenerator() {
         totalExpected = data.total;
       }
 
-      if (type === "image" && data.imageData && data.mimeType && typeof data.index === 'number') {
+      if (type === "image" && typeof data.index === 'number') {
         const imageIndex = data.index;
         imageCount++;
-        const newImage: GeneratedImage = {
-          id: `${Date.now()}-${imageCount}`,
-          src: `data:${data.mimeType};base64,${data.imageData}`,
-          prompt: prompt,
-          style: settings.style,
-          aspectRatio: settings.aspectRatio,
-          timestamp: "Just now",
-          isNew: true,
-          isFavorite: false
-        };
-        generatedImages.push(newImage);
-        setGenerations(prev => [newImage, ...prev]);
         
-        // Update pending image slot only if still loading (prevent overwriting)
-        setPendingImages(prev => prev.map((p, i) => 
-          i === imageIndex && p.status === 'loading' ? { ...p, status: 'complete' as const, image: newImage } : p
-        ));
+        // If we have savedImageId, fetch the image from the API (already saved by backend)
+        if (data.savedImageId) {
+          const newImage: GeneratedImage = {
+            id: data.savedImageId,
+            src: `/api/images/${data.savedImageId}/image`,
+            prompt: prompt,
+            style: settings.style,
+            aspectRatio: settings.aspectRatio,
+            timestamp: "Just now",
+            isNew: true,
+            isFavorite: false,
+            alreadySaved: true
+          };
+          generatedImages.push(newImage);
+          setGenerations(prev => [newImage, ...prev]);
+          
+          // Update pending image slot
+          setPendingImages(prev => prev.map((p, i) => 
+            i === imageIndex && p.status === 'loading' ? { ...p, status: 'complete' as const, image: newImage } : p
+          ));
+        } else if (data.imageData && data.mimeType) {
+          // Fallback: use inline image data if provided
+          const newImage: GeneratedImage = {
+            id: `${Date.now()}-${imageCount}`,
+            src: `data:${data.mimeType};base64,${data.imageData}`,
+            prompt: prompt,
+            style: settings.style,
+            aspectRatio: settings.aspectRatio,
+            timestamp: "Just now",
+            isNew: true,
+            isFavorite: false
+          };
+          generatedImages.push(newImage);
+          setGenerations(prev => [newImage, ...prev]);
+        
+          // Update pending image slot only if still loading (prevent overwriting)
+          setPendingImages(prev => prev.map((p, i) => 
+            i === imageIndex && p.status === 'loading' ? { ...p, status: 'complete' as const, image: newImage } : p
+          ));
+        }
       }
 
       if (type === "final_image" && typeof data.index === 'number') {
@@ -1023,7 +1047,8 @@ export default function ImageGenerator() {
             aspectRatio: settings.aspectRatio,
             detail: settings.detail,
             speed: settings.speed,
-            imageCount: parseInt(settings.variations)
+            imageCount: parseInt(settings.variations),
+            isPublic: isPublicImage
           },
           handleEvent
         );
@@ -1037,7 +1062,8 @@ export default function ImageGenerator() {
             enableCuration: settings.aiCuration,
             detail: settings.detail,
             speed: settings.speed,
-            imageCount: parseInt(settings.variations)
+            imageCount: parseInt(settings.variations),
+            isPublic: isPublicImage
           },
           handleEvent
         );

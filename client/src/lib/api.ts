@@ -198,6 +198,7 @@ export interface GenerationEventData {
   score?: { composition: number; detail: number; lighting: number; overall: number };
   error?: string;
   totalImages?: number;
+  savedImageId?: string;
   totalCandidates?: number;
   selectedCount?: number;
 }
@@ -297,7 +298,7 @@ export const generateApi = {
 
   draft: async (
     prompt: string,
-    options: { stylePreset?: string; aspectRatio?: string; detail?: string; speed?: "fast" | "quality"; imageCount?: number } = {},
+    options: { stylePreset?: string; aspectRatio?: string; detail?: string; speed?: "fast" | "quality"; imageCount?: number; isPublic?: boolean } = {},
     onEvent: GenerationEventCallback
   ): Promise<void> => {
     try {
@@ -330,6 +331,7 @@ export const generateApi = {
       detail?: string;
       speed?: "fast" | "quality";
       imageCount?: number;
+      isPublic?: boolean;
     } = {},
     onEvent: GenerationEventCallback
   ): Promise<void> => {

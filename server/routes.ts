@@ -1370,9 +1370,10 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/generate/draft", requireAuth, async (req, res) => {
+  app.post("/api/generate/draft", requireAuth, async (req: any, res) => {
     try {
-      const { prompt, stylePreset = "auto", aspectRatio = "1:1", detail = "medium", speed = "quality", imageCount = 1 } = req.body;
+      const userId = getUserId(req);
+      const { prompt, stylePreset = "auto", aspectRatio = "1:1", detail = "medium", speed = "quality", imageCount = 1, isPublic = false } = req.body;
       if (!prompt || typeof prompt !== "string") {
         return res.status(400).json({ message: "Prompt is required" });
       }
@@ -1421,12 +1422,55 @@ export async function registerRoutes(
           sendEvent("progress", { completed: currentCount, total: count });
           
           if (result) {
-            sendEvent("image", {
-              index,
-              imageData: result.imageData,
-              mimeType: result.mimeType,
-              progress: `${currentCount}/${count}`,
-            });
+            const imageUrl = `data:${result.mimeType};base64,${result.imageData}`;
+            
+            // Save image to database
+            try {
+              const savedImage = await storage.createImage({
+                userId,
+                imageUrl,
+                prompt,
+                style: stylePreset,
+                aspectRatio,
+                generationType: "image",
+                isFavorite: false,
+                isPublic: Boolean(isPublic),
+              });
+              
+              // If image is public, also add to galleryImages for discovery page
+              if (isPublic) {
+                try {
+                  await storage.createGalleryImage({
+                    title: prompt.substring(0, 100),
+                    imageUrl,
+                    creator: userId,
+                    category: stylePreset !== "auto" ? stylePreset : "General",
+                    aspectRatio,
+                    prompt,
+                  });
+                  await invalidateCache('gallery:images');
+                } catch (galleryError) {
+                  console.error("Failed to add draft image to gallery:", galleryError);
+                }
+              }
+              
+              // Send savedImageId for efficient loading
+              sendEvent("image", {
+                index,
+                savedImageId: savedImage.id,
+                mimeType: result.mimeType,
+                progress: `${currentCount}/${count}`,
+              });
+            } catch (saveError) {
+              console.error("Failed to save draft image:", saveError);
+              // Fallback: send image data directly
+              sendEvent("image", {
+                index,
+                imageData: result.imageData,
+                mimeType: result.mimeType,
+                progress: `${currentCount}/${count}`,
+              });
+            }
             return { success: true, index };
           } else {
             sendEvent("image_error", { index, error: "Generation failed" });
@@ -1466,6 +1510,7 @@ export async function registerRoutes(
         detail = "medium",
         speed = "quality",
         imageCount = 1,
+        isPublic = false,
       } = req.body;
 
       if (!prompt || typeof prompt !== "string") {
@@ -1536,7 +1581,27 @@ export async function registerRoutes(
                 aspectRatio,
                 generationType: "image",
                 isFavorite: false,
+                isPublic: Boolean(isPublic),
               });
+              
+              // If image is public, also add to galleryImages for discovery page
+              if (isPublic) {
+                try {
+                  await storage.createGalleryImage({
+                    title: prompt.substring(0, 100),
+                    imageUrl,
+                    creator: userId,
+                    category: stylePreset !== "auto" ? stylePreset : "General",
+                    aspectRatio,
+                    prompt,
+                  });
+                  // Invalidate gallery cache so new image appears immediately
+                  await invalidateCache('gallery:images');
+                  console.log(`[Premium Gen] Image ${index} added to public gallery`);
+                } catch (galleryError) {
+                  console.error("Failed to add image to gallery:", galleryError);
+                }
+              }
               
               console.log(`[Premium Gen] Image ${index} saved with ID ${savedImage.id}, sending to client...`);
               // Send small event with just the ID - frontend will fetch the image separately
