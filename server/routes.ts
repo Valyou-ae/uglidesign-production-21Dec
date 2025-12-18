@@ -1213,6 +1213,84 @@ export async function registerRoutes(
     }
   });
 
+  // ============== STYLE TRANSFER ROUTES ==============
+
+  app.get("/api/style-transfer/presets", async (_req, res) => {
+    try {
+      const { getStylePresets, getStylePresetsByCategory } = await import("./services/styleTransfer");
+      const presets = getStylePresets();
+      const byCategory = getStylePresetsByCategory();
+      res.json({ presets, byCategory });
+    } catch (error) {
+      console.error("Style presets error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.post("/api/style-transfer/preset", generationRateLimiter, async (req: any, res) => {
+    try {
+      const { contentImage, presetId, options } = req.body;
+
+      if (!contentImage || !presetId) {
+        return res.status(400).json({ message: "Content image and preset ID are required" });
+      }
+
+      const { transferStyleFromPreset } = await import("./services/styleTransfer");
+
+      const styleOptions = {
+        styleStrength: options?.styleStrength ?? 0.7,
+        preserveContent: options?.preserveContent ?? 0.6,
+        outputQuality: options?.outputQuality ?? "high"
+      };
+
+      const result = await transferStyleFromPreset(contentImage, presetId, styleOptions);
+
+      if (!result.success) {
+        return res.status(500).json({ message: result.error || "Style transfer failed" });
+      }
+
+      res.json({ 
+        success: true, 
+        image: `data:image/png;base64,${result.imageBase64}` 
+      });
+    } catch (error) {
+      console.error("Style transfer preset error:", error);
+      res.status(500).json({ message: "Style transfer failed" });
+    }
+  });
+
+  app.post("/api/style-transfer/custom", generationRateLimiter, async (req: any, res) => {
+    try {
+      const { contentImage, styleImage, options } = req.body;
+
+      if (!contentImage || !styleImage) {
+        return res.status(400).json({ message: "Both content and style images are required" });
+      }
+
+      const { transferStyleFromImage } = await import("./services/styleTransfer");
+
+      const styleOptions = {
+        styleStrength: options?.styleStrength ?? 0.7,
+        preserveContent: options?.preserveContent ?? 0.6,
+        outputQuality: options?.outputQuality ?? "high"
+      };
+
+      const result = await transferStyleFromImage(contentImage, styleImage, styleOptions);
+
+      if (!result.success) {
+        return res.status(500).json({ message: result.error || "Style transfer failed" });
+      }
+
+      res.json({ 
+        success: true, 
+        image: `data:image/png;base64,${result.imageBase64}` 
+      });
+    } catch (error) {
+      console.error("Style transfer custom error:", error);
+      res.status(500).json({ message: "Style transfer failed" });
+    }
+  });
+
   // ============== AFFILIATE ROUTES ==============
 
   app.get("/api/affiliate/stats", requireAuth, async (req: any, res) => {
