@@ -100,7 +100,7 @@ export async function initializeGoogleAuth(): Promise<boolean> {
         cancel_on_tap_outside: false,
         context: "signin",
         itp_support: true,
-        use_fedcm_for_prompt: true,
+        use_fedcm_for_prompt: false,
         ux_mode: "popup",
         intermediate_iframe_close_callback: () => {
           console.log("Google One Tap closed");
