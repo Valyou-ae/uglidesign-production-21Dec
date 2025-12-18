@@ -42,6 +42,7 @@ export function useImages() {
     mutationFn: (id: string) => imagesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
     },
   });
 
@@ -49,6 +50,7 @@ export function useImages() {
     mutationFn: ({ id, isPublic }: { id: string; isPublic: boolean }) => imagesApi.setVisibility(id, isPublic),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
     },
   });
 

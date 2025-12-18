@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   Wand2, 
   Sparkles, 
@@ -225,6 +225,7 @@ const PROMPT_SUGGESTIONS = [
 
 
 export default function ImageGenerator() {
+  const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
   const [status, setStatus] = useState<GenerationStatus>("idle");
   const [generations, setGenerations] = useState<GeneratedImage[]>([]);
@@ -562,6 +563,7 @@ export default function ImageGenerator() {
         title: confirmedIsPublic ? "Image is now Public" : "Image is now Private", 
         description: confirmedIsPublic ? "This image will appear in the public gallery." : "This image is only visible to you." 
       });
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
     } catch (error) {
       // Rollback on error
       setGenerations(prev => prev.map(g => g.id === id ? { ...g, isPublic: currentIsPublic } : g));
@@ -696,6 +698,7 @@ export default function ImageGenerator() {
       setGenerations(prev => prev.filter(g => g.id !== id));
       setImageToDelete(null);
       toast({ title: "Image Deleted", description: "The image has been removed." });
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
     } catch (error) {
       setImageToDelete(null);
       toast({ title: "Delete Failed", description: error instanceof Error ? error.message : "Could not delete image.", variant: "destructive" });
