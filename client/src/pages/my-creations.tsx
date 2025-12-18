@@ -922,11 +922,11 @@ export default function MyCreations() {
               onClick={e => e.stopPropagation()}
             >
               {/* Left: Image */}
-              <div className="flex-1 bg-black/60 flex items-center justify-center p-4 md:p-6 relative group overflow-hidden min-h-[300px] md:min-h-0">
+              <div className="md:flex-1 bg-black/60 flex items-center justify-center p-4 md:p-6 relative group overflow-hidden">
                 <img 
                   src={selectedItem.src} 
                   alt={selectedItem.name} 
-                  className="w-auto h-auto max-w-full max-h-[70vh] object-contain rounded-lg" 
+                  className="max-w-full max-h-[40vh] md:max-h-[80vh] object-contain rounded-lg" 
                 />
                 <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                    <Button size="icon" className="rounded-full bg-black/50 text-white border-0 hover:bg-black/70">
