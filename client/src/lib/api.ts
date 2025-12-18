@@ -783,6 +783,31 @@ export const galleryApi = {
     }),
 };
 
+// Daily Inspiration API
+export interface DailyInspiration {
+  id: string;
+  title: string;
+  prompt: string;
+  imageUrl: string | null;
+  category: string;
+  tags: string[] | null;
+  difficulty: string | null;
+  featured: boolean | null;
+  activeDate: string;
+  createdAt: string;
+}
+
+export const inspirationsApi = {
+  getAll: (limit?: number) =>
+    fetchApi<{ inspirations: DailyInspiration[] }>(`/inspirations${limit ? `?limit=${limit}` : ""}`),
+
+  getToday: () =>
+    fetchApi<DailyInspiration>("/inspirations/today"),
+
+  getFeatured: (limit?: number) =>
+    fetchApi<{ inspirations: DailyInspiration[] }>(`/inspirations/featured${limit ? `?limit=${limit}` : ""}`),
+};
+
 // Background Removal API
 export const backgroundRemovalApi = {
   removeBackground: async (image: string, options: BackgroundRemovalOptions): Promise<{ success: boolean; result: BackgroundRemovalResult; message?: string }> => {
