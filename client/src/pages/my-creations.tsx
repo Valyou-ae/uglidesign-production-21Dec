@@ -965,10 +965,6 @@ export default function MyCreations() {
                       <span className="text-xs font-medium text-foreground">{selectedItem.aspectRatio}</span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-xs text-muted-foreground">Size</span>
-                      <span className="text-xs font-medium text-foreground font-mono">{selectedItem.size}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
                       <span className="text-xs text-muted-foreground">Date Created</span>
                       <span className="text-xs font-medium text-foreground">{selectedItem.date} at {selectedItem.time}</span>
                     </div>
