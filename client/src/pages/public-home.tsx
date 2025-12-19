@@ -168,7 +168,7 @@ function JustifiedGalleryCard({ item, rowHeight, index, onLike, isLoggedIn }: { 
                 className={cn(
                   "w-full h-full object-cover transition-all duration-500 group-hover:scale-105",
                   imageLoaded ? "opacity-100" : "opacity-0",
-                  !isLoggedIn && !item.isGenerated && "grayscale group-hover:grayscale-0"
+                  !item.isGenerated && "grayscale group-hover:grayscale-0"
                 )}
               />
               {!imageLoaded && (
