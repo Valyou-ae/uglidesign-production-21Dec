@@ -23,7 +23,9 @@ import {
   Download,
   Sparkles,
   MessageCircle,
-  FolderOpen
+  FolderOpen,
+  History,
+  ChevronRight
 } from "lucide-react";
 
 interface OptionChip {
@@ -242,6 +244,72 @@ function TypingIndicator() {
   );
 }
 
+interface ChatSession {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function ChatHistorySidebar({ 
+  sessions, 
+  currentSessionId, 
+  onSelectSession,
+  isLoading
+}: { 
+  sessions: ChatSession[];
+  currentSessionId: string | null;
+  onSelectSession: (sessionId: string) => void;
+  isLoading: boolean;
+}) {
+  return (
+    <aside className="w-72 border-l border-white/10 bg-background/50 flex flex-col h-full" data-testid="sidebar-chat-history">
+      <div className="p-4 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <History className="h-5 w-5 text-muted-foreground" />
+          <h2 className="font-semibold text-sm">Chat History</h2>
+        </div>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="p-2 space-y-1">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-sm">
+              No previous chats
+            </div>
+          ) : (
+            sessions.map((session) => (
+              <button
+                key={session.id}
+                onClick={() => onSelectSession(session.id)}
+                className={cn(
+                  "w-full text-left p-3 rounded-lg transition-colors group",
+                  "hover:bg-white/5",
+                  currentSessionId === session.id && "bg-primary/10 border border-primary/20"
+                )}
+                data-testid={`session-item-${session.id}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-sm truncate flex-1">
+                    {session.name}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(session.createdAt).toLocaleDateString()}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      </ScrollArea>
+    </aside>
+  );
+}
+
 export default function ChatStudio() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -255,8 +323,58 @@ export default function ChatStudio() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
+    queryKey: ["/api/chat/sessions"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/chat/sessions");
+      return res.json();
+    },
+    enabled: !!user
+  });
+  
+  const loadSession = async (selectedSessionId: string) => {
+    try {
+      const res = await apiRequest("GET", `/api/chat/sessions/${selectedSessionId}`);
+      const data = await res.json();
+      
+      if (data.session) {
+        setSessionId(data.session.id);
+        setProjectId(data.session.projectId);
+        setProjectName(data.session.name);
+        
+        const loadedMessages: ChatMessageType[] = (data.messages || []).map((msg: any) => ({
+          id: msg.id,
+          role: msg.role,
+          content: msg.content,
+          options: msg.options,
+          imageUrl: msg.imageId ? undefined : undefined,
+          enhancedPrompt: msg.enhancedPrompt,
+          timestamp: new Date(msg.createdAt)
+        }));
+        
+        if (loadedMessages.length === 0) {
+          const greeting: ChatMessageType = {
+            id: '1',
+            role: 'assistant',
+            content: "Hi! I'm your AI creative assistant. What would you like to create today?",
+            options: INITIAL_OPTIONS,
+            timestamp: new Date()
+          };
+          setMessages([greeting]);
+        } else {
+          setMessages(loadedMessages);
+        }
+        
+        setStage('initial');
+      }
+    } catch (error) {
+      console.error("Failed to load session:", error);
+    }
+  };
 
   const createSessionMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -269,6 +387,7 @@ export default function ChatStudio() {
         setProjectId(data.projectId);
         setProjectName(data.session.name);
       }
+      queryClient.invalidateQueries({ queryKey: ["/api/chat/sessions"] });
     }
   });
 
@@ -299,8 +418,12 @@ export default function ChatStudio() {
       });
       const genData = await genRes.json();
       
+      if (!genRes.ok) {
+        throw new Error(genData.message || "Image generation failed");
+      }
+      
       if (!genData.success || !genData.image) {
-        throw new Error("Generation failed");
+        throw new Error(genData.message || "No image was generated");
       }
       
       // Convert base64 to data URL
@@ -317,6 +440,10 @@ export default function ChatStudio() {
         isPublic: false
       });
       const savedData = await saveRes.json();
+      
+      if (!saveRes.ok) {
+        console.error("Failed to save image:", savedData.message);
+      }
       
       return {
         imageUrl,
@@ -377,92 +504,93 @@ export default function ChatStudio() {
     addUserMessage(content);
     setIsLoading(true);
 
-    await new Promise(resolve => setTimeout(resolve, 800));
+    if (!sessionId) {
+      addAgentMessage(
+        "Setting up your session... Please try again in a moment.",
+        INITIAL_OPTIONS
+      );
+      setIsLoading(false);
+      return;
+    }
 
-    if (stage === 'initial') {
-      setSelectedSubject(content);
-      setStage('style');
-      addAgentMessage(
-        `Great choice! A ${content} sounds amazing. What style would you like for it?`,
-        STYLE_OPTIONS
-      );
-    } else if (stage === 'style') {
-      setSelectedStyle(content);
-      setStage('mood');
-      addAgentMessage(
-        `${content.charAt(0).toUpperCase() + content.slice(1)} style - excellent! Now, what mood or atmosphere should it have?`,
-        MOOD_OPTIONS
-      );
-    } else if (stage === 'mood') {
-      setSelectedMood(content);
-      setStage('generating');
-      addAgentMessage(
-        `Perfect! I'm now generating your ${selectedSubject} in ${selectedStyle} style with a ${content} mood. This will take a moment...`
-      );
+    const isFirstMessage = stage === 'initial' && !selectedSubject;
+    
+    if (isFirstMessage) {
+      apiRequest("POST", `/api/chat/sessions/${sessionId}/generate-name`, { firstMessage: content })
+        .then(res => res.json())
+        .then(data => {
+          if (data.name) {
+            setProjectName(data.name);
+            queryClient.invalidateQueries({ queryKey: ["/api/chat/sessions"] });
+          }
+        })
+        .catch(err => console.error("Failed to generate smart name:", err));
+    }
+    
+    try {
+      const chatMessages = messages
+        .filter(m => m.id !== '1')
+        .map(m => ({ role: m.role, content: m.content }));
+      chatMessages.push({ role: 'user' as const, content });
       
-      const enhancedPrompt = `A ${content} ${selectedSubject}, ${selectedStyle} style, professional photography, 8k resolution, highly detailed, volumetric lighting, cinematic composition`;
+      const res = await apiRequest("POST", `/api/chat/sessions/${sessionId}/chat`, {
+        messages: chatMessages,
+        context: { subject: selectedSubject, style: selectedStyle, mood: selectedMood }
+      });
+      const aiResponse = await res.json();
       
-      try {
-        const result = await generateImageMutation.mutateAsync(enhancedPrompt);
+      if (aiResponse.shouldGenerateImage && aiResponse.imagePrompt) {
+        addAgentMessage("Creating your image...");
         
-        setStage('post-generation');
-        addAgentMessage(
-          "Here's your generated image! What would you like to do next?",
-          [
+        try {
+          const result = await generateImageMutation.mutateAsync(aiResponse.imagePrompt);
+          
+          setStage('post-generation');
+          const postGenOptions: OptionChip[] = [
             { label: 'Create Variation', icon: '🔄', value: 'variation', type: 'quick' },
             { label: 'Different Style', icon: '🎨', value: 'new-style', type: 'quick' },
             { label: 'New Subject', icon: '➕', value: 'new', type: 'quick' },
-            { label: 'Refine This', icon: '✏️', value: 'refine', type: 'quick' },
             { label: "I'm Done", icon: '✓', value: 'done', type: 'quick' }
-          ],
-          result.imageUrl,
-          result.enhancedPrompt || enhancedPrompt,
-          result.imageId
-        );
-        queryClient.invalidateQueries({ queryKey: ["/api/images"] });
-      } catch (error) {
-        addAgentMessage("I had trouble generating the image. Let's try again with different settings.", INITIAL_OPTIONS);
-        setStage('initial');
-      }
-    } else if (stage === 'post-generation') {
-      if (content === 'done') {
-        addAgentMessage("Great session! Your images have been saved to your creations. Come back anytime to create more!");
-      } else if (content === 'new') {
-        setStage('initial');
-        setSelectedSubject('');
-        setSelectedStyle('');
-        setSelectedMood('');
-        addAgentMessage("Let's start fresh! What would you like to create?", INITIAL_OPTIONS);
-      } else if (content === 'new-style') {
-        setStage('style');
-        addAgentMessage(`Let's try a different style for your ${selectedSubject}. Which style would you like?`, STYLE_OPTIONS);
-      } else {
-        addAgentMessage(
-          "I'll work on that for you. Generating a variation...",
-        );
-        
-        const variationPrompt = `A variation of ${selectedMood} ${selectedSubject}, ${selectedStyle} style, professional photography, 8k resolution, highly detailed, volumetric lighting, cinematic composition`;
-        
-        try {
-          const result = await generateImageMutation.mutateAsync(variationPrompt);
+          ];
+          
           addAgentMessage(
-            "Here's a new variation! What do you think?",
-            [
-              { label: 'Keep This', icon: '👍', value: 'keep', type: 'quick' },
-              { label: 'Try Again', icon: '🔄', value: 'variation', type: 'quick' },
-              { label: 'New Subject', icon: '➕', value: 'new', type: 'quick' },
-              { label: "I'm Done", icon: '✓', value: 'done', type: 'quick' }
-            ],
+            aiResponse.message || "Here's your image! What would you like to do next?",
+            postGenOptions,
             result.imageUrl,
-            result.enhancedPrompt || variationPrompt,
+            result.enhancedPrompt || aiResponse.imagePrompt,
             result.imageId
           );
           queryClient.invalidateQueries({ queryKey: ["/api/images"] });
         } catch (error) {
-          addAgentMessage("I had trouble generating the variation. Let's try something different.", INITIAL_OPTIONS);
-          setStage('initial');
+          const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+          addAgentMessage(
+            `I couldn't generate the image: ${errorMessage}. Would you like to try something different?`
+          );
+        }
+      } else {
+        const options: OptionChip[] | undefined = aiResponse.suggestedOptions?.map(
+          (opt: { label: string; icon: string; value: string }) => ({
+            ...opt,
+            type: 'quick' as const
+          })
+        );
+        
+        addAgentMessage(aiResponse.message, options);
+        
+        if (stage === 'initial' && !selectedSubject && content) {
+          setSelectedSubject(content);
+        } else if (selectedSubject && !selectedStyle) {
+          setSelectedStyle(content);
+        } else if (selectedSubject && selectedStyle && !selectedMood) {
+          setSelectedMood(content);
         }
       }
+    } catch (error) {
+      console.error("Chat error:", error);
+      addAgentMessage(
+        "I'm having trouble connecting. What would you like to create?",
+        INITIAL_OPTIONS
+      );
     }
 
     setIsLoading(false);
@@ -585,6 +713,15 @@ export default function ChatStudio() {
           </div>
         </div>
       </main>
+      
+      {showHistory && (
+        <ChatHistorySidebar
+          sessions={sessionsData?.sessions || []}
+          currentSessionId={sessionId}
+          onSelectSession={loadSession}
+          isLoading={sessionsLoading}
+        />
+      )}
     </div>
   );
 }

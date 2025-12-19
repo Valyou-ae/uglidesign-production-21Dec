@@ -959,3 +959,173 @@ Generate a beautiful, creative seamless pattern based on this design:`;
     return null;
   }
 }
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+interface ChatResponse {
+  message: string;
+  shouldGenerateImage: boolean;
+  imagePrompt?: string;
+  suggestedOptions?: { label: string; icon: string; value: string }[];
+}
+
+/**
+ * Contextual AI chat for the creative studio
+ * Guides users through image creation naturally
+ */
+export async function chatWithCreativeAgent(
+  messages: ChatMessage[],
+  currentContext: { subject?: string; style?: string; mood?: string }
+): Promise<ChatResponse> {
+  try {
+    const client = keyManager.getNextClient();
+    
+    const systemPrompt = `You are a friendly AI creative assistant helping users create images. Your job is to:
+1. Understand what the user wants to create
+2. Help them refine their vision with style and mood preferences
+3. When you have enough context (subject + style + mood), trigger image generation
+
+Current context:
+- Subject: ${currentContext.subject || 'Not yet specified'}
+- Style: ${currentContext.style || 'Not yet specified'}
+- Mood: ${currentContext.mood || 'Not yet specified'}
+
+Guidelines:
+- Be conversational and encouraging
+- If the user mentions what they want to create, acknowledge it and ask about style preferences
+- If they mention a style, acknowledge it and ask about mood/atmosphere
+- If they have subject, style, and mood, you should trigger image generation
+- Keep responses concise (1-2 sentences max)
+- Suggest options when helpful
+
+Respond in JSON format:
+{
+  "message": "Your friendly response",
+  "shouldGenerateImage": false or true,
+  "imagePrompt": "Full prompt for image generation (only if shouldGenerateImage is true)",
+  "suggestedOptions": [{"label": "Option", "icon": "emoji", "value": "value"}] (optional, max 4 options)
+}`;
+
+    const conversationHistory = messages.map(m => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }]
+    }));
+    
+    const response = await client.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [
+        { role: "user", parts: [{ text: systemPrompt }] },
+        { role: "model", parts: [{ text: "I understand. I'll help guide the user through creating their perfect image." }] },
+        ...conversationHistory
+      ],
+    });
+    
+    const candidates = response.candidates;
+    if (!candidates || candidates.length === 0) {
+      return {
+        message: "I'd love to help you create something! What would you like to make today?",
+        shouldGenerateImage: false,
+        suggestedOptions: [
+          { label: "Portrait", icon: "👤", value: "portrait" },
+          { label: "Landscape", icon: "🌄", value: "landscape" },
+          { label: "Fantasy", icon: "🐉", value: "fantasy" },
+          { label: "Abstract", icon: "🎨", value: "abstract" }
+        ]
+      };
+    }
+    
+    const content = candidates[0].content;
+    if (!content || !content.parts || !content.parts[0].text) {
+      return {
+        message: "What kind of image would you like to create?",
+        shouldGenerateImage: false
+      };
+    }
+    
+    const text = content.parts[0].text;
+    keyManager.reportSuccess(client);
+    
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          message: parsed.message || "Let's create something amazing!",
+          shouldGenerateImage: parsed.shouldGenerateImage || false,
+          imagePrompt: parsed.imagePrompt,
+          suggestedOptions: parsed.suggestedOptions
+        };
+      }
+    } catch {
+      return {
+        message: text.slice(0, 200),
+        shouldGenerateImage: false
+      };
+    }
+    
+    return {
+      message: text.slice(0, 200),
+      shouldGenerateImage: false
+    };
+  } catch (error) {
+    console.error("[CreativeChat] Generation failed:", error);
+    return {
+      message: "I'm ready to help you create! What would you like to make?",
+      shouldGenerateImage: false
+    };
+  }
+}
+
+/**
+ * Generate a smart, concise name for a chat session based on the first user message
+ */
+export async function generateChatSessionName(firstMessage: string): Promise<string> {
+  try {
+    const client = keyManager.getNextClient();
+    
+    const response = await client.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `Generate a very short, creative name (3-5 words max) for a creative image generation session based on this user request. Only respond with the name, nothing else.
+
+User request: "${firstMessage}"
+
+Examples of good names:
+- "Sunset Portrait Session"
+- "Fantasy Dragon Art"  
+- "Minimal Logo Design"
+- "Cozy Cafe Vibes"`,
+            },
+          ],
+        },
+      ],
+    });
+    
+    const candidates = response.candidates;
+    if (!candidates || candidates.length === 0) {
+      console.error("[ChatName] No candidates in response");
+      return `Creative Session ${new Date().toLocaleDateString()}`;
+    }
+    
+    const content = candidates[0].content;
+    if (!content || !content.parts || !content.parts[0].text) {
+      console.error("[ChatName] No text in response");
+      return `Creative Session ${new Date().toLocaleDateString()}`;
+    }
+    
+    const name = content.parts[0].text.trim().replace(/^["']|["']$/g, '');
+    keyManager.reportSuccess(client);
+    
+    return name.length > 50 ? name.slice(0, 47) + '...' : name;
+  } catch (error) {
+    console.error("[ChatName] Generation failed:", error);
+    return `Creative Session ${new Date().toLocaleDateString()}`;
+  }
+}

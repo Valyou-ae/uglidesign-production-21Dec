@@ -1455,6 +1455,8 @@ export async function registerRoutes(
     analyzePrompt,
     enhancePrompt,
     generateImage: generateGeminiImage,
+    generateChatSessionName,
+    chatWithCreativeAgent,
   } = await import("./services/gemini");
 
   // ============== GUEST IMAGE GENERATION (NO AUTH) ==============
@@ -3500,6 +3502,46 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Update chat session error:", error);
       res.status(500).json({ message: "Failed to update chat session" });
+    }
+  });
+
+  app.post("/api/chat/sessions/:id/generate-name", requireAuth, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const { id } = req.params;
+      const { firstMessage } = req.body;
+      
+      if (!firstMessage) {
+        return res.status(400).json({ message: "First message is required" });
+      }
+      
+      const smartName = await generateChatSessionName(firstMessage);
+      const session = await storage.updateChatSession(id, userId, { name: smartName });
+      
+      if (!session) {
+        return res.status(404).json({ message: "Chat session not found" });
+      }
+      
+      res.json({ session, name: smartName });
+    } catch (error) {
+      console.error("Generate session name error:", error);
+      res.status(500).json({ message: "Failed to generate session name" });
+    }
+  });
+  
+  app.post("/api/chat/sessions/:id/chat", requireAuth, async (req: any, res) => {
+    try {
+      const { messages, context } = req.body;
+      
+      if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ message: "Messages array is required" });
+      }
+      
+      const response = await chatWithCreativeAgent(messages, context || {});
+      res.json(response);
+    } catch (error) {
+      console.error("Chat session error:", error);
+      res.status(500).json({ message: "Failed to process chat message" });
     }
   });
 
