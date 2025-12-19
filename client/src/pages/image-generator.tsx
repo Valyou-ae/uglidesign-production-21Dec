@@ -1318,6 +1318,132 @@ export default function ImageGenerator() {
       
       <main className="flex-1 flex flex-col relative h-full overflow-hidden bg-background text-foreground">
         
+        {/* PERSONALIZED HEADER SECTION */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="hidden md:block px-6 pt-5 pb-3 bg-gradient-to-b from-[#EC4899]/5 to-transparent"
+        >
+          <div className="max-w-[1800px] mx-auto w-full">
+            <div className="flex items-center justify-between gap-4">
+              {/* Left: Greeting & Welcome */}
+              <div className="flex items-center gap-4">
+                {user ? (
+                  <>
+                    <div className="relative">
+                      <Avatar className="h-12 w-12 ring-2 ring-[#EC4899]/30 ring-offset-2 ring-offset-background">
+                        <AvatarImage src={user.profileImageUrl || undefined} alt={user.username || "User"} />
+                        <AvatarFallback className="bg-gradient-to-br from-[#EC4899] to-[#A855F7] text-white font-semibold">
+                          {(user.displayName || user.username || "U").charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-[#16A34A] rounded-full border-2 border-background" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                        Welcome back, {user.displayName || user.username || "Creator"}! 
+                        <motion.span 
+                          animate={{ rotate: [0, 14, -8, 14, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
+                          className="inline-block"
+                        >
+                          👋
+                        </motion.span>
+                      </h2>
+                      <p className="text-sm text-muted-foreground">Ready to create something amazing today?</p>
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      Welcome to the Studio! 
+                      <Sparkles className="h-5 w-5 text-[#EC4899]" />
+                    </h2>
+                    <p className="text-sm text-muted-foreground">Sign in to save your creations and unlock more features</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Right: Quick Stats */}
+              {user && (
+                <div className="flex items-center gap-3">
+                  {/* Credits Display */}
+                  <div className="flex items-center gap-2 px-3 py-2 bg-background/60 rounded-xl border border-border/50">
+                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#EC4899]/20 to-[#A855F7]/20 flex items-center justify-center">
+                      <Coins className="h-4 w-4 text-[#EC4899]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Credits</p>
+                      <p className="text-sm font-semibold text-foreground">{credits ?? "..."}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Creations Count */}
+                  <div className="flex items-center gap-2 px-3 py-2 bg-background/60 rounded-xl border border-border/50">
+                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#A855F7]/20 to-[#6366F1]/20 flex items-center justify-center">
+                      <ImageIcon className="h-4 w-4 text-[#A855F7]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Creations</p>
+                      <p className="text-sm font-semibold text-foreground">{generations.length}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Favorites Count */}
+                  {savedPrompts.length > 0 && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-background/60 rounded-xl border border-border/50">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#FB923C]/20 to-[#F97316]/20 flex items-center justify-center">
+                        <Bookmark className="h-4 w-4 text-[#FB923C]" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Saved</p>
+                        <p className="text-sm font-semibold text-foreground">{savedPrompts.length}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Quick Recent Prompts */}
+            {user && savedPrompts.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
+                className="mt-4 flex items-center gap-2"
+              >
+                <span className="text-xs text-muted-foreground shrink-0">Quick access:</span>
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {savedPrompts.slice(0, 4).map((fav: PromptFavorite) => (
+                    <button
+                      key={fav.id}
+                      onClick={() => {
+                        setPrompt(fav.prompt);
+                        setSettings(prev => ({
+                          ...prev,
+                          style: fav.style || prev.style,
+                          aspectRatio: fav.aspectRatio || prev.aspectRatio,
+                          quality: fav.quality || prev.quality,
+                          detail: fav.detail || prev.detail,
+                          speed: fav.speed || prev.speed,
+                        }));
+                        toast({ title: "Prompt loaded!", description: `"${fav.name}" is ready to generate.` });
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 hover:bg-muted rounded-lg border border-border/50 hover:border-[#EC4899]/30 transition-all text-xs text-muted-foreground hover:text-foreground shrink-0"
+                      data-testid={`button-quick-prompt-${fav.id}`}
+                    >
+                      <Bookmark className="h-3 w-3 text-[#EC4899]" />
+                      <span className="max-w-[120px] truncate">{fav.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+        
         {/* TOP SECTION: PROMPT BAR (Expandable on Focus/Type) */}
         <div 
           ref={promptContainerRef}
