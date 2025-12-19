@@ -233,20 +233,12 @@ export default function BackgroundRemover() {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       
-      // Auto-detect mode: 1 file = single mode, multiple = batch mode
-      if (files.length === 1) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          if (event.target?.result) {
-            setSelectedImage(event.target.result as string);
-            setState("configuring");
-            setProcessedImage(null);
-            setErrorMessage(null);
-          }
-        };
-        reader.readAsDataURL(files[0]);
-      } else {
-        // Multiple files - batch mode
+      // If already in batch mode (batchImages has items), always add to batch
+      // Otherwise: 1 file = single mode, multiple = batch mode
+      const shouldAddToBatch = batchImages.length > 0 || files.length > 1;
+      
+      if (shouldAddToBatch) {
+        // Add to batch mode
         const remainingSlots = MAX_BATCH_IMAGES - batchImages.length;
         const filesToProcess = files.slice(0, remainingSlots);
 
@@ -276,6 +268,18 @@ export default function BackgroundRemover() {
         if (filesToProcess.length > 0) {
           setState("configuring");
         }
+      } else {
+        // Single file, no existing batch - single mode
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            setSelectedImage(event.target.result as string);
+            setState("configuring");
+            setProcessedImage(null);
+            setErrorMessage(null);
+          }
+        };
+        reader.readAsDataURL(files[0]);
       }
     }
     if (e.target) {
@@ -364,20 +368,12 @@ export default function BackgroundRemover() {
     
     if (files.length === 0) return;
     
-    // Auto-detect mode: 1 file = single mode, multiple = batch mode
-    if (files.length === 1) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setSelectedImage(event.target.result as string);
-          setState("configuring");
-          setProcessedImage(null);
-          setErrorMessage(null);
-        }
-      };
-      reader.readAsDataURL(files[0]);
-    } else {
-      // Multiple files - batch mode
+    // If already in batch mode (batchImages has items), always add to batch
+    // Otherwise: 1 file = single mode, multiple = batch mode
+    const shouldAddToBatch = batchImages.length > 0 || files.length > 1;
+    
+    if (shouldAddToBatch) {
+      // Add to batch mode
       const remainingSlots = MAX_BATCH_IMAGES - batchImages.length;
       const filesToProcess = files.slice(0, remainingSlots);
 
@@ -407,6 +403,18 @@ export default function BackgroundRemover() {
       if (filesToProcess.length > 0) {
         setState("configuring");
       }
+    } else {
+      // Single file, no existing batch - single mode
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setSelectedImage(event.target.result as string);
+          setState("configuring");
+          setProcessedImage(null);
+          setErrorMessage(null);
+        }
+      };
+      reader.readAsDataURL(files[0]);
     }
   };
 
