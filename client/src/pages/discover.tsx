@@ -1981,7 +1981,7 @@ export default function Discover() {
     <div className="h-screen bg-background flex font-sans text-foreground overflow-hidden">
       <Sidebar className="hidden md:flex border-r border-border/50" />
       
-      <main className="flex-1 flex flex-col relative h-full overflow-y-auto bg-[#F8F8F8] dark:bg-[#0A0A0B] text-[#18181B] dark:text-[#FAFAFA] pb-20 md:pb-0">
+      <main className="flex-1 flex flex-col relative h-full overflow-y-auto bg-[#F8F8F8] dark:bg-[#1a1a2e] text-[#18181B] dark:text-[#FAFAFA] pb-20 md:pb-0">
         
         <div className="px-4 md:px-8 lg:px-12 py-6 max-w-[1600px] mx-auto w-full">
           <div className="flex items-center gap-3 mb-6">
