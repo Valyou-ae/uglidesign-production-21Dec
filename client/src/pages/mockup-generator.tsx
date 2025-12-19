@@ -1573,45 +1573,48 @@ export default function MockupGenerator() {
                               )}
                             </div>
 
-                            {/* Section 2: Brand Style */}
-                            <div className="bg-card rounded-xl border border-border p-4 sm:p-6">
-                              <div className="flex items-center gap-2 mb-4">
+                            {/* Section 2: Brand Style - Compact Round Icons */}
+                            <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
+                              <div className="flex items-center gap-2 mb-3">
                                 <Sparkles className="h-4 w-4 text-primary" />
                                 <h3 className="text-sm font-bold text-foreground">Brand Style</h3>
                                 {selectedStyle && <Badge variant="secondary" className="text-[10px] ml-auto">{BRAND_STYLES.find(s => s.id === selectedStyle)?.name}</Badge>}
                               </div>
                               
-                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                                 {BRAND_STYLES.map((style) => {
                                   const isSelected = selectedStyle === style.id;
                                   return (
-                                    <div 
-                                      key={style.id} 
-                                      onClick={() => setSelectedStyle(style.id)}
-                                      data-testid={`style-card-${style.id}`}
-                                      className={cn(
-                                        "group relative bg-muted/30 rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-200 hover:shadow-md active:scale-[0.98]",
-                                        isSelected 
-                                          ? "border-primary ring-2 ring-primary/20" 
-                                          : "border-transparent hover:border-primary/30"
-                                      )}
-                                    >
-                                      <div className="aspect-[4/3] relative overflow-hidden">
-                                        <img 
-                                          src={style.img} 
-                                          alt={style.name} 
-                                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                                        />
-                                        {isSelected && (
-                                          <div className="absolute top-1.5 right-1.5 bg-primary rounded-full p-1">
-                                            <Check className="h-3 w-3 text-white" />
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="p-2">
-                                        <h4 className="font-medium text-foreground text-xs truncate">{style.name}</h4>
-                                      </div>
-                                    </div>
+                                    <TooltipProvider key={style.id} delayDuration={200}>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <button 
+                                            onClick={() => setSelectedStyle(style.id)}
+                                            data-testid={`style-card-${style.id}`}
+                                            className={cn(
+                                              "relative flex-shrink-0 h-12 w-12 rounded-full overflow-hidden border-2 transition-all duration-200 hover:scale-110 active:scale-95",
+                                              isSelected 
+                                                ? "border-primary ring-2 ring-primary/30 scale-110" 
+                                                : "border-border hover:border-primary/50"
+                                            )}
+                                          >
+                                            <img 
+                                              src={style.img} 
+                                              alt={style.name} 
+                                              className="w-full h-full object-cover" 
+                                            />
+                                            {isSelected && (
+                                              <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                                <Check className="h-4 w-4 text-white drop-shadow-lg" />
+                                              </div>
+                                            )}
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" className="text-xs">
+                                          <p className="font-medium">{style.name}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                   );
                                 })}
                               </div>
