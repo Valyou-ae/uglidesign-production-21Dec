@@ -102,109 +102,111 @@
   }
 }
 
-/* LIGHT MODE */
+/* LIGHT MODE - Vibrant Bold Theme */
 :root {
-  /* Background: #FAFAFA (light) */
-  --background: 0 0% 98%;
-  /* Foreground: #18181B */
-  --foreground: 240 5% 10%;
+  /* Background: #FDF2F8 (light pink) */
+  --background: 327 73% 97%;
+  /* Foreground: #1A1A2E (dark) */
+  --foreground: 240 29% 14%;
 
   /* Card: #FFFFFF */
   --card: 0 0% 100%;
-  --card-foreground: 240 5% 10%;
+  --card-foreground: 240 29% 14%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 240 5% 10%;
+  --popover-foreground: 240 29% 14%;
 
-  /* Primary: #B94E30 (Rust) */
-  --primary: 14 59% 46%;
+  /* Primary: #E91E63 (Pink) */
+  --primary: 340 82% 52%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary: #E3B436 (Gold) */
-  --secondary: 44 76% 55%;
+  /* Secondary: #9C27B0 (Purple) */
+  --secondary: 291 64% 42%;
   --secondary-foreground: 0 0% 100%;
 
-  /* Muted: #F4F4F5 */
-  --muted: 240 5% 96%;
-  --muted-foreground: 240 4% 46%;
+  /* Muted: light pink tinted */
+  --muted: 327 30% 94%;
+  --muted-foreground: 240 29% 40%;
 
-  /* Accent: #E3B436 (Gold) */
-  --accent: 44 76% 55%;
+  /* Accent: #3F51B5 (Indigo) */
+  --accent: 231 48% 48%;
   --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
+  /* Destructive: #FF5722 (Deep Orange) */
+  --destructive: 14 100% 57%;
+  --destructive-foreground: 0 0% 100%;
 
-  /* Border: #E4E4E7 */
-  --border: 240 6% 90%;
-  --input: 240 6% 90%;
-  --ring: 14 59% 46%;
+  /* Border */
+  --border: 327 20% 88%;
+  --input: 327 20% 88%;
+  --ring: 340 82% 52%;
 
   --radius: 0.75rem; /* 12px default radius */
 
-  /* Sidebar: #FFFFFF */
+  /* Sidebar */
   --sidebar: 0 0% 100%;
-  --sidebar-foreground: 240 5% 26%;
-  --sidebar-primary: 14 59% 46%;
+  --sidebar-foreground: 240 29% 26%;
+  --sidebar-primary: 340 82% 52%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 5% 96%;
-  --sidebar-accent-foreground: 14 59% 46%;
-  --sidebar-border: 240 6% 90%;
-  --sidebar-ring: 14 59% 46%;
+  --sidebar-accent: 327 30% 94%;
+  --sidebar-accent-foreground: 340 82% 52%;
+  --sidebar-border: 327 20% 88%;
+  --sidebar-ring: 340 82% 52%;
   
-  /* Chart Colors - UGLI Brand */
-  --chart-1: 14 59% 46%;  /* Rust */
-  --chart-2: 44 76% 55%;  /* Gold */
-  --chart-3: 22 24% 32%;  /* Brown */
-  --chart-4: 142 71% 45%; /* Green */
-  --chart-5: 38 92% 50%;  /* Amber */
+  /* Chart Colors - Vibrant Bold */
+  --chart-1: 340 82% 52%;  /* Pink */
+  --chart-2: 291 64% 42%;  /* Purple */
+  --chart-3: 231 48% 48%;  /* Indigo */
+  --chart-4: 14 100% 57%;  /* Deep Orange */
+  --chart-5: 240 29% 14%;  /* Dark */
 }
 
 .dark {
-  /* Background: #09090B */
-  --background: 240 10% 4%;
+  /* Background: #1A1A2E (dark) */
+  --background: 240 29% 14%;
   --foreground: 0 0% 98%;
 
-  /* Card: #18181B */
-  --card: 240 5% 10%;
+  /* Card: slightly lighter dark */
+  --card: 240 25% 18%;
   --card-foreground: 0 0% 98%;
 
-  --popover: 240 5% 10%;
+  --popover: 240 25% 18%;
   --popover-foreground: 0 0% 98%;
 
-  /* Primary: Rust (darker for dark mode) */
-  --primary: 14 59% 40%;
+  /* Primary: #E91E63 (Pink) */
+  --primary: 340 82% 52%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary: Gold (darker for dark mode) */
-  --secondary: 44 76% 48%;
+  /* Secondary: #9C27B0 (Purple) */
+  --secondary: 291 64% 42%;
   --secondary-foreground: 0 0% 100%;
 
-  /* Muted: #27272A */
-  --muted: 240 4% 16%;
-  --muted-foreground: 240 5% 65%;
+  /* Muted */
+  --muted: 240 20% 22%;
+  --muted-foreground: 240 10% 65%;
 
-  /* Accent: Gold (darker for dark mode) */
-  --accent: 44 76% 48%;
+  /* Accent: #3F51B5 (Indigo) */
+  --accent: 231 48% 48%;
   --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 63% 31%;
-  --destructive-foreground: 0 0% 98%;
+  /* Destructive: #FF5722 */
+  --destructive: 14 100% 50%;
+  --destructive-foreground: 0 0% 100%;
 
-  /* Border: #27272A */
-  --border: 240 4% 16%;
-  --input: 240 4% 16%;
-  --ring: 14 59% 40%;
+  /* Border */
+  --border: 240 20% 22%;
+  --input: 240 20% 22%;
+  --ring: 340 82% 52%;
 
-  /* Sidebar: #18181B */
-  --sidebar: 240 5% 10%;
-  --sidebar-foreground: 240 5% 65%;
-  --sidebar-primary: 14 59% 40%;
+  /* Sidebar */
+  --sidebar: 240 25% 18%;
+  --sidebar-foreground: 240 10% 65%;
+  --sidebar-primary: 340 82% 52%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 4% 16%;
+  --sidebar-accent: 240 20% 22%;
   --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-border: 240 4% 16%;
-  --sidebar-ring: 14 59% 40%;
+  --sidebar-border: 240 20% 22%;
+  --sidebar-ring: 340 82% 52%;
 }
 
 @layer base {
@@ -223,7 +225,7 @@
   }
   
   .text-gradient-brand {
-    @apply bg-gradient-to-r from-[#B94E30] to-[#E3B436] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#E91E63] to-[#9C27B0] bg-clip-text text-transparent;
   }
   
   .card-hover {
@@ -286,10 +288,10 @@
   
   @keyframes tutorial-pulse {
     0%, 100% {
-      box-shadow: 0 0 0 0 rgba(185, 78, 48, 0.4), 0 0 0 0 rgba(227, 180, 54, 0.2);
+      box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.4), 0 0 0 0 rgba(156, 39, 176, 0.2);
     }
     50% {
-      box-shadow: 0 0 0 8px rgba(185, 78, 48, 0), 0 0 0 16px rgba(227, 180, 54, 0);
+      box-shadow: 0 0 0 8px rgba(233, 30, 99, 0), 0 0 0 16px rgba(156, 39, 176, 0);
     }
   }
 }
