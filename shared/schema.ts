@@ -231,6 +231,7 @@ export const dailyInspirations = pgTable("daily_inspirations", {
 export const chatSessions = pgTable("chat_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id).notNull(),
+  projectId: varchar("project_id").references(() => moodBoards.id),
   name: text("name").notNull(),
   preferences: jsonb("preferences").$type<{
     preferredStyles: string[];

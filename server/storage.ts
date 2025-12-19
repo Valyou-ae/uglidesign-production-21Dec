@@ -13,6 +13,8 @@ import {
   galleryImageLikes,
   imageLikes,
   dailyInspirations,
+  chatSessions,
+  chatMessages,
   type User, 
   type InsertUser, 
   type UpdateProfile, 
@@ -35,7 +37,11 @@ import {
   type MoodBoardItem,
   type InsertMoodBoardItem,
   type GalleryImage,
-  type DailyInspiration
+  type DailyInspiration,
+  type ChatSession,
+  type InsertChatSession,
+  type ChatMessage,
+  type InsertChatMessage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, count, gte, lte, sql } from "drizzle-orm";
@@ -145,6 +151,15 @@ export interface IStorage {
   getDailyInspirations(limit?: number): Promise<DailyInspiration[]>;
   getTodaysInspiration(): Promise<DailyInspiration | undefined>;
   getFeaturedInspirations(limit?: number): Promise<DailyInspiration[]>;
+  
+  createChatSession(userId: string, name: string, projectId?: string): Promise<ChatSession>;
+  getChatSessions(userId: string): Promise<ChatSession[]>;
+  getChatSession(sessionId: string, userId: string): Promise<ChatSession | undefined>;
+  updateChatSession(sessionId: string, userId: string, data: Partial<InsertChatSession>): Promise<ChatSession | undefined>;
+  deleteChatSession(sessionId: string, userId: string): Promise<void>;
+  
+  addChatMessage(sessionId: string, message: Omit<InsertChatMessage, 'sessionId'>): Promise<ChatMessage>;
+  getChatMessages(sessionId: string): Promise<ChatMessage[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1192,6 +1207,61 @@ export class DatabaseStorage implements IStorage {
       .where(eq(dailyInspirations.featured, true))
       .orderBy(desc(dailyInspirations.activeDate))
       .limit(limit);
+  }
+
+  async createChatSession(userId: string, name: string, projectId?: string): Promise<ChatSession> {
+    const [session] = await db
+      .insert(chatSessions)
+      .values({ userId, name, projectId: projectId || null })
+      .returning();
+    return session;
+  }
+
+  async getChatSessions(userId: string): Promise<ChatSession[]> {
+    return db
+      .select()
+      .from(chatSessions)
+      .where(eq(chatSessions.userId, userId))
+      .orderBy(desc(chatSessions.updatedAt));
+  }
+
+  async getChatSession(sessionId: string, userId: string): Promise<ChatSession | undefined> {
+    const [session] = await db
+      .select()
+      .from(chatSessions)
+      .where(and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)));
+    return session || undefined;
+  }
+
+  async updateChatSession(sessionId: string, userId: string, data: Partial<InsertChatSession>): Promise<ChatSession | undefined> {
+    const [session] = await db
+      .update(chatSessions)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)))
+      .returning();
+    return session || undefined;
+  }
+
+  async deleteChatSession(sessionId: string, userId: string): Promise<void> {
+    await db.delete(chatMessages).where(eq(chatMessages.sessionId, sessionId));
+    await db.delete(chatSessions).where(and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)));
+  }
+
+  async addChatMessage(sessionId: string, message: Omit<InsertChatMessage, 'sessionId'>): Promise<ChatMessage> {
+    const [chatMessage] = await db
+      .insert(chatMessages)
+      .values({ ...message, sessionId })
+      .returning();
+    await db.update(chatSessions).set({ updatedAt: new Date() }).where(eq(chatSessions.id, sessionId));
+    return chatMessage;
+  }
+
+  async getChatMessages(sessionId: string): Promise<ChatMessage[]> {
+    return db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.sessionId, sessionId))
+      .orderBy(chatMessages.createdAt);
   }
 }
 
