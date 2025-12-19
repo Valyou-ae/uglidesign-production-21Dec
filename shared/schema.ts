@@ -259,6 +259,7 @@ export const chatMessages = pgTable("chat_messages", {
   content: text("content").notNull(),
   options: jsonb("options").$type<{ label: string; icon?: string; value: string; type: string }[]>(),
   imageId: varchar("image_id").references(() => generatedImages.id),
+  originalPrompt: text("original_prompt"),
   enhancedPrompt: text("enhanced_prompt"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [

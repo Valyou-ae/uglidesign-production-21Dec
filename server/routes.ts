@@ -3471,6 +3471,20 @@ export async function registerRoutes(
       
       const messages = await storage.getChatMessages(id);
       
+      // Enrich messages with imageUrl from generatedImages table
+      const enrichedMessages = await Promise.all(
+        messages.map(async (msg) => {
+          if (msg.imageId) {
+            const image = await storage.getImageById(msg.imageId, userId);
+            return {
+              ...msg,
+              imageUrl: image?.imageUrl || null
+            };
+          }
+          return msg;
+        })
+      );
+      
       // Get linked project info if exists
       let project = null;
       if (session.projectId) {
@@ -3480,7 +3494,7 @@ export async function registerRoutes(
         }
       }
       
-      res.json({ session, messages, project });
+      res.json({ session, messages: enrichedMessages, project });
     } catch (error) {
       console.error("Get chat session error:", error);
       res.status(500).json({ message: "Failed to get chat session" });
@@ -3531,13 +3545,13 @@ export async function registerRoutes(
   
   app.post("/api/chat/sessions/:id/chat", requireAuth, async (req: any, res) => {
     try {
-      const { messages, context } = req.body;
+      const { messages, context, attachedImage } = req.body;
       
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ message: "Messages array is required" });
       }
       
-      const response = await chatWithCreativeAgent(messages, context || {});
+      const response = await chatWithCreativeAgent(messages, context || {}, attachedImage || null);
       res.json(response);
     } catch (error) {
       console.error("Chat session error:", error);
@@ -3562,7 +3576,7 @@ export async function registerRoutes(
     try {
       const userId = getUserId(req);
       const { id: sessionId } = req.params;
-      const { role, content, options, imageId, enhancedPrompt } = req.body;
+      const { role, content, options, imageId, originalPrompt, enhancedPrompt } = req.body;
       
       // Verify session belongs to user
       const session = await storage.getChatSession(sessionId, userId);
@@ -3575,6 +3589,7 @@ export async function registerRoutes(
         content,
         options,
         imageId,
+        originalPrompt,
         enhancedPrompt,
       });
       

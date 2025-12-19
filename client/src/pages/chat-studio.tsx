@@ -28,7 +28,8 @@ import {
   History,
   ChevronRight,
   CheckSquare,
-  Square
+  Square,
+  ImagePlus
 } from "lucide-react";
 
 interface OptionChip {
@@ -44,6 +45,7 @@ interface ChatMessageType {
   content: string;
   options?: OptionChip[];
   imageUrl?: string;
+  originalPrompt?: string;
   enhancedPrompt?: string;
   timestamp: Date;
 }
@@ -483,8 +485,20 @@ export default function ChatStudio() {
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(true);
+  const [lastGeneratedImage, setLastGeneratedImage] = useState<{
+    url: string;
+    prompt: string;
+    enhancedPrompt?: string;
+  } | null>(null);
+  const [attachedImage, setAttachedImage] = useState<{
+    file: File;
+    preview: string;
+    base64?: string;
+    isLoading?: boolean;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
     queryKey: ["/api/chat/sessions"],
@@ -510,7 +524,8 @@ export default function ChatStudio() {
           role: msg.role,
           content: msg.content,
           options: msg.options,
-          imageUrl: msg.imageId ? undefined : undefined,
+          imageUrl: msg.imageUrl || undefined,
+          originalPrompt: msg.originalPrompt,
           enhancedPrompt: msg.enhancedPrompt,
           timestamp: new Date(msg.createdAt)
         }));
@@ -524,8 +539,20 @@ export default function ChatStudio() {
             timestamp: new Date()
           };
           setMessages([greeting]);
+          setLastGeneratedImage(null);
         } else {
           setMessages(loadedMessages);
+          // Restore last generated image from loaded messages
+          const lastImageMsg = [...loadedMessages].reverse().find(m => m.imageUrl);
+          if (lastImageMsg) {
+            setLastGeneratedImage({
+              url: lastImageMsg.imageUrl!,
+              prompt: lastImageMsg.originalPrompt || lastImageMsg.enhancedPrompt || 'Generated image',
+              enhancedPrompt: lastImageMsg.enhancedPrompt
+            });
+          } else {
+            setLastGeneratedImage(null);
+          }
         }
         
         setStage('initial');
@@ -546,6 +573,7 @@ export default function ChatStudio() {
         setProjectId(data.projectId);
         setProjectName(data.session.name);
       }
+      setLastGeneratedImage(null);
       queryClient.invalidateQueries({ queryKey: ["/api/chat/sessions"] });
     }
   });
@@ -644,22 +672,23 @@ export default function ChatStudio() {
     return userMessage;
   };
 
-  const addAgentMessage = (content: string, options?: OptionChip[], imageUrl?: string, enhancedPrompt?: string, imageId?: string) => {
+  const addAgentMessage = (content: string, options?: OptionChip[], imageUrl?: string, originalPrompt?: string, enhancedPrompt?: string, imageId?: string) => {
     const agentMessage: ChatMessageType = {
       id: (Date.now() + 1).toString(),
       role: 'assistant',
       content,
       options,
       imageUrl,
+      originalPrompt,
       enhancedPrompt,
       timestamp: new Date()
     };
     setMessages(prev => [...prev, agentMessage]);
-    saveMessageMutation.mutate({ role: 'assistant', content, options, imageId, enhancedPrompt });
+    saveMessageMutation.mutate({ role: 'assistant', content, options, imageId, originalPrompt, enhancedPrompt });
     return agentMessage;
   };
 
-  const processUserInput = async (content: string) => {
+  const processUserInput = async (content: string, imageBase64?: string | null) => {
     addUserMessage(content);
     setIsLoading(true);
 
@@ -694,7 +723,13 @@ export default function ChatStudio() {
       
       const res = await apiRequest("POST", `/api/chat/sessions/${sessionId}/chat`, {
         messages: chatMessages,
-        context: { subject: selectedSubject, style: selectedStyle, mood: selectedMood }
+        context: { 
+          subject: selectedSubject, 
+          style: selectedStyle, 
+          mood: selectedMood,
+          lastImage: lastGeneratedImage
+        },
+        attachedImage: imageBase64 || null
       });
       const aiResponse = await res.json();
       
@@ -703,6 +738,12 @@ export default function ChatStudio() {
         
         try {
           const result = await generateImageMutation.mutateAsync(aiResponse.imagePrompt);
+          
+          setLastGeneratedImage({
+            url: result.imageUrl,
+            prompt: aiResponse.imagePrompt,
+            enhancedPrompt: result.enhancedPrompt
+          });
           
           setStage('post-generation');
           const postGenOptions: OptionChip[] = [
@@ -716,6 +757,7 @@ export default function ChatStudio() {
             aiResponse.message || "Here's your image! What would you like to do next?",
             postGenOptions,
             result.imageUrl,
+            aiResponse.imagePrompt,
             result.enhancedPrompt || aiResponse.imagePrompt,
             result.imageId
           );
@@ -756,17 +798,60 @@ export default function ChatStudio() {
   };
 
   const handleSend = () => {
-    if (input.trim() && !isLoading) {
-      processUserInput(input.trim());
+    if (input.trim() && !isLoading && !attachedImage?.isLoading) {
+      const imageBase64 = attachedImage?.base64 || null;
+      processUserInput(input.trim(), imageBase64);
       setInput('');
+      setAttachedImage(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
+  
+  const canSend = Boolean(input.trim() && !isLoading && !attachedImage?.isLoading);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      if (canSend) {
+        handleSend();
+      }
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const preview = URL.createObjectURL(file);
+      setAttachedImage({ file, preview, isLoading: true });
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setAttachedImage({ file, preview, base64, isLoading: false });
+      };
+      reader.onerror = () => {
+        console.error("Failed to read file");
+        URL.revokeObjectURL(preview);
+        setAttachedImage(null);
+      };
+      reader.onabort = () => {
+        URL.revokeObjectURL(preview);
+        setAttachedImage(null);
+      };
+      reader.readAsDataURL(file);
+    }
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const removeAttachment = () => {
+    if (attachedImage?.preview) {
+      URL.revokeObjectURL(attachedImage.preview);
+    }
+    setAttachedImage(null);
   };
 
   return (
@@ -843,30 +928,73 @@ export default function ChatStudio() {
         </ScrollArea>
 
         <div className="px-6 py-4 border-t border-white/10 bg-background/80 backdrop-blur-sm">
-          <div className="max-w-3xl mx-auto flex gap-3">
-            <Textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type your message or select an option above..."
-              disabled={isLoading}
-              className="min-h-[48px] max-h-[120px] resize-none bg-white/5 border-white/10"
-              rows={1}
-              data-testid="input-chat-message"
-            />
-            <Button 
-              onClick={handleSend} 
-              disabled={isLoading || !input.trim()}
-              className="h-12 w-12 shrink-0"
-              data-testid="button-send-message"
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Send className="h-5 w-5" />
-              )}
-            </Button>
+          <div className="max-w-3xl mx-auto space-y-3">
+            {attachedImage && (
+              <div className="flex items-start gap-2">
+                <div className="relative group">
+                  <img 
+                    src={attachedImage.preview} 
+                    alt="Attached image" 
+                    className="h-20 w-20 object-cover rounded-lg border border-white/10"
+                    data-testid="img-attachment-preview"
+                  />
+                  <button
+                    onClick={removeAttachment}
+                    className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    data-testid="button-remove-attachment"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+                <span className="text-xs text-muted-foreground mt-2">
+                  Image attached - describe what you'd like to do with it
+                </span>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                accept="image/*"
+                className="hidden"
+                data-testid="input-file-upload"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+                className="h-12 w-12 shrink-0"
+                data-testid="button-attach-image"
+              >
+                <ImagePlus className="h-5 w-5" />
+              </Button>
+              <Textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={attachedImage ? "Describe what you'd like to do with this image..." : "Type your message or select an option above..."}
+                disabled={isLoading}
+                className="min-h-[48px] max-h-[120px] resize-none bg-white/5 border-white/10"
+                rows={1}
+                data-testid="input-chat-message"
+              />
+              <Button 
+                onClick={handleSend} 
+                disabled={!canSend}
+                className="h-12 w-12 shrink-0"
+                data-testid="button-send-message"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </main>

@@ -975,31 +975,63 @@ interface ChatResponse {
 /**
  * Contextual AI chat for the creative studio
  * Guides users through image creation naturally
+ * Supports vision analysis when an image is attached
  */
 export async function chatWithCreativeAgent(
   messages: ChatMessage[],
-  currentContext: { subject?: string; style?: string; mood?: string }
+  currentContext: { 
+    subject?: string; 
+    style?: string; 
+    mood?: string;
+    lastImage?: { url: string; prompt: string; enhancedPrompt?: string } | null;
+  },
+  attachedImage?: string | null
 ): Promise<ChatResponse> {
   try {
     const client = keyManager.getNextClient();
     
+    const lastImageContext = currentContext.lastImage 
+      ? `\n\nLast Generated Image:
+- Original prompt: "${currentContext.lastImage.prompt}"
+- Enhanced prompt: "${currentContext.lastImage.enhancedPrompt || currentContext.lastImage.prompt}"
+When the user says "this image", "the image", "it", or similar references, they are referring to this most recently generated image.`
+      : '';
+    
+    const attachedImageContext = attachedImage 
+      ? `\n\nIMPORTANT: The user has attached an image for you to analyze. Look at the image carefully and:
+1. Describe what you see in the image briefly
+2. Ask what they would like to do with it - offer helpful options like: recreate in a different style, use as inspiration, extract colors/elements, etc.
+3. DO NOT immediately generate a new image - ask questions first to understand their intent`
+      : '';
+    
     const systemPrompt = `You are a friendly AI creative assistant helping users create images. Your job is to:
 1. Understand what the user wants to create
 2. Help them refine their vision with style and mood preferences
-3. When you have enough context (subject + style + mood), trigger image generation
+3. ONLY trigger image generation when you are confident about what the user wants${attachedImageContext}
 
 Current context:
 - Subject: ${currentContext.subject || 'Not yet specified'}
 - Style: ${currentContext.style || 'Not yet specified'}
-- Mood: ${currentContext.mood || 'Not yet specified'}
+- Mood: ${currentContext.mood || 'Not yet specified'}${lastImageContext}
+
+CRITICAL RULES - PREVENT HALLUCINATION:
+- NEVER assume the user wants to generate a new image unless they explicitly say so
+- When in doubt, ASK a clarifying question instead of generating
+- If the user's request is vague or ambiguous, offer options to help them clarify
+- Only set shouldGenerateImage to true when you have CLEAR, SPECIFIC details about: subject, style, AND mood
+- If the user is just exploring or chatting, engage in conversation - don't rush to generate
+- If they say things like "maybe", "I'm not sure", "what do you think" - ask follow-up questions
 
 Guidelines:
 - Be conversational and encouraging
 - If the user mentions what they want to create, acknowledge it and ask about style preferences
 - If they mention a style, acknowledge it and ask about mood/atmosphere
-- If they have subject, style, and mood, you should trigger image generation
+- If they have subject, style, and mood AND seem ready, trigger image generation
 - Keep responses concise (1-2 sentences max)
-- Suggest options when helpful
+- Suggest options when helpful (provide 2-4 relevant options)
+- If the user refers to "this image" or "the image", they mean the last generated image described above
+- If an image is attached, analyze it first and ask what the user wants to do with it
+- When unsure, always err on the side of asking questions rather than generating
 
 Respond in JSON format:
 {
@@ -1009,17 +1041,32 @@ Respond in JSON format:
   "suggestedOptions": [{"label": "Option", "icon": "emoji", "value": "value"}] (optional, max 4 options)
 }`;
 
-    const conversationHistory = messages.map(m => ({
+    const conversationHistory = messages.slice(0, -1).map(m => ({
       role: m.role === 'user' ? 'user' : 'model',
       parts: [{ text: m.content }]
     }));
+    
+    const lastMessage = messages[messages.length - 1];
+    let lastMessageParts: any[] = [{ text: lastMessage.content }];
+    
+    if (attachedImage && lastMessage.role === 'user') {
+      const base64Data = attachedImage.replace(/^data:image\/\w+;base64,/, '');
+      const mimeMatch = attachedImage.match(/^data:(image\/\w+);base64,/);
+      const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+      
+      lastMessageParts = [
+        { text: lastMessage.content || "What can you tell me about this image?" },
+        { inlineData: { mimeType, data: base64Data } }
+      ];
+    }
     
     const response = await client.models.generateContent({
       model: "gemini-2.0-flash",
       contents: [
         { role: "user", parts: [{ text: systemPrompt }] },
         { role: "model", parts: [{ text: "I understand. I'll help guide the user through creating their perfect image." }] },
-        ...conversationHistory
+        ...conversationHistory,
+        { role: lastMessage.role === 'user' ? 'user' : 'model', parts: lastMessageParts }
       ],
     });
     
