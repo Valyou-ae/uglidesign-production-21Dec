@@ -255,13 +255,41 @@ function ChatHistorySidebar({
   sessions, 
   currentSessionId, 
   onSelectSession,
+  onRenameSession,
   isLoading
 }: { 
   sessions: ChatSession[];
   currentSessionId: string | null;
   onSelectSession: (sessionId: string) => void;
+  onRenameSession: (sessionId: string, newName: string) => void;
   isLoading: boolean;
 }) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+
+  const handleStartEdit = (e: React.MouseEvent, session: ChatSession) => {
+    e.stopPropagation();
+    setEditingId(session.id);
+    setEditName(session.name);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId && editName.trim()) {
+      onRenameSession(editingId, editName.trim());
+    }
+    setEditingId(null);
+    setEditName('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveEdit();
+    } else if (e.key === 'Escape') {
+      setEditingId(null);
+      setEditName('');
+    }
+  };
+
   return (
     <aside className="w-72 border-l border-white/10 bg-background/50 flex flex-col h-full" data-testid="sidebar-chat-history">
       <div className="p-4 border-b border-white/10">
@@ -282,26 +310,45 @@ function ChatHistorySidebar({
             </div>
           ) : (
             sessions.map((session) => (
-              <button
+              <div
                 key={session.id}
-                onClick={() => onSelectSession(session.id)}
+                onClick={() => editingId !== session.id && onSelectSession(session.id)}
                 className={cn(
-                  "w-full text-left p-3 rounded-lg transition-colors group",
+                  "w-full text-left p-3 rounded-lg transition-colors group cursor-pointer",
                   "hover:bg-white/5",
                   currentSessionId === session.id && "bg-primary/10 border border-primary/20"
                 )}
                 data-testid={`session-item-${session.id}`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm truncate flex-1">
-                    {session.name}
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                {editingId === session.id ? (
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={handleSaveEdit}
+                    autoFocus
+                    className="w-full px-2 py-1 text-sm bg-white/10 border border-primary/50 rounded focus:outline-none"
+                    data-testid={`input-rename-${session.id}`}
+                  />
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm truncate flex-1">
+                      {session.name}
+                    </span>
+                    <button
+                      onClick={(e) => handleStartEdit(e, session)}
+                      className="p-1 rounded hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                      data-testid={`button-rename-${session.id}`}
+                    >
+                      <Pencil className="h-3 w-3 text-muted-foreground" />
+                    </button>
+                  </div>
+                )}
                 <span className="text-xs text-muted-foreground">
                   {new Date(session.createdAt).toLocaleDateString()}
                 </span>
-              </button>
+              </div>
             ))
           )}
         </div>
@@ -626,13 +673,11 @@ export default function ChatStudio() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {projectId && (
-              <Link href={`/projects/${projectId}`}>
-                <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground" data-testid="button-view-project">
-                  <FolderOpen className="h-4 w-4" />
-                  <span className="hidden sm:inline">{projectName || "View Project"}</span>
-                </Button>
-              </Link>
+            {projectName && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <FolderOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">{projectName}</span>
+              </div>
             )}
             <Button 
               variant="outline" 
@@ -719,6 +764,17 @@ export default function ChatStudio() {
           sessions={sessionsData?.sessions || []}
           currentSessionId={sessionId}
           onSelectSession={loadSession}
+          onRenameSession={async (id, newName) => {
+            try {
+              await apiRequest("PATCH", `/api/chat/sessions/${id}`, { name: newName });
+              queryClient.invalidateQueries({ queryKey: ["/api/chat/sessions"] });
+              if (id === sessionId) {
+                setProjectName(newName);
+              }
+            } catch (err) {
+              console.error("Failed to rename session:", err);
+            }
+          }}
           isLoading={sessionsLoading}
         />
       )}
