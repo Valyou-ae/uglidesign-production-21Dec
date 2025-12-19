@@ -29,8 +29,22 @@ import {
   ChevronRight,
   CheckSquare,
   Square,
-  ImagePlus
+  ImagePlus,
+  Upload,
+  Images
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface OptionChip {
   label: string;
@@ -496,6 +510,16 @@ export default function ChatStudio() {
     base64?: string;
     isLoading?: boolean;
   } | null>(null);
+  const [showCreationsPicker, setShowCreationsPicker] = useState(false);
+  
+  const { data: userImages } = useQuery({
+    queryKey: ["/api/images"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/images?limit=50");
+      return res.json();
+    },
+    enabled: showCreationsPicker
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -871,6 +895,29 @@ export default function ChatStudio() {
     setAttachedImage(null);
   };
 
+  const handleSelectFromCreations = async (imageUrl: string) => {
+    setShowCreationsPicker(false);
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'creation.png', { type: blob.type });
+      const preview = URL.createObjectURL(blob);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAttachedImage({
+          file,
+          preview,
+          base64: reader.result as string,
+          isLoading: false
+        });
+      };
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.error("Failed to load image from creations:", error);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
@@ -977,17 +1024,36 @@ export default function ChatStudio() {
                 className="hidden"
                 data-testid="input-file-upload"
               />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading}
-                className="h-12 w-12 shrink-0"
-                data-testid="button-attach-image"
-              >
-                <ImagePlus className="h-5 w-5" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    disabled={isLoading}
+                    className="h-12 w-12 shrink-0"
+                    data-testid="button-attach-image"
+                  >
+                    <ImagePlus className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem 
+                    onClick={() => fileInputRef.current?.click()}
+                    data-testid="menu-upload-from-device"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload from device
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => setShowCreationsPicker(true)}
+                    data-testid="menu-pick-from-creations"
+                  >
+                    <Images className="h-4 w-4 mr-2" />
+                    Pick from creations
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Textarea
                 ref={textareaRef}
                 value={input}
@@ -1058,6 +1124,43 @@ export default function ChatStudio() {
           isLoading={sessionsLoading}
         />
       )}
+      
+      <Dialog open={showCreationsPicker} onOpenChange={setShowCreationsPicker}>
+        <DialogContent className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Pick from your creations</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[60vh]">
+            {userImages?.images && userImages.images.length > 0 ? (
+              <div className="grid grid-cols-3 gap-3 p-1">
+                {userImages.images.map((image: any) => (
+                  <button
+                    key={image.id}
+                    onClick={() => handleSelectFromCreations(image.imageUrl)}
+                    className="relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors group"
+                    data-testid={`creation-picker-${image.id}`}
+                  >
+                    <img
+                      src={image.imageUrl}
+                      alt={image.prompt || "Creation"}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">Select</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+                <Images className="h-12 w-12 mb-2 opacity-50" />
+                <p>No creations yet</p>
+                <p className="text-sm">Generate some images first!</p>
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
