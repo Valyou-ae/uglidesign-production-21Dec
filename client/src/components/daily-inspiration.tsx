@@ -417,6 +417,7 @@ function PersonalizedPromptCard({
 
 export function PersonalizedPrompts({ onTryPrompt }: DailyInspirationProps) {
   const { user } = useAuth();
+  const [currentIndex, setCurrentIndex] = useState(0);
   
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/prompts/recommendations"],
@@ -426,6 +427,15 @@ export function PersonalizedPrompts({ onTryPrompt }: DailyInspirationProps) {
   });
 
   const recommendations = data?.recommendations || [];
+  const hasMultiple = recommendations.length > 1;
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? recommendations.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev === recommendations.length - 1 ? 0 : prev + 1));
+  };
 
   if (!user) {
     return null;
@@ -433,16 +443,9 @@ export function PersonalizedPrompts({ onTryPrompt }: DailyInspirationProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <User className="w-5 h-5 text-[#E91E63]" />
-          <h2 className="text-lg font-semibold text-white">For You</h2>
-        </div>
-        <div className="animate-pulse space-y-3">
-          {[1, 2].map((i) => (
-            <div key={i} className="h-32 bg-white/10 rounded-xl" />
-          ))}
-        </div>
+      <div className="animate-pulse space-y-4">
+        <div className="h-6 w-32 bg-white/10 rounded" />
+        <div className="h-48 bg-white/10 rounded-2xl" />
       </div>
     );
   }
@@ -453,19 +456,63 @@ export function PersonalizedPrompts({ onTryPrompt }: DailyInspirationProps) {
 
   return (
     <div className="space-y-4" data-testid="personalized-prompts">
-      <div className="flex items-center gap-2">
-        <User className="w-5 h-5 text-[#E91E63]" />
-        <h2 className="text-lg font-semibold text-white">For You</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <User className="w-5 h-5 text-[#E91E63]" />
+          <h2 className="text-lg font-semibold text-white">For You</h2>
+        </div>
+        {hasMultiple && (
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-white/60 hover:text-white"
+              onClick={goToPrevious}
+              data-testid="personalized-prev"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-white/60 min-w-[3rem] text-center">
+              {currentIndex + 1} / {recommendations.length}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-white/60 hover:text-white"
+              onClick={goToNext}
+              data-testid="personalized-next"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
-      <div className="space-y-3">
-        {recommendations.map((rec) => (
-          <PersonalizedPromptCard
-            key={rec.id}
-            recommendation={rec}
-            onTryPrompt={onTryPrompt}
-          />
-        ))}
-      </div>
+
+      <AnimatePresence mode="wait">
+        <PersonalizedPromptCard
+          key={recommendations[currentIndex].id}
+          recommendation={recommendations[currentIndex]}
+          onTryPrompt={onTryPrompt}
+        />
+      </AnimatePresence>
+
+      {hasMultiple && (
+        <div className="flex justify-center gap-1.5">
+          {recommendations.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all",
+                index === currentIndex 
+                  ? "bg-[#E91E63] w-6" 
+                  : "bg-white/20 hover:bg-white/40"
+              )}
+              data-testid={`personalized-dot-${index}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

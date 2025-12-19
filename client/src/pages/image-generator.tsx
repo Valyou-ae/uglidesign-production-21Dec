@@ -1954,14 +1954,14 @@ export default function ImageGenerator() {
               </motion.div>
             )}
 
-            {/* Session History - Last 6 generations */}
+            {/* Gallery - All creations in masonry layout, newest first */}
             {generations.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-sm font-semibold text-foreground">Recent Creations</h3>
-                    <span className="text-xs text-muted-foreground">({Math.min(generations.length, 6)} of {generations.length})</span>
+                    <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="text-sm font-semibold text-foreground">Your Creations</h3>
+                    <span className="text-xs text-muted-foreground">({generations.length})</span>
                   </div>
                   <Button 
                     variant="ghost" 
@@ -1969,13 +1969,13 @@ export default function ImageGenerator() {
                     className="text-xs text-muted-foreground hover:text-foreground"
                     onClick={() => setLocation('/my-creations')}
                   >
-                    View All in Library
+                    View in Library
                     <ChevronDown className="h-3 w-3 ml-1 -rotate-90" />
                   </Button>
                 </div>
                 
-                <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-6 gap-3">
-                  {generations.slice(0, 6).map((gen) => (
+                <div className="columns-2 sm:columns-3 md:columns-4 gap-3">
+                  {generations.map((gen) => (
                     <motion.div 
                       key={gen.id}
                       initial={{ opacity: 0, scale: 0.9 }}
