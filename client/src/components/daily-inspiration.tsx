@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Copy, ChevronLeft, ChevronRight, Lightbulb, Tag, Zap } from "lucide-react";
+import { Sparkles, Copy, ChevronLeft, ChevronRight, Lightbulb, Tag, Zap, User, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { inspirationsApi, type DailyInspiration } from "@/lib/api";
+import { inspirationsApi, promptsApi, type DailyInspiration, type PromptRecommendation } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 interface DailyInspirationProps {
   onTryPrompt?: (prompt: string) => void;
@@ -318,6 +319,149 @@ export function InspirationGrid({ onTryPrompt, limit = 6 }: DailyInspirationProp
           <InspirationCard
             key={inspiration.id}
             inspiration={inspiration}
+            onTryPrompt={onTryPrompt}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PersonalizedPromptCard({ 
+  recommendation, 
+  onTryPrompt 
+}: { 
+  recommendation: PromptRecommendation; 
+  onTryPrompt?: (prompt: string) => void;
+}) {
+  const { toast } = useToast();
+
+  const handleCopyPrompt = () => {
+    navigator.clipboard.writeText(recommendation.prompt);
+    toast({
+      title: "Copied!",
+      description: "Prompt copied to clipboard",
+    });
+  };
+
+  const handleTryPrompt = () => {
+    if (onTryPrompt) {
+      onTryPrompt(recommendation.prompt);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative rounded-xl overflow-hidden border border-[#E91E63]/20 bg-gradient-to-br from-[#1a1a1a]/90 to-[#0f0f0f]/90 p-4"
+      data-testid={`personalized-prompt-${recommendation.id}`}
+    >
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <Badge variant="outline" className="bg-[#E91E63]/20 text-[#E91E63] border-[#E91E63]/30 text-xs">
+            <User className="w-3 h-3 mr-1" />
+            For You
+          </Badge>
+          <Badge variant="outline" className="bg-white/5 text-white/60 border-white/10 text-xs">
+            {recommendation.category}
+          </Badge>
+        </div>
+        
+        <div className="relative bg-[#1a1a1a] rounded-lg p-3 border border-white/5">
+          <p className="text-sm text-white/90 line-clamp-3 pr-8">
+            {recommendation.prompt}
+          </p>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-7 w-7 text-white/50 hover:text-white hover:bg-white/10"
+            onClick={handleCopyPrompt}
+            data-testid={`copy-personalized-prompt-${recommendation.id}`}
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+        
+        <p className="text-xs text-white/50 italic">
+          {recommendation.reason}
+        </p>
+        
+        <div className="flex flex-wrap gap-1.5">
+          {recommendation.tags.slice(0, 3).map((tag, index) => (
+            <span 
+              key={index}
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-white/5 text-white/60"
+            >
+              <Tag className="w-2.5 h-2.5" />
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {onTryPrompt && (
+          <Button
+            onClick={handleTryPrompt}
+            size="sm"
+            className="w-full bg-[#E91E63] hover:bg-[#C2185B] text-white"
+            data-testid={`try-personalized-prompt-${recommendation.id}`}
+          >
+            <Wand2 className="w-4 h-4 mr-2" />
+            Try This
+          </Button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+export function PersonalizedPrompts({ onTryPrompt }: DailyInspirationProps) {
+  const { user } = useAuth();
+  
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["/api/prompts/recommendations"],
+    queryFn: () => promptsApi.getRecommendations(),
+    staleTime: 5 * 60 * 1000,
+    enabled: !!user,
+  });
+
+  const recommendations = data?.recommendations || [];
+
+  if (!user) {
+    return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <User className="w-5 h-5 text-[#E91E63]" />
+          <h2 className="text-lg font-semibold text-white">For You</h2>
+        </div>
+        <div className="animate-pulse space-y-3">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-32 bg-white/10 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error || recommendations.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-4" data-testid="personalized-prompts">
+      <div className="flex items-center gap-2">
+        <User className="w-5 h-5 text-[#E91E63]" />
+        <h2 className="text-lg font-semibold text-white">For You</h2>
+      </div>
+      <div className="space-y-3">
+        {recommendations.map((rec) => (
+          <PersonalizedPromptCard
+            key={rec.id}
+            recommendation={rec}
             onTryPrompt={onTryPrompt}
           />
         ))}

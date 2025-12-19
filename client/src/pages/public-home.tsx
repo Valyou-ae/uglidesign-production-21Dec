@@ -17,6 +17,7 @@ import { useLoginPopup } from "@/components/login-popup";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
+import { DailyInspirationFeed, PersonalizedPrompts } from "@/components/daily-inspiration";
 import ugliLogo from "@assets/Ugli_Logo_(1)_1766145410500.png";
 
 interface InspirationItem {
@@ -620,22 +621,33 @@ export default function PublicHome() {
       
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#0A0A0B]">
         <BrandingHeader isLoggedIn={!!user} />
-        <div className="flex-1 relative overflow-hidden">
-          {isGalleryReady ? (
-            <JustifiedGallery 
-              items={galleryImages} 
-              generatedImage={generatedImage} 
-              onLike={handleLike}
-              isLoggedIn={!!user}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#E91E63] border-t-transparent rounded-full animate-spin" />
-                <p className="text-gray-400 text-sm">Loading gallery...</p>
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          {/* Gallery Section - 3/4 width on lg+ */}
+          <div className="flex-1 lg:basis-3/4 relative overflow-hidden">
+            {isGalleryReady ? (
+              <JustifiedGallery 
+                items={galleryImages} 
+                generatedImage={generatedImage} 
+                onLike={handleLike}
+                isLoggedIn={!!user}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-[#E91E63] border-t-transparent rounded-full animate-spin" />
+                  <p className="text-gray-400 text-sm">Loading gallery...</p>
+                </div>
               </div>
+            )}
+          </div>
+          
+          {/* Inspiration Section - 1/4 width on lg+, hidden on mobile */}
+          <div className="hidden lg:flex lg:basis-1/4 border-l border-white/10 overflow-y-auto bg-[#0A0A0B]">
+            <div className="w-full p-4 space-y-6">
+              {user && <PersonalizedPrompts />}
+              <DailyInspirationFeed />
             </div>
-          )}
+          </div>
         </div>
       </main>
 

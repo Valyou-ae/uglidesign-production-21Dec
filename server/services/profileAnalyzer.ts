@@ -229,3 +229,91 @@ export async function getOrCreateUserProfile(userId: string): Promise<UserPrefer
   
   return updateUserProfileFromActivity(userId);
 }
+
+interface PromptRecommendation {
+  id: string;
+  prompt: string;
+  reason: string;
+  category: string;
+  tags: string[];
+}
+
+const PROMPT_TEMPLATES: Record<string, { template: string; category: string; tags: string[] }[]> = {
+  portrait: [
+    { template: "Professional headshot of a {subject}, {style} style, {mood} lighting, studio background", category: "Portrait", tags: ["professional", "headshot"] },
+    { template: "{mood} portrait photography, {style} aesthetic, natural lighting, bokeh background", category: "Portrait", tags: ["artistic", "bokeh"] },
+    { template: "Close-up portrait with {mood} expression, {style} color grading, cinematic depth", category: "Portrait", tags: ["cinematic", "close-up"] },
+  ],
+  landscape: [
+    { template: "{mood} mountain landscape at golden hour, {style} photography, dramatic clouds", category: "Landscape", tags: ["nature", "mountains"] },
+    { template: "Serene {subject} scene, {style} style, soft morning light, mist rising", category: "Landscape", tags: ["peaceful", "morning"] },
+    { template: "Epic {subject} vista, {style} rendering, {mood} atmosphere, wide angle view", category: "Landscape", tags: ["epic", "wide-angle"] },
+  ],
+  product: [
+    { template: "Professional product shot of a {subject}, {style} lighting, clean white background", category: "Product", tags: ["commercial", "clean"] },
+    { template: "Lifestyle product photography, {subject} in natural setting, {mood} mood", category: "Product", tags: ["lifestyle", "natural"] },
+    { template: "Minimalist product display, {subject}, {style} aesthetic, soft shadows", category: "Product", tags: ["minimalist", "modern"] },
+  ],
+  abstract: [
+    { template: "{mood} abstract composition, {style} art style, flowing forms and colors", category: "Abstract", tags: ["artistic", "flowing"] },
+    { template: "Geometric abstract patterns, {style} design, {mood} color palette", category: "Abstract", tags: ["geometric", "pattern"] },
+    { template: "Surreal {mood} dreamscape, {style} rendering, ethereal lighting", category: "Abstract", tags: ["surreal", "dream"] },
+  ],
+  default: [
+    { template: "{mood} scene with beautiful {style} aesthetics, professional quality", category: "General", tags: ["professional", "quality"] },
+    { template: "Artistic {style} composition, {mood} atmosphere, stunning visuals", category: "General", tags: ["artistic", "stunning"] },
+    { template: "Creative {subject} concept, {style} style, {mood} lighting", category: "General", tags: ["creative", "concept"] },
+  ],
+};
+
+export function generatePersonalizedPrompts(analysis: AnalysisResult): PromptRecommendation[] {
+  const recommendations: PromptRecommendation[] = [];
+  
+  const topStyle = analysis.preferredStyles[0] || 'artistic';
+  const topSubject = analysis.preferredSubjects[0] || 'scene';
+  const topMood = analysis.preferredMoods[0] || 'beautiful';
+  
+  const subjectCategory = analysis.preferredSubjects[0] || 'default';
+  const templates = PROMPT_TEMPLATES[subjectCategory] || PROMPT_TEMPLATES.default;
+  
+  for (let i = 0; i < Math.min(templates.length, 3); i++) {
+    const template = templates[i];
+    const prompt = template.template
+      .replace('{style}', topStyle)
+      .replace('{subject}', topSubject)
+      .replace('{mood}', topMood);
+    
+    recommendations.push({
+      id: `rec-${i + 1}`,
+      prompt,
+      reason: `Based on your preference for ${topStyle} style and ${topSubject} subjects`,
+      category: template.category,
+      tags: [...template.tags, topStyle, topMood],
+    });
+  }
+  
+  if (analysis.recentContext.recentPrompts.length > 0) {
+    const recentPrompt = analysis.recentContext.recentPrompts[0];
+    if (recentPrompt && recentPrompt.length > 10) {
+      recommendations.push({
+        id: 'rec-continue',
+        prompt: `${recentPrompt}, with a new perspective`,
+        reason: 'Continue exploring your recent creative direction',
+        category: 'Continuation',
+        tags: ['recent', 'variation'],
+      });
+    }
+  }
+  
+  if (analysis.profileCompleteness < 50) {
+    recommendations.push({
+      id: 'rec-explore',
+      prompt: 'Beautiful cinematic landscape at sunset, vibrant colors, professional photography',
+      reason: 'Try this popular style to help us learn your preferences',
+      category: 'Explore',
+      tags: ['popular', 'recommended'],
+    });
+  }
+  
+  return recommendations.slice(0, 5);
+}

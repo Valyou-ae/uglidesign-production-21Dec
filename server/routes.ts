@@ -1235,6 +1235,21 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/prompts/recommendations", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { analyzeUserProfile, generatePersonalizedPrompts } = await import("./services/profileAnalyzer");
+      
+      const analysis = await analyzeUserProfile(userId);
+      const recommendations = await generatePersonalizedPrompts(analysis);
+      
+      res.json({ recommendations, analysis: { profileCompleteness: analysis.profileCompleteness } });
+    } catch (error) {
+      console.error("Personalized prompts error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
   // ============== STYLE TRANSFER ROUTES ==============
 
   app.get("/api/style-transfer/presets", async (_req, res) => {

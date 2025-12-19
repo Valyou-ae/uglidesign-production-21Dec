@@ -808,6 +808,19 @@ export const inspirationsApi = {
     fetchApi<{ inspirations: DailyInspiration[] }>(`/inspirations/featured${limit ? `?limit=${limit}` : ""}`),
 };
 
+export interface PromptRecommendation {
+  id: string;
+  prompt: string;
+  reason: string;
+  category: string;
+  tags: string[];
+}
+
+export const promptsApi = {
+  getRecommendations: () =>
+    fetchApi<{ recommendations: PromptRecommendation[]; analysis: { profileCompleteness: number } }>("/prompts/recommendations"),
+};
+
 // Style Transfer API
 export interface StylePreset {
   id: string;
