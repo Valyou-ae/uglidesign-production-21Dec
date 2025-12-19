@@ -20,7 +20,8 @@ import {
   CreditCard,
   Sparkles,
   Palette,
-  MessageCircle
+  MessageCircle,
+  Images
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -136,7 +137,7 @@ export function Sidebar({ className }: SidebarProps) {
   const privateNavigation: NavItem[] = [
     { name: "Chat Studio", shortName: "Chat", icon: MessageCircle, href: "/chat-studio", badge: "New" },
     { name: "Projects", shortName: "Projects", icon: Folder, href: "/mood-boards" },
-    { name: "My Creations", shortName: "Creations", icon: Folder, href: "/my-creations", count: totalCreations > 0 ? totalCreations.toString() : undefined, dataTutorial: "my-creations-link" },
+    { name: "My Creations", shortName: "Creations", icon: Images, href: "/my-creations", count: totalCreations > 0 ? totalCreations.toString() : undefined, dataTutorial: "my-creations-link" },
   ];
 
   const navigation: NavItem[] = user ? [...publicNavigation, ...privateNavigation] : publicNavigation;
@@ -176,7 +177,7 @@ export function Sidebar({ className }: SidebarProps) {
         <>
           <Link href="/my-creations">
             <div className={cn("flex flex-col items-center justify-center p-2 cursor-pointer", location === "/my-creations" ? "text-primary" : "text-muted-foreground")}>
-              <Folder className="h-6 w-6" />
+              <Images className="h-6 w-6" />
               <span className="text-[10px] mt-1">Creations</span>
             </div>
           </Link>
