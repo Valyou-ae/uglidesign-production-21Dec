@@ -44,3 +44,11 @@ integrations = ["javascript_database:1.0.0", "stripe:2.0.0"]
 
 [userenv.shared]
 GOOGLE_CLIENT_ID = "219712504704-2mv22scc589s3da7fufolugsnqumc545.apps.googleusercontent.com"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 3000

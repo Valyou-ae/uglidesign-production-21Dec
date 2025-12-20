@@ -794,6 +794,7 @@ export default function MockupGenerator() {
   const [outputQuality, setOutputQuality] = useState<OutputQuality>("high");
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState<boolean>(false);
   const [productPickerOpen, setProductPickerOpen] = useState(false);
+  const [productSearchQuery, setProductSearchQuery] = useState("");
   const [showAllColors, setShowAllColors] = useState(false);
   // AOP-specific state
   const [isAlreadySeamless, setIsAlreadySeamless] = useState<boolean>(false);
@@ -1746,82 +1747,143 @@ export default function MockupGenerator() {
                       {currentStep === "product" && (
                         <div className="flex flex-col h-full animate-fade-in">
                           <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6 pb-4">
-                            {/* Product Picker */}
+                            {/* Product Picker - Visual Grid */}
                             <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
-                              <label className="text-sm font-bold text-foreground mb-3 block">Select Product</label>
-                              <Popover open={productPickerOpen} onOpenChange={setProductPickerOpen}>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    aria-expanded={productPickerOpen}
-                                    className="w-full justify-between h-12 text-left font-normal"
-                                    data-testid="button-product-picker"
+                              <div className="flex items-center justify-between mb-4">
+                                <label className="text-sm font-bold text-foreground">Select Product</label>
+                                {selectedProductType && (
+                                  <Badge variant="secondary" className="text-xs gap-1.5">
+                                    <Check className="h-3 w-3" />
+                                    {selectedProductType}
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              {/* Search Input */}
+                              <div className="relative mb-4">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  placeholder="Search products..."
+                                  value={productSearchQuery}
+                                  onChange={(e) => setProductSearchQuery(e.target.value)}
+                                  className="pl-10 h-10"
+                                  data-testid="input-product-search"
+                                />
+                                {productSearchQuery && (
+                                  <button
+                                    onClick={() => setProductSearchQuery("")}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                   >
-                                    <div className="flex items-center gap-3">
-                                      {selectedProductType ? (
-                                        <>
-                                          <ProductThumbnail 
-                                            productName={selectedProductType} 
-                                            isSelected={true}
-                                            color={PRODUCT_COLOR_MAP[selectedColors[0]] || "#FFFFFF"}
-                                          />
-                                          <div className="flex flex-col items-start">
-                                            <span className="text-sm font-medium">{selectedProductType}</span>
-                                            <span className="text-xs text-muted-foreground">{effectiveActiveCategory}</span>
-                                          </div>
-                                        </>
-                                      ) : (
-                                        <span className="text-muted-foreground">Search or browse products...</span>
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Category Tabs */}
+                              <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+                                {productCategories.map((cat) => {
+                                  const isActive = effectiveActiveCategory === cat.name;
+                                  const CatIcon = cat.icon;
+                                  return (
+                                    <button
+                                      key={cat.name}
+                                      onClick={() => {
+                                        setActiveCategory(cat.name);
+                                        setProductSearchQuery("");
+                                      }}
+                                      className={cn(
+                                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all shrink-0",
+                                        isActive
+                                          ? "bg-primary text-white"
+                                          : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                                       )}
-                                    </div>
-                                    <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[340px] sm:w-[400px] p-0" align="start">
-                                  <Command>
-                                    <CommandInput placeholder="Search products..." />
-                                    <CommandList className="max-h-[300px]">
-                                      <CommandEmpty>No products found.</CommandEmpty>
-                                      {productCategories.map((cat) => (
-                                        <CommandGroup key={cat.name} heading={cat.name}>
-                                          {cat.items.map((item) => (
-                                            <CommandItem
-                                              key={`${cat.name}-${item.name}`}
-                                              value={`${cat.name} ${item.name}`}
-                                              onSelect={() => {
-                                                setActiveCategory(cat.name);
-                                                setSelectedProductType(item.name);
-                                                setProductPickerOpen(false);
-                                                if (isNonWearableCategory(cat.name)) {
-                                                  setUseModel(false);
-                                                } else {
-                                                  setUseModel(true);
-                                                  const autoGender = getGenderFromCategory(cat.name);
-                                                  if (autoGender) {
-                                                    setModelDetails(prev => ({...prev, sex: autoGender}));
-                                                    setGenderAutoSelected(true);
-                                                  }
-                                                }
-                                              }}
-                                              className="cursor-pointer"
-                                              data-testid={`product-option-${item.name.replace(/\s+/g, '-').toLowerCase()}`}
-                                            >
-                                              <div className="flex items-center gap-3 w-full">
-                                                <item.icon className="h-4 w-4 text-muted-foreground" />
-                                                <span>{item.name}</span>
-                                                {selectedProductType === item.name && effectiveActiveCategory === cat.name && (
-                                                  <Check className="h-4 w-4 ml-auto text-primary" />
-                                                )}
-                                              </div>
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      ))}
-                                    </CommandList>
-                                  </Command>
-                                </PopoverContent>
-                              </Popover>
+                                      data-testid={`category-tab-${cat.name.replace(/\s+/g, '-').toLowerCase()}`}
+                                    >
+                                      <CatIcon className="h-4 w-4" />
+                                      <span className="hidden sm:inline">{cat.name}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Product Grid */}
+                              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 max-h-[280px] overflow-y-auto pr-1">
+                                {(() => {
+                                  const searchLower = productSearchQuery.toLowerCase();
+                                  const itemsToShow = productSearchQuery
+                                    ? productCategories.flatMap(cat => 
+                                        cat.items
+                                          .filter(item => item.name.toLowerCase().includes(searchLower))
+                                          .map(item => ({ ...item, category: cat.name }))
+                                      )
+                                    : effectiveItems.map(item => ({ ...item, category: effectiveActiveCategory }));
+
+                                  if (itemsToShow.length === 0) {
+                                    return (
+                                      <div className="col-span-full text-center py-8 text-muted-foreground">
+                                        <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                        <p className="text-sm">No products found</p>
+                                      </div>
+                                    );
+                                  }
+
+                                  return itemsToShow.map((item) => {
+                                    const isSelected = selectedProductType === item.name && effectiveActiveCategory === item.category;
+                                    const silhouette = PRODUCT_SILHOUETTES[item.name] || PRODUCT_SILHOUETTES["default"];
+                                    return (
+                                      <button
+                                        key={`${item.category}-${item.name}`}
+                                        onClick={() => {
+                                          setActiveCategory(item.category);
+                                          setSelectedProductType(item.name);
+                                          setProductSearchQuery("");
+                                          if (isNonWearableCategory(item.category)) {
+                                            setUseModel(false);
+                                          } else {
+                                            setUseModel(true);
+                                            const autoGender = getGenderFromCategory(item.category);
+                                            if (autoGender) {
+                                              setModelDetails(prev => ({...prev, sex: autoGender}));
+                                              setGenderAutoSelected(true);
+                                            }
+                                          }
+                                        }}
+                                        className={cn(
+                                          "relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all hover:scale-[1.02] active:scale-[0.98]",
+                                          isSelected
+                                            ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                                            : "border-border bg-background hover:border-primary/30 hover:bg-muted/50"
+                                        )}
+                                        data-testid={`product-card-${item.name.replace(/\s+/g, '-').toLowerCase()}`}
+                                      >
+                                        <div 
+                                          className={cn(
+                                            "w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center transition-colors",
+                                            isSelected ? "bg-primary/20" : "bg-muted"
+                                          )}
+                                        >
+                                          <div 
+                                            className="w-8 h-8 sm:w-10 sm:h-10"
+                                            style={{ color: isSelected ? "#E91E63" : "currentColor" }}
+                                            dangerouslySetInnerHTML={{ __html: silhouette.svg }}
+                                          />
+                                        </div>
+                                        <span className={cn(
+                                          "text-xs text-center font-medium leading-tight line-clamp-2",
+                                          isSelected ? "text-primary" : "text-muted-foreground"
+                                        )}>
+                                          {item.name}
+                                        </span>
+                                        {isSelected && (
+                                          <div className="absolute top-1 right-1">
+                                            <Check className="h-4 w-4 text-primary" />
+                                          </div>
+                                        )}
+                                      </button>
+                                    );
+                                  });
+                                })()}
+                              </div>
                             </div>
 
                             {/* Sizes + Colors */}
