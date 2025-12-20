@@ -38,7 +38,6 @@ export function SaveToFolderModal({
   onSave,
   imageId,
 }: SaveToFolderModalProps) {
-  console.log("[DEBUG] SaveToFolderModal render, isOpen:", isOpen);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");

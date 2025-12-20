@@ -474,13 +474,10 @@ export default function ImageGenerator() {
   };
 
   const openSaveToFolderModal = (image: GeneratedImage) => {
-    console.log("[DEBUG] openSaveToFolderModal called with image:", image);
     if (!user) {
-      console.log("[DEBUG] No user, showing login toast");
       toast({ title: "Please log in", description: "You need to be logged in to save images.", variant: "destructive" });
       return;
     }
-    console.log("[DEBUG] Setting imageToSave and showFolderModal to true");
     setImageToSave(image);
     setShowFolderModal(true);
   };
