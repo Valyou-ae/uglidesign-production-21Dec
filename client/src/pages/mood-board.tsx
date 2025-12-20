@@ -179,7 +179,7 @@ function BoardsGrid({ onSelectBoard }: { onSelectBoard: (id: string) => void }) 
         </div>
         <Button
           onClick={() => setShowCreateModal(true)}
-          className="bg-gradient-to-r from-[#E91E63] to-[#9C27B0] text-white hover:opacity-90"
+          className="bg-gradient-to-r from-[#ed5387] to-[#9C27B0] text-white hover:opacity-90"
           data-testid="button-create-board"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -203,7 +203,7 @@ function BoardsGrid({ onSelectBoard }: { onSelectBoard: (id: string) => void }) 
             </p>
             <Button
               onClick={() => setShowCreateModal(true)}
-              className="bg-gradient-to-r from-[#E91E63] to-[#9C27B0] text-white"
+              className="bg-gradient-to-r from-[#ed5387] to-[#9C27B0] text-white"
               data-testid="button-create-first-board"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -296,7 +296,7 @@ function BoardsGrid({ onSelectBoard }: { onSelectBoard: (id: string) => void }) 
             <Button
               onClick={handleCreateBoard}
               disabled={createBoardMutation.isPending}
-              className="bg-gradient-to-r from-[#E91E63] to-[#9C27B0] text-white"
+              className="bg-gradient-to-r from-[#ed5387] to-[#9C27B0] text-white"
               data-testid="button-confirm-create"
             >
               {createBoardMutation.isPending ? "Creating..." : "Create Project"}

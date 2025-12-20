@@ -177,7 +177,7 @@ type Agent = {
 };
 
 const AGENTS: Agent[] = [
-  { id: 1, name: "Text Sentinel", status: "idle", message: "Analyzing prompt...", icon: Bot, activeColor: "#E91E63" },
+  { id: 1, name: "Text Sentinel", status: "idle", message: "Analyzing prompt...", icon: Bot, activeColor: "#ed5387" },
   { id: 2, name: "Style Architect", status: "idle", message: "Enhancing style...", icon: Sparkles, activeColor: "#9C27B0" },
   { id: 3, name: "Visual Synthesizer", status: "idle", message: "Generating image...", icon: Palette, activeColor: "#1A1A2E" },
 ];
@@ -308,7 +308,7 @@ export default function ImageGenerator() {
     toast({ 
       title: "Tutorial Complete!", 
       description: "You're ready to create amazing AI-generated images.",
-      className: "bg-gradient-to-r from-[#E91E63]/10 to-[#9C27B0]/10 border-[#E91E63]/30 text-foreground"
+      className: "bg-gradient-to-r from-[#ed5387]/10 to-[#9C27B0]/10 border-[#ed5387]/30 text-foreground"
     });
   };
 
@@ -362,7 +362,7 @@ export default function ImageGenerator() {
       toast({ 
         title: "Prompt Saved!", 
         description: `"${favoriteName}" has been saved to your favorites.`,
-        className: "bg-[#E91E63]/10 border-[#E91E63]/30 text-[#E91E63] dark:bg-[#E91E63]/20 dark:border-[#E91E63]/50 dark:text-[#9C27B0]"
+        className: "bg-[#ed5387]/10 border-[#ed5387]/30 text-[#ed5387] dark:bg-[#ed5387]/20 dark:border-[#ed5387]/50 dark:text-[#9C27B0]"
       });
     } catch (error) {
       toast({ title: "Save Failed", description: error instanceof Error ? error.message : "Could not save prompt.", variant: "destructive" });
@@ -384,7 +384,7 @@ export default function ImageGenerator() {
     toast({ 
       title: "Prompt Loaded", 
       description: `Loaded "${favorite.name}" with all settings.`,
-      className: "bg-[#E91E63]/10 border-[#E91E63]/30 text-[#E91E63] dark:bg-[#E91E63]/20 dark:border-[#E91E63]/50 dark:text-[#9C27B0]"
+      className: "bg-[#ed5387]/10 border-[#ed5387]/30 text-[#ed5387] dark:bg-[#ed5387]/20 dark:border-[#ed5387]/50 dark:text-[#9C27B0]"
     });
   };
 
@@ -734,7 +734,7 @@ export default function ImageGenerator() {
     toast({
       title: "Listening...",
       description: "Speak now to add to your prompt.",
-      className: "bg-[#E91E63]/10 border-[#E91E63]/30 text-[#E91E63]"
+      className: "bg-[#ed5387]/10 border-[#ed5387]/30 text-[#ed5387]"
     });
 
     recognition.onresult = (event: any) => {
@@ -1005,7 +1005,7 @@ export default function ImageGenerator() {
               toast({
                 title: "Image Generated!",
                 description: `Created ${imageCount} image${imageCount > 1 ? "s" : ""}. Saving to your creations...`,
-                className: "bg-[#E91E63]/10 border-[#E91E63]/30 text-[#E91E63] dark:bg-[#E91E63]/20 dark:border-[#E91E63]/50 dark:text-[#9C27B0]",
+                className: "bg-[#ed5387]/10 border-[#ed5387]/30 text-[#ed5387] dark:bg-[#ed5387]/20 dark:border-[#ed5387]/50 dark:text-[#9C27B0]",
               });
               
               let savedCount = 0;
@@ -1070,7 +1070,7 @@ export default function ImageGenerator() {
             toast({
               title: "Image Generated!",
               description: `Created ${imageCount} image${imageCount > 1 ? "s" : ""}. ${preSavedCount > 0 ? 'Saved!' : 'Sign in to save to your library.'}`,
-              className: "bg-[#E91E63]/10 border-[#E91E63]/30 text-[#E91E63] dark:bg-[#E91E63]/20 dark:border-[#E91E63]/50 dark:text-[#9C27B0]",
+              className: "bg-[#ed5387]/10 border-[#ed5387]/30 text-[#ed5387] dark:bg-[#ed5387]/20 dark:border-[#ed5387]/50 dark:text-[#9C27B0]",
             });
             setTimeout(() => {
               setStatus("idle");
@@ -1160,7 +1160,7 @@ export default function ImageGenerator() {
     toast({
       title: "Image Generated!",
       description: "Your creation is ready.",
-      className: "bg-[#E91E63]/10 border-[#E91E63]/30 text-[#E91E63] dark:bg-[#E91E63]/20 dark:border-[#E91E63]/50 dark:text-[#9C27B0]",
+      className: "bg-[#ed5387]/10 border-[#ed5387]/30 text-[#ed5387] dark:bg-[#ed5387]/20 dark:border-[#ed5387]/50 dark:text-[#9C27B0]",
     });
 
     // Reset agents after delay
@@ -1497,7 +1497,7 @@ export default function ImageGenerator() {
                           disabled={status === "generating"}
                           size="icon"
                           data-testid="button-generate"
-                          className="h-9 w-9 rounded-lg bg-gradient-to-r from-[#E91E63] to-[#C2185B] hover:brightness-110 text-white shadow-sm transition-all"
+                          className="h-9 w-9 rounded-lg bg-gradient-to-r from-[#ed5387] to-[#C2185B] hover:brightness-110 text-white shadow-sm transition-all"
                         >
                           {status === "generating" ? (
                             <RefreshCw className="h-4 w-4 animate-spin" />
@@ -1541,12 +1541,12 @@ export default function ImageGenerator() {
                           data-testid="button-load-prompts"
                           className="h-9 w-9 rounded-lg transition-all"
                         >
-                          <BookmarkCheck className="h-5 w-5 text-[#E91E63]" />
+                          <BookmarkCheck className="h-5 w-5 text-[#ed5387]" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-[280px] max-h-[320px] overflow-y-auto">
                         <DropdownMenuLabel className="flex items-center gap-2 text-xs">
-                          <BookmarkCheck className="h-3.5 w-3.5 text-[#E91E63]" />
+                          <BookmarkCheck className="h-3.5 w-3.5 text-[#ed5387]" />
                           Saved Prompts ({savedPrompts.length})
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
@@ -1908,9 +1908,9 @@ export default function ImageGenerator() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className="h-10 w-10 rounded-full border-2 border-[#E91E63]/30 flex items-center justify-center backdrop-blur-sm bg-background/50">
+                      <div className="h-10 w-10 rounded-full border-2 border-[#ed5387]/30 flex items-center justify-center backdrop-blur-sm bg-background/50">
                         <motion.div
-                          className="absolute inset-0 rounded-full border-2 border-[#E91E63]"
+                          className="absolute inset-0 rounded-full border-2 border-[#ed5387]"
                           style={{ borderTopColor: 'transparent', borderLeftColor: 'transparent' }}
                           animate={{ rotate: 360 }}
                           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -1945,7 +1945,7 @@ export default function ImageGenerator() {
                       className={cn(
                         "relative rounded-xl overflow-hidden border transition-all",
                         pending.status === 'loading' 
-                          ? "bg-gradient-to-br from-[#E91E63]/5 to-[#9C27B0]/5 border-[#E91E63]/20" 
+                          ? "bg-gradient-to-br from-[#ed5387]/5 to-[#9C27B0]/5 border-[#ed5387]/20" 
                           : "border-border bg-card"
                       )}
                       style={{ aspectRatio: settings.aspectRatio === "16:9" ? "16/9" : settings.aspectRatio === "9:16" ? "9/16" : settings.aspectRatio === "4:3" ? "4/3" : settings.aspectRatio === "3:4" ? "3/4" : "1/1" }}
@@ -1953,7 +1953,7 @@ export default function ImageGenerator() {
                       {pending.status === 'loading' ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                           <motion.div
-                            className="h-8 w-8 rounded-full border-2 border-[#E91E63] border-t-transparent"
+                            className="h-8 w-8 rounded-full border-2 border-[#ed5387] border-t-transparent"
                             animate={{ rotate: 360 }}
                             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                           />
@@ -2009,7 +2009,7 @@ export default function ImageGenerator() {
                       onClick={() => setSelectedImage(gen)}
                       className={cn(
                         "break-inside-avoid mb-3 relative group rounded-xl overflow-hidden cursor-pointer bg-card border transition-all duration-200",
-                        gen.isNew ? "border-2 border-[#E91E63]/50 hover:border-[#E91E63]" : "border-border hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]"
+                        gen.isNew ? "border-2 border-[#ed5387]/50 hover:border-[#ed5387]" : "border-border hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]"
                       )}
                     >
                       {/* Image Container - Dynamic aspect ratio */}
@@ -2058,7 +2058,7 @@ export default function ImageGenerator() {
                         </div>
                       </div>
                       {gen.isNew && (
-                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-[#E91E63] text-white text-[9px] font-bold rounded">NEW</div>
+                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-[#ed5387] text-white text-[9px] font-bold rounded">NEW</div>
                       )}
                       </div>
                     </motion.div>
@@ -2070,7 +2070,7 @@ export default function ImageGenerator() {
             {/* Empty State - Only when no generations at all */}
             {generations.length === 0 && status !== "generating" && (
               <div className="flex flex-col items-center justify-center text-center py-16">
-                <div className="w-32 h-32 bg-gradient-to-tr from-[#E91E63] to-[#9C27B0] rounded-full blur-[60px] opacity-20 mb-6" />
+                <div className="w-32 h-32 bg-gradient-to-tr from-[#ed5387] to-[#9C27B0] rounded-full blur-[60px] opacity-20 mb-6" />
                 <h2 className="text-2xl font-bold mb-2 text-foreground">Ready to Create</h2>
                 <p className="text-muted-foreground mb-6 max-w-md">
                   Type a prompt above or pick one from the suggestions to generate your first image.
@@ -2325,7 +2325,7 @@ export default function ImageGenerator() {
                             checked={selectedImage.isPublic || false}
                             onCheckedChange={() => toggleVisibility(selectedImage.id, selectedImage.isPublic || false)}
                             data-testid="switch-visibility"
-                            className="data-[state=checked]:bg-[#E91E63] scale-75"
+                            className="data-[state=checked]:bg-[#ed5387] scale-75"
                           />
                         </div>
                       </div>
@@ -2449,7 +2449,7 @@ export default function ImageGenerator() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Bookmark className="h-5 w-5 text-[#E91E63]" />
+              <Bookmark className="h-5 w-5 text-[#ed5387]" />
               Save Prompt
             </DialogTitle>
           </DialogHeader>
@@ -2462,7 +2462,7 @@ export default function ImageGenerator() {
                 value={favoriteName}
                 onChange={(e) => setFavoriteName(e.target.value)}
                 data-testid="input-favorite-name"
-                className="focus-visible:ring-[#E91E63]"
+                className="focus-visible:ring-[#ed5387]"
               />
             </div>
             
@@ -2514,7 +2514,7 @@ export default function ImageGenerator() {
               onClick={handleSavePromptFavorite}
               disabled={isSavingFavorite || !favoriteName.trim()}
               data-testid="button-confirm-save-prompt"
-              className="bg-[#E91E63] hover:bg-[#C2185B] text-white"
+              className="bg-[#ed5387] hover:bg-[#C2185B] text-white"
             >
               {isSavingFavorite ? (
                 <>

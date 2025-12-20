@@ -101,7 +101,7 @@ function SidebarContent({ collapsed, onCollapsedChange, onNavClick }: SidebarCon
       )}
 
       <div className={cn("flex items-center gap-3 px-4 py-6 h-[88px]", collapsed ? "justify-center px-2" : "")}>
-        <div className="h-10 w-10 min-w-[40px] rounded-xl bg-gradient-to-br from-[#E91E63] to-[#9C27B0] flex items-center justify-center shadow-lg shadow-[#E91E63]/20">
+        <div className="h-10 w-10 min-w-[40px] rounded-xl bg-gradient-to-br from-[#ed5387] to-[#9C27B0] flex items-center justify-center shadow-lg shadow-[#ed5387]/20">
           <LayoutDashboard className="h-5 w-5 text-white" />
         </div>
         {!collapsed && (
@@ -117,7 +117,7 @@ function SidebarContent({ collapsed, onCollapsedChange, onNavClick }: SidebarCon
         collapsed ? "justify-center bg-transparent" : "bg-sidebar-accent/50 border border-sidebar-border/50"
       )}>
         <div className="relative flex-shrink-0">
-          <div className="absolute -inset-0.5 bg-gradient-to-br from-[#E91E63] to-[#9C27B0] rounded-full opacity-70" />
+          <div className="absolute -inset-0.5 bg-gradient-to-br from-[#ed5387] to-[#9C27B0] rounded-full opacity-70" />
           <Avatar className="h-9 w-9 border-2 border-sidebar relative">
             <AvatarImage src={user?.profileImageUrl} />
             <AvatarFallback>{initials}</AvatarFallback>
@@ -292,12 +292,12 @@ function SidebarContent({ collapsed, onCollapsedChange, onNavClick }: SidebarCon
 
       <div className={cn("pt-4 mt-auto px-3 pb-6", collapsed ? "flex flex-col items-center" : "")}>
         <div className={cn(
-          "p-4 rounded-xl bg-gradient-to-br from-[#E91E63]/10 to-[#9C27B0]/10 border border-[#E91E63]/20",
+          "p-4 rounded-xl bg-gradient-to-br from-[#ed5387]/10 to-[#9C27B0]/10 border border-[#ed5387]/20",
           collapsed && "p-2"
         )}>
           {!collapsed ? (
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[#E91E63] to-[#9C27B0] flex items-center justify-center">
+              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[#ed5387] to-[#9C27B0] flex items-center justify-center">
                 <LayoutDashboard className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -309,7 +309,7 @@ function SidebarContent({ collapsed, onCollapsedChange, onNavClick }: SidebarCon
             <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#E91E63] to-[#9C27B0] flex items-center justify-center cursor-pointer">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#ed5387] to-[#9C27B0] flex items-center justify-center cursor-pointer">
                     <LayoutDashboard className="h-4 w-4 text-white" />
                   </div>
                 </TooltipTrigger>

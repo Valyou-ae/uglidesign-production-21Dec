@@ -199,11 +199,11 @@ export default function ShareImage() {
           <Link href="/">
             <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground" data-testid="link-back-home">
               <ArrowLeft className="w-4 h-4" />
-              <span className="font-bold text-xl text-[#E91E63]">UGLI</span>
+              <span className="font-bold text-xl text-[#ed5387]">UGLI</span>
             </Button>
           </Link>
           <Link href="/image-gen">
-            <Button className="gap-2 bg-[#E91E63] hover:bg-[#A04228] text-white" data-testid="button-create-own">
+            <Button className="gap-2 bg-[#ed5387] hover:bg-[#A04228] text-white" data-testid="button-create-own">
               <Sparkles className="w-4 h-4" />
               Create Your Own
             </Button>
@@ -383,20 +383,20 @@ export default function ShareImage() {
             
             {/* Try UGLI Button - Full Width */}
             <Link href="/image-gen">
-              <Button className="w-full gap-2 bg-[#E91E63] hover:bg-[#A04228] text-white" data-testid="button-try-ugli">
+              <Button className="w-full gap-2 bg-[#ed5387] hover:bg-[#A04228] text-white" data-testid="button-try-ugli">
                 <Sparkles className="w-4 h-4" />
                 Try UGLI for Free!
               </Button>
             </Link>
 
             {/* CTA Box */}
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-[#E91E63]/10 to-[#9C27B0]/10 border border-[#E91E63]/20">
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-[#ed5387]/10 to-[#9C27B0]/10 border border-[#ed5387]/20">
               <h3 className="font-bold text-foreground mb-2">Generate Your Own AI Images</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Create stunning AI-generated images with UGLI. Fast, powerful, and free to try.
               </p>
               <Link href="/">
-                <Button variant="link" className="p-0 h-auto text-[#E91E63] gap-1" data-testid="link-learn-more">
+                <Button variant="link" className="p-0 h-auto text-[#ed5387] gap-1" data-testid="link-learn-more">
                   Learn more <ExternalLink className="w-3 h-3" />
                 </Button>
               </Link>

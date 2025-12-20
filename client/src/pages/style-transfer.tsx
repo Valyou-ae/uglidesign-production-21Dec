@@ -288,8 +288,8 @@ export default function StyleTransferPage() {
                       className={cn(
                         "relative aspect-square rounded-xl border-2 border-dashed transition-all cursor-pointer overflow-hidden",
                         contentImage
-                          ? "border-[#E91E63]/50 bg-[#E91E63]/5"
-                          : "border-border hover:border-[#E91E63]/50 hover:bg-muted/30"
+                          ? "border-[#ed5387]/50 bg-[#ed5387]/5"
+                          : "border-border hover:border-[#ed5387]/50 hover:bg-muted/30"
                       )}
                       onClick={() => contentInputRef.current?.click()}
                       data-testid="content-image-upload"
@@ -389,7 +389,7 @@ export default function StyleTransferPage() {
                       <div className="relative aspect-square rounded-xl border border-border bg-muted/20 overflow-hidden">
                         {isProcessing ? (
                           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                            <Loader2 className="h-10 w-10 animate-spin text-[#E91E63]" />
+                            <Loader2 className="h-10 w-10 animate-spin text-[#ed5387]" />
                             <span className="text-sm text-muted-foreground">Applying style...</span>
                           </div>
                         ) : resultImage ? (
@@ -403,7 +403,7 @@ export default function StyleTransferPage() {
                               <Button
                                 size="sm"
                                 onClick={downloadResult}
-                                className="bg-[#E91E63] hover:bg-[#C2185B] text-white"
+                                className="bg-[#ed5387] hover:bg-[#C2185B] text-white"
                                 data-testid="download-result"
                               >
                                 <Download className="h-4 w-4 mr-1" />
@@ -498,7 +498,7 @@ export default function StyleTransferPage() {
                         <Button
                           size="sm"
                           onClick={downloadResult}
-                          className="bg-[#E91E63] hover:bg-[#C2185B] text-white"
+                          className="bg-[#ed5387] hover:bg-[#C2185B] text-white"
                           data-testid="download-result-custom"
                         >
                           <Download className="h-4 w-4 mr-1" />

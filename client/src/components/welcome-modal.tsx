@@ -16,7 +16,7 @@ const WELCOME_STEPS: WelcomeStep[] = [
     title: "Create Stunning Images",
     description: "Use our AI-powered image generator to bring your ideas to life. Just describe what you want, and watch the magic happen.",
     icon: Sparkles,
-    gradient: "from-[#E91E63] to-[#C2185B]",
+    gradient: "from-[#ed5387] to-[#C2185B]",
   },
   {
     title: "Professional Mockups",

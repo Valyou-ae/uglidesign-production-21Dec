@@ -116,7 +116,7 @@
   --popover: 0 0% 100%;
   --popover-foreground: 240 29% 14%;
 
-  /* Primary: #E91E63 (Pink) */
+  /* Primary: #ed5387 (Pink) */
   --primary: 340 82% 52%;
   --primary-foreground: 0 0% 100%;
 
@@ -173,7 +173,7 @@
   --popover: 0 0% 10%;
   --popover-foreground: 0 0% 98%;
 
-  /* Primary: #E91E63 (Pink) */
+  /* Primary: #ed5387 (Pink) */
   --primary: 340 82% 52%;
   --primary-foreground: 0 0% 100%;
 
@@ -225,7 +225,7 @@
   }
   
   .text-gradient-brand {
-    @apply bg-gradient-to-r from-[#E91E63] to-[#9C27B0] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#ed5387] to-[#9C27B0] bg-clip-text text-transparent;
   }
   
   .card-hover {

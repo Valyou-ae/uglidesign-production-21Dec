@@ -119,7 +119,7 @@ const OUTPUT_TYPES: Array<{
     name: 'Custom Color', 
     description: 'Any solid color',
     icon: Palette,
-    preview: 'bg-gradient-to-br from-[#E91E63] to-[#C2185B]'
+    preview: 'bg-gradient-to-br from-[#ed5387] to-[#C2185B]'
   },
   { 
     id: 'blur', 
@@ -1102,7 +1102,7 @@ export default function BackgroundRemover() {
             <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-16 mb-1">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#E91E63] to-[#C2185B] bg-clip-text text-transparent">
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#ed5387] to-[#C2185B] bg-clip-text text-transparent">
                     Background Remover
                   </h1>
                   <Scissors className="h-5 w-5 md:h-6 md:w-6 text-primary" />
@@ -1188,7 +1188,7 @@ export default function BackgroundRemover() {
                   <Button 
                     onClick={processImage}
                     disabled={state === "processing"}
-                    className="h-12 px-8 rounded-[12px] bg-gradient-to-r from-[#E91E63] to-[#C2185B] hover:from-[#C2185B] hover:to-[#6A2D1C] text-white font-bold transition-all hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/25"
+                    className="h-12 px-8 rounded-[12px] bg-gradient-to-r from-[#ed5387] to-[#C2185B] hover:from-[#C2185B] hover:to-[#6A2D1C] text-white font-bold transition-all hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/25"
                     data-testid="process-button"
                   >
                     {state === "processing" ? (
@@ -1256,7 +1256,7 @@ export default function BackgroundRemover() {
                   <Button 
                     onClick={processBatch}
                     disabled={state === "processing" || batchImages.length === 0}
-                    className="h-12 px-8 rounded-[12px] bg-gradient-to-r from-[#E91E63] to-[#C2185B] hover:from-[#C2185B] hover:to-[#6A2D1C] text-white font-bold transition-all hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/25"
+                    className="h-12 px-8 rounded-[12px] bg-gradient-to-r from-[#ed5387] to-[#C2185B] hover:from-[#C2185B] hover:to-[#6A2D1C] text-white font-bold transition-all hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/25"
                     data-testid="process-batch-button"
                   >
                     {state === "processing" ? (
@@ -1399,7 +1399,7 @@ export default function BackgroundRemover() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
-                        className="h-12 px-6 rounded-[12px] bg-gradient-to-r from-[#E91E63] to-[#C2185B] hover:from-[#C2185B] hover:to-[#6A2D1C] text-white font-bold"
+                        className="h-12 px-6 rounded-[12px] bg-gradient-to-r from-[#ed5387] to-[#C2185B] hover:from-[#C2185B] hover:to-[#6A2D1C] text-white font-bold"
                         data-testid="download-button"
                       >
                         <Download className="h-5 w-5 mr-2" />
@@ -1472,7 +1472,7 @@ export default function BackgroundRemover() {
                   <Button 
                     onClick={downloadAllAsZip}
                     disabled={batchResults.successful === 0}
-                    className="h-12 px-6 rounded-[12px] bg-gradient-to-r from-[#E91E63] to-[#C2185B] hover:from-[#C2185B] hover:to-[#6A2D1C] text-white font-bold"
+                    className="h-12 px-6 rounded-[12px] bg-gradient-to-r from-[#ed5387] to-[#C2185B] hover:from-[#C2185B] hover:to-[#6A2D1C] text-white font-bold"
                     data-testid="download-all-zip"
                   >
                     <Package className="h-5 w-5 mr-2" />
@@ -1505,7 +1505,7 @@ export default function BackgroundRemover() {
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-muted overflow-hidden">
                 <motion.div 
-                  className="h-full bg-gradient-to-r from-[#E91E63] to-[#C2185B]"
+                  className="h-full bg-gradient-to-r from-[#ed5387] to-[#C2185B]"
                   initial={{ width: "0%" }}
                   animate={{ width: "100%" }}
                   transition={{ duration: 30, ease: "linear" }}

@@ -207,7 +207,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="group bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-[20px] overflow-hidden cursor-pointer hover:border-[#E91E63]/50 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(233,30,99,0.15)] transition-all duration-300">
+      <div className="group bg-white dark:bg-[#111113] border border-[#E4E4E7] dark:border-[#1F1F23] rounded-[20px] overflow-hidden cursor-pointer hover:border-[#ed5387]/50 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(233,30,99,0.15)] transition-all duration-300">
         <div className={cn("relative overflow-hidden", aspectClasses[item.aspectRatio])}>
           {isVisible ? (
             <>
@@ -222,7 +222,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
                 )}
               />
               {!imageLoaded && (
-                <div className="absolute inset-0 bg-gradient-to-br from-[#E91E63]/20 to-[#1A1A2E]/20 animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#ed5387]/20 to-[#1A1A2E]/20 animate-pulse" />
               )}
             </>
           ) : (
@@ -241,7 +241,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
           <div className="absolute bottom-0 left-0 right-0 p-4">
             <h3 className="text-base font-semibold text-white truncate drop-shadow-lg">{item.title}</h3>
             <div className="flex items-center gap-2 mt-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#E91E63] to-[#9C27B0]" />
+              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#ed5387] to-[#9C27B0]" />
               <span className="text-xs text-white/80">@{item.creator}</span>
               {item.verified && <BadgeCheck className="h-3 w-3 text-[#9C27B0]" />}
             </div>
@@ -297,8 +297,8 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
                 className={cn(
                   "flex items-center gap-1 text-xs transition-colors",
                   remixed 
-                    ? "text-[#E91E63]" 
-                    : "text-[#71717A] dark:text-[#52525B] hover:text-[#E91E63]"
+                    ? "text-[#ed5387]" 
+                    : "text-[#71717A] dark:text-[#52525B] hover:text-[#ed5387]"
                 )}
                 data-testid={`button-remix-${item.id}`}
               >
@@ -312,7 +312,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
                   <PopoverTrigger asChild>
                     <button
                       onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 text-xs text-[#71717A] dark:text-[#52525B] hover:text-[#E91E63] transition-colors"
+                      className="flex items-center gap-1 text-xs text-[#71717A] dark:text-[#52525B] hover:text-[#ed5387] transition-colors"
                       data-testid={`button-share-${item.id}`}
                       title="Share this image"
                     >
@@ -323,7 +323,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
                     <div className="flex flex-col gap-1">
                       <button
                         onClick={handleCopyShareLink}
-                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-[#E91E63]/10 transition-colors text-left"
+                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-[#ed5387]/10 transition-colors text-left"
                         data-testid={`button-copy-link-${item.id}`}
                       >
                         {linkCopied ? <Check className="h-4 w-4 text-green-500" /> : <Link2 className="h-4 w-4" />}
@@ -365,7 +365,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
               )}
               <button
                 onClick={handleCopyPrompt}
-                className="flex items-center gap-1 text-xs text-[#71717A] dark:text-[#52525B] hover:text-[#E91E63] transition-colors"
+                className="flex items-center gap-1 text-xs text-[#71717A] dark:text-[#52525B] hover:text-[#ed5387] transition-colors"
                 data-testid={`button-copy-${item.id}`}
               >
                 {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
@@ -2103,7 +2103,7 @@ export default function Discover() {
         <div className="px-4 md:px-8 lg:px-12 py-6 max-w-[1600px] mx-auto w-full">
           <div className="flex items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-[#E91E63]" />
+              <TrendingUp className="h-5 w-5 text-[#ed5387]" />
               <h2 className="text-xl font-semibold text-[#18181B] dark:text-[#FAFAFA]">Discover</h2>
               <div className="flex items-center gap-2 px-2.5 py-1 bg-[#16A34A]/10 rounded-full ml-1">
                 <span className="relative flex h-2 w-2">
@@ -2121,7 +2121,7 @@ export default function Discover() {
                 placeholder="Search by prompt, category, tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-9 h-10 bg-white dark:bg-[#111113] border-[#E4E4E7] dark:border-[#1F1F23] rounded-full text-sm focus:border-[#E91E63] focus:ring-[#E91E63]/20"
+                className="pl-9 pr-9 h-10 bg-white dark:bg-[#111113] border-[#E4E4E7] dark:border-[#1F1F23] rounded-full text-sm focus:border-[#ed5387] focus:ring-[#ed5387]/20"
                 data-testid="input-search-discover"
               />
               {searchQuery && (
@@ -2138,7 +2138,7 @@ export default function Discover() {
 
           {isLoadingCommunity ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-[#E91E63] mb-4" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#ed5387] mb-4" />
               <span className="text-sm text-[#71717A]">Loading community creations...</span>
             </div>
           ) : displayedItems.length === 0 && searchQuery ? (
@@ -2150,7 +2150,7 @@ export default function Discover() {
               </p>
               <button
                 onClick={() => setSearchQuery("")}
-                className="mt-4 px-4 py-2 text-sm font-medium text-[#E91E63] hover:bg-[#E91E63]/10 rounded-full transition-colors"
+                className="mt-4 px-4 py-2 text-sm font-medium text-[#ed5387] hover:bg-[#ed5387]/10 rounded-full transition-colors"
                 data-testid="button-clear-search-empty"
               >
                 Clear search

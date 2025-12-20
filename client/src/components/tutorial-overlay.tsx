@@ -41,7 +41,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     title: "Enter Your Prompt",
     description: "Start by describing the image you want to create. Be as detailed as you like - mention subjects, styles, lighting, mood, and any specific elements you want.",
     targetSelector: "[data-tutorial='prompt-input']",
-    icon: <Wand2 className="h-6 w-6 text-[#E91E63]" />,
+    icon: <Wand2 className="h-6 w-6 text-[#ed5387]" />,
     position: "bottom"
   },
   {
@@ -57,7 +57,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     title: "Select Aspect Ratio",
     description: "Choose the perfect dimensions for your image. Square for social profiles, landscape for wallpapers, or portrait for mobile screens.",
     targetSelector: "[data-tutorial='ratio-selector']",
-    icon: <Layers className="h-6 w-6 text-[#E91E63]" />,
+    icon: <Layers className="h-6 w-6 text-[#ed5387]" />,
     position: "top"
   },
   {
@@ -73,7 +73,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     title: "View Your Creations",
     description: "All your generated images are saved in My Creations. Access, download, or remix your artwork anytime from the sidebar.",
     targetSelector: "[data-tutorial='my-creations-link']",
-    icon: <ImageIcon className="h-6 w-6 text-[#E91E63]" />,
+    icon: <ImageIcon className="h-6 w-6 text-[#ed5387]" />,
     position: "right"
   }
 ];
@@ -241,7 +241,7 @@ export function TutorialOverlay({ isOpen, onClose, onComplete }: TutorialOverlay
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute z-[101] rounded-xl ring-4 ring-[#E91E63]/50 ring-offset-2 ring-offset-transparent pointer-events-none tutorial-pulse"
+              className="absolute z-[101] rounded-xl ring-4 ring-[#ed5387]/50 ring-offset-2 ring-offset-transparent pointer-events-none tutorial-pulse"
               style={{
                 top: targetRect.top - 8,
                 left: targetRect.left - 8,
@@ -275,7 +275,7 @@ export function TutorialOverlay({ isOpen, onClose, onComplete }: TutorialOverlay
 
             <div className="p-6 pt-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#E91E63]/10 to-[#9C27B0]/10 flex items-center justify-center shrink-0">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#ed5387]/10 to-[#9C27B0]/10 flex items-center justify-center shrink-0">
                   {step.icon}
                 </div>
                 <div>
@@ -300,9 +300,9 @@ export function TutorialOverlay({ isOpen, onClose, onComplete }: TutorialOverlay
                     className={cn(
                       "h-2 rounded-full transition-all duration-300",
                       index === currentStep 
-                        ? "w-6 bg-gradient-to-r from-[#E91E63] to-[#9C27B0]" 
+                        ? "w-6 bg-gradient-to-r from-[#ed5387] to-[#9C27B0]" 
                         : index < currentStep
-                        ? "w-2 bg-[#E91E63]/50"
+                        ? "w-2 bg-[#ed5387]/50"
                         : "w-2 bg-muted-foreground/20 hover:bg-muted-foreground/30"
                     )}
                     data-testid={`tutorial-step-indicator-${index}`}
@@ -341,7 +341,7 @@ export function TutorialOverlay({ isOpen, onClose, onComplete }: TutorialOverlay
                   size="sm"
                   onClick={handleNext}
                   disabled={isAnimating}
-                  className="flex-1 h-10 rounded-xl bg-gradient-to-r from-[#E91E63] to-[#C2185B] hover:brightness-110 text-white"
+                  className="flex-1 h-10 rounded-xl bg-gradient-to-r from-[#ed5387] to-[#C2185B] hover:brightness-110 text-white"
                   data-testid="tutorial-next"
                 >
                   {isLastStep ? (

@@ -173,7 +173,7 @@ function JustifiedGalleryCard({ item, rowHeight, index, onLike, isLoggedIn }: { 
                 )}
               />
               {!imageLoaded && (
-                <div className="absolute inset-0 bg-gradient-to-br from-[#E91E63]/20 to-[#1A1A2E]/20 animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#ed5387]/20 to-[#1A1A2E]/20 animate-pulse" />
               )}
             </>
           ) : (
@@ -181,7 +181,7 @@ function JustifiedGalleryCard({ item, rowHeight, index, onLike, isLoggedIn }: { 
           )}
           
           {item.isGenerated && (
-            <div className="absolute top-2 right-2 bg-gradient-to-r from-[#E91E63] to-[#9C27B0] px-2 py-1 rounded-full flex items-center gap-1 z-10">
+            <div className="absolute top-2 right-2 bg-gradient-to-r from-[#ed5387] to-[#9C27B0] px-2 py-1 rounded-full flex items-center gap-1 z-10">
               <Sparkles className="h-3 w-3 text-white" />
               <span className="text-[10px] font-medium text-white">NEW</span>
             </div>
@@ -207,7 +207,7 @@ function JustifiedGalleryCard({ item, rowHeight, index, onLike, isLoggedIn }: { 
                 data-testid={`button-like-${item.id}`}
                 className={cn(
                   "flex items-center gap-1 text-xs transition-all duration-200 hover:scale-110",
-                  item.isLiked ? "text-[#E91E63]" : "text-white/80 hover:text-[#E91E63]"
+                  item.isLiked ? "text-[#ed5387]" : "text-white/80 hover:text-[#ed5387]"
                 )}
               >
                 <Heart className={cn("h-3 w-3", item.isLiked && "fill-current")} />
@@ -473,7 +473,7 @@ function BrandingHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
         
         <Button 
           onClick={() => openLoginPopup()}
-          className="bg-gradient-to-r from-[#E91E63] to-[#9C27B0] hover:from-[#C2185B] hover:to-[#7B1FA2] text-white font-medium px-6 py-2 rounded-full shadow-lg shadow-[#E91E63]/30 transition-all hover:scale-105"
+          className="bg-gradient-to-r from-[#ed5387] to-[#9C27B0] hover:from-[#C2185B] hover:to-[#7B1FA2] text-white font-medium px-6 py-2 rounded-full shadow-lg shadow-[#ed5387]/30 transition-all hover:scale-105"
           data-testid="button-get-started-hero"
         >
           Get Started Free
@@ -632,7 +632,7 @@ export default function PublicHome() {
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-[#E91E63] border-t-transparent rounded-full animate-spin" />
+                <div className="w-12 h-12 border-4 border-[#ed5387] border-t-transparent rounded-full animate-spin" />
                 <p className="text-gray-400 text-sm">Loading gallery...</p>
               </div>
             </div>

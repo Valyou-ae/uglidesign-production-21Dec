@@ -166,7 +166,7 @@ export function Sidebar({ className }: SidebarProps) {
       </Link>
       <Link href="/image-gen">
         <div className="flex flex-col items-center justify-center -mt-6 cursor-pointer">
-           <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#E91E63] to-[#9C27B0] flex items-center justify-center shadow-lg shadow-[#E91E63]/30 border-4 border-background">
+           <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#ed5387] to-[#9C27B0] flex items-center justify-center shadow-lg shadow-[#ed5387]/30 border-4 border-background">
              <ImageIcon className="h-6 w-6 text-white" />
            </div>
            <span className="text-[10px] mt-1 font-medium text-foreground">Create</span>
@@ -284,7 +284,7 @@ export function Sidebar({ className }: SidebarProps) {
                           <span className={cn(
                             "text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
                             isDiscover 
-                              ? "bg-gradient-to-r from-[#E91E63] to-[#9C27B0] text-white"
+                              ? "bg-gradient-to-r from-[#ed5387] to-[#9C27B0] text-white"
                               : "bg-primary/10 text-primary"
                           )}>
                             {item.badge}

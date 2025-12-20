@@ -113,7 +113,7 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
       </Link>
       <Link href="/image-gen">
         <div className="flex flex-col items-center justify-center -mt-6 cursor-pointer">
-           <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#E91E63] to-[#9C27B0] flex items-center justify-center shadow-lg shadow-[#E91E63]/30 border-4 border-background">
+           <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#ed5387] to-[#9C27B0] flex items-center justify-center shadow-lg shadow-[#ed5387]/30 border-4 border-background">
              <ImageIcon className="h-6 w-6 text-white" />
            </div>
            <span className="text-[10px] mt-1 font-medium text-foreground">Create</span>
@@ -130,7 +130,7 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
         className="flex flex-col items-center justify-center p-2 cursor-pointer text-primary"
         data-testid="button-mobile-login"
       >
-        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#E91E63] to-[#9C27B0] flex items-center justify-center">
+        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#ed5387] to-[#9C27B0] flex items-center justify-center">
           <span className="text-[10px] text-white font-bold">Go</span>
         </div>
         <span className="text-[10px] mt-1">Login</span>
@@ -210,7 +210,7 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
                           <span className={cn(
                             "text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
                             isDiscover 
-                              ? "bg-gradient-to-r from-[#E91E63] to-[#9C27B0] text-white"
+                              ? "bg-gradient-to-r from-[#ed5387] to-[#9C27B0] text-white"
                               : "bg-primary/10 text-primary"
                           )}>
                             {item.badge}
@@ -312,7 +312,7 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
               className="flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-lg font-medium text-white/50 hover:bg-white/10 hover:text-white transition-all cursor-pointer group select-none mx-auto w-[52px]"
               data-testid="button-login-sidebar"
             >
-              <div className="h-5 w-5 rounded-full bg-gradient-to-br from-[#E91E63] to-[#9C27B0] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="h-5 w-5 rounded-full bg-gradient-to-br from-[#ed5387] to-[#9C27B0] flex items-center justify-center group-hover:scale-110 transition-transform">
                 <User className="h-3 w-3 text-white" />
               </div>
               <span className="text-[9px] font-medium">Login</span>
@@ -323,7 +323,7 @@ export function PublicSidebar({ className }: PublicSidebarProps) {
               className="flex items-center gap-3 rounded-lg font-medium text-white/50 hover:bg-white/10 hover:text-white transition-all cursor-pointer group select-none px-3.5 py-3 text-sm w-full"
               data-testid="button-login-sidebar"
             >
-              <div className="h-5 w-5 rounded-full bg-gradient-to-br from-[#E91E63] to-[#9C27B0] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="h-5 w-5 rounded-full bg-gradient-to-br from-[#ed5387] to-[#9C27B0] flex items-center justify-center group-hover:scale-110 transition-transform">
                 <User className="h-3 w-3 text-white" />
               </div>
               <span>Sign In</span>

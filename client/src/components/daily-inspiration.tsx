@@ -22,7 +22,7 @@ const categoryColors: Record<string, { bg: string; text: string; border: string 
   architecture: { bg: "bg-slate-500/20", text: "text-slate-300", border: "border-slate-500/30" },
   nature: { bg: "bg-emerald-500/20", text: "text-emerald-300", border: "border-emerald-500/30" },
   scifi: { bg: "bg-cyan-500/20", text: "text-cyan-300", border: "border-cyan-500/30" },
-  default: { bg: "bg-[#E91E63]/20", text: "text-[#E91E63]", border: "border-[#E91E63]/30" },
+  default: { bg: "bg-[#ed5387]/20", text: "text-[#ed5387]", border: "border-[#ed5387]/30" },
 };
 
 const difficultyConfig: Record<string, { label: string; color: string }> = {
@@ -68,7 +68,7 @@ function InspirationCard({
         "relative rounded-2xl overflow-hidden border backdrop-blur-sm",
         colorScheme.border,
         "bg-gradient-to-br from-[#1a1a1a]/90 to-[#0f0f0f]/90",
-        isActive && "ring-2 ring-[#E91E63]/50"
+        isActive && "ring-2 ring-[#ed5387]/50"
       )}
       data-testid={`inspiration-card-${inspiration.id}`}
     >
@@ -143,7 +143,7 @@ function InspirationCard({
         {onTryPrompt && (
           <Button
             onClick={handleTryPrompt}
-            className="w-full bg-[#E91E63] hover:bg-[#C2185B] text-white"
+            className="w-full bg-[#ed5387] hover:bg-[#C2185B] text-white"
             data-testid={`try-prompt-${inspiration.id}`}
           >
             <Lightbulb className="w-4 h-4 mr-2" />
@@ -242,7 +242,7 @@ export function DailyInspirationFeed({ onTryPrompt }: DailyInspirationProps) {
               className={cn(
                 "w-2 h-2 rounded-full transition-all",
                 index === currentIndex 
-                  ? "bg-[#E91E63] w-6" 
+                  ? "bg-[#ed5387] w-6" 
                   : "bg-white/20 hover:bg-white/40"
               )}
               data-testid={`inspiration-dot-${index}`}
@@ -354,12 +354,12 @@ function PersonalizedPromptCard({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative rounded-xl overflow-hidden border border-[#E91E63]/20 bg-gradient-to-br from-[#1a1a1a]/90 to-[#0f0f0f]/90 p-4"
+      className="relative rounded-xl overflow-hidden border border-[#ed5387]/20 bg-gradient-to-br from-[#1a1a1a]/90 to-[#0f0f0f]/90 p-4"
       data-testid={`personalized-prompt-${recommendation.id}`}
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-2">
-          <Badge variant="outline" className="bg-[#E91E63]/20 text-[#E91E63] border-[#E91E63]/30 text-xs">
+          <Badge variant="outline" className="bg-[#ed5387]/20 text-[#ed5387] border-[#ed5387]/30 text-xs">
             <User className="w-3 h-3 mr-1" />
             For You
           </Badge>
@@ -403,7 +403,7 @@ function PersonalizedPromptCard({
           <Button
             onClick={handleTryPrompt}
             size="sm"
-            className="w-full bg-[#E91E63] hover:bg-[#C2185B] text-white"
+            className="w-full bg-[#ed5387] hover:bg-[#C2185B] text-white"
             data-testid={`try-personalized-prompt-${recommendation.id}`}
           >
             <Wand2 className="w-4 h-4 mr-2" />
@@ -458,7 +458,7 @@ export function PersonalizedPrompts({ onTryPrompt }: DailyInspirationProps) {
     <div className="space-y-4" data-testid="personalized-prompts">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <User className="w-5 h-5 text-[#E91E63]" />
+          <User className="w-5 h-5 text-[#ed5387]" />
           <h2 className="text-lg font-semibold text-white">For You</h2>
         </div>
         {hasMultiple && (
@@ -505,7 +505,7 @@ export function PersonalizedPrompts({ onTryPrompt }: DailyInspirationProps) {
               className={cn(
                 "w-2 h-2 rounded-full transition-all",
                 index === currentIndex 
-                  ? "bg-[#E91E63] w-6" 
+                  ? "bg-[#ed5387] w-6" 
                   : "bg-white/20 hover:bg-white/40"
               )}
               data-testid={`personalized-dot-${index}`}

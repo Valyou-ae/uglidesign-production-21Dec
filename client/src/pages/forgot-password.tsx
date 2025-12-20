@@ -58,7 +58,7 @@ export default function ForgotPassword() {
       <div className="hidden lg:flex w-1/2 relative bg-black items-center justify-center overflow-hidden">
         {/* Background Gradients */}
         <div className="absolute top-0 left-0 w-full h-full bg-[#0A0A0B]">
-          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-[#E91E63]/20 rounded-full blur-[120px]" />
+          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-[#ed5387]/20 rounded-full blur-[120px]" />
           <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-[#9C27B0]/20 rounded-full blur-[120px]" />
         </div>
         
@@ -73,7 +73,7 @@ export default function ForgotPassword() {
             
             <h1 className="text-5xl font-bold text-white mb-6 leading-tight">
               Recovery made <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E91E63] to-[#9C27B0]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ed5387] to-[#9C27B0]">
                 simple & secure
               </span>
             </h1>
@@ -87,7 +87,7 @@ export default function ForgotPassword() {
         {/* Abstract floating elements */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 right-1/4 w-24 h-24 bg-gradient-to-br from-[#9C27B0] to-[#7B1FA2] rounded-2xl opacity-20 blur-2xl animate-float" />
-          <div className="absolute bottom-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-[#E91E63] to-[#C2185B] rounded-full opacity-20 blur-3xl animate-float-delayed" />
+          <div className="absolute bottom-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-[#ed5387] to-[#C2185B] rounded-full opacity-20 blur-3xl animate-float-delayed" />
         </div>
       </div>
 
@@ -176,7 +176,7 @@ export default function ForgotPassword() {
                 <Button 
                   type="submit" 
                   disabled={isLoading} 
-                  className="h-11 rounded-xl bg-gradient-to-r from-[#E91E63] to-[#C2185B] hover:brightness-110 text-white font-bold shadow-lg shadow-[#E91E63]/20 transition-all hover:-translate-y-[1px]"
+                  className="h-11 rounded-xl bg-gradient-to-r from-[#ed5387] to-[#C2185B] hover:brightness-110 text-white font-bold shadow-lg shadow-[#ed5387]/20 transition-all hover:-translate-y-[1px]"
                   data-testid="button-send-reset-link"
                 >
                   {isLoading ? (

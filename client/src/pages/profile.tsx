@@ -188,7 +188,7 @@ export default function Profile() {
       <main className="flex-1 flex flex-col relative h-full overflow-y-auto bg-[#FAFAFA] dark:bg-[#09090B]">
         {/* Cover Image */}
         <div className="h-32 md:h-40 w-full relative overflow-hidden flex-shrink-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#E91E63] via-[#9C27B0] to-[#1A1A2E] opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#ed5387] via-[#9C27B0] to-[#1A1A2E] opacity-90" />
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
           <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
           
@@ -211,7 +211,7 @@ export default function Profile() {
               <div className="rounded-full p-1 md:p-1.5 bg-background">
                 <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-xl">
                   <AvatarImage src={user.profileImageUrl || ""} />
-                  <AvatarFallback className="text-4xl bg-gradient-to-br from-[#E91E63] to-[#9C27B0] text-white" data-testid="text-user-initials">
+                  <AvatarFallback className="text-4xl bg-gradient-to-br from-[#ed5387] to-[#9C27B0] text-white" data-testid="text-user-initials">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -232,7 +232,7 @@ export default function Profile() {
                   </Button>
                   <Button 
                     size="sm" 
-                    className="bg-gradient-to-r from-[#E91E63] to-[#C2185B] hover:shadow-lg hover:shadow-[#E91E63]/20 border-0 text-white"
+                    className="bg-gradient-to-r from-[#ed5387] to-[#C2185B] hover:shadow-lg hover:shadow-[#ed5387]/20 border-0 text-white"
                     onClick={() => setLocation("/settings")}
                     data-testid="button-edit-profile"
                   >

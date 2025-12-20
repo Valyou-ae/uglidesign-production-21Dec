@@ -470,7 +470,7 @@ export default function MyCreations() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setCalendarOpen(true)}
-                className="h-10 w-10 bg-white dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-lg hover:bg-[#F4F4F5] dark:hover:bg-[#2A2A30] text-[#71717A] hover:text-[#E91E63]"
+                className="h-10 w-10 bg-white dark:bg-[#1F1F25] border border-[#E4E4E7] dark:border-[#2A2A30] rounded-lg hover:bg-[#F4F4F5] dark:hover:bg-[#2A2A30] text-[#71717A] hover:text-[#ed5387]"
                 data-testid="button-calendar-history"
               >
                 <Calendar className="h-4 w-4" />
@@ -888,7 +888,7 @@ export default function MyCreations() {
                 <Button
                   onClick={() => fetchNextPage()}
                   disabled={isFetchingNextPage}
-                  className="bg-[#E91E63] hover:bg-[#9A3E25] text-white px-8 py-2"
+                  className="bg-[#ed5387] hover:bg-[#9A3E25] text-white px-8 py-2"
                   data-testid="button-load-more"
                 >
                   {isFetchingNextPage ? (
@@ -1046,7 +1046,7 @@ export default function MyCreations() {
                           checked={selectedItem.isPublic}
                           onCheckedChange={() => toggleVisibility(selectedItem.id, selectedItem.isPublic)}
                           data-testid="switch-visibility-creations"
-                          className="data-[state=checked]:bg-[#E91E63] scale-75"
+                          className="data-[state=checked]:bg-[#ed5387] scale-75"
                         />
                       </div>
                     </div>
