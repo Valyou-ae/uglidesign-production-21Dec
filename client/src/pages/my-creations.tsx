@@ -740,10 +740,10 @@ export default function MyCreations() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-[#1F1F25] border-[#2A2A30] text-[#E4E4E7]">
                           <DropdownMenuItem onClick={() => handleAction("Open", item)} className="hover:bg-[#2A2A30] cursor-pointer"><ArrowUpRight className="h-4 w-4 mr-2" /> Open</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleAction("Edit", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Pencil className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleAction("Download", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Download className="h-4 w-4 mr-2" /> Download</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleAction("Copy", item)} className="hover:bg-[#2A2A30] cursor-pointer"><ClipboardCopy className="h-4 w-4 mr-2" /> Copy to Clipboard</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleAction("Duplicate", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Copy className="h-4 w-4 mr-2" /> Duplicate</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAction("Move", item)} className="hover:bg-[#2A2A30] cursor-pointer"><FolderInput className="h-4 w-4 mr-2" /> Move to Folder</DropdownMenuItem>
                           <DropdownMenuSeparator className="bg-[#2A2A30]" />
                           <DropdownMenuItem 
                             onClick={() => {
@@ -772,13 +772,6 @@ export default function MyCreations() {
                           >
                             <Palette className="h-4 w-4 mr-2" /> Apply Style Transfer
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator className="bg-[#2A2A30]" />
-                          {item.favorite ? (
-                            <DropdownMenuItem onClick={() => handleAction("Unfavorite", item)} className="text-[#F59E0B] hover:bg-[#2A2A30] cursor-pointer"><StarOff className="h-4 w-4 mr-2" /> Unfavorite</DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={() => handleAction("Favorite", item)} className="text-[#F59E0B] hover:bg-[#2A2A30] cursor-pointer"><Star className="h-4 w-4 mr-2" /> Add to Favorites</DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem onClick={() => handleAction("Delete", item)} className="text-[#DC2626] hover:bg-[#2A2A30] cursor-pointer"><Trash2 className="h-4 w-4 mr-2" /> Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -864,17 +857,6 @@ export default function MyCreations() {
                               <ClipboardCopy className="h-3.5 w-3.5" />
                             </Button>
                             <div className="flex items-center gap-1 ml-auto">
-                              <Button 
-                                size="icon" 
-                                className="h-8 w-8 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleFavorite(item.id);
-                                }}
-                              >
-                                <Star className={cn("h-3.5 w-3.5", item.favorite && "fill-yellow-400 text-yellow-400")} />
-                              </Button>
-                              
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button size="icon" className="h-8 w-8 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg">
@@ -883,7 +865,6 @@ export default function MyCreations() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="bg-[#1F1F25] border-[#2A2A30] text-[#E4E4E7]">
                                   <DropdownMenuItem onClick={() => handleAction("Open", item)} className="hover:bg-[#2A2A30] cursor-pointer"><ArrowUpRight className="h-4 w-4 mr-2" /> Open</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleAction("Edit", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Pencil className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleAction("Copy", item)} className="hover:bg-[#2A2A30] cursor-pointer"><ClipboardCopy className="h-4 w-4 mr-2" /> Copy to Clipboard</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleAction("Duplicate", item)} className="hover:bg-[#2A2A30] cursor-pointer"><Copy className="h-4 w-4 mr-2" /> Duplicate</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleAction("Move", item)} className="hover:bg-[#2A2A30] cursor-pointer"><FolderInput className="h-4 w-4 mr-2" /> Move to Folder</DropdownMenuItem>
@@ -915,26 +896,8 @@ export default function MyCreations() {
                                   >
                                     <Palette className="h-4 w-4 mr-2" /> Apply Style Transfer
                                   </DropdownMenuItem>
-                                  <DropdownMenuSeparator className="bg-[#2A2A30]" />
-                                  {item.favorite ? (
-                                    <DropdownMenuItem onClick={() => handleAction("Unfavorite", item)} className="text-[#F59E0B] hover:bg-[#2A2A30] cursor-pointer"><StarOff className="h-4 w-4 mr-2" /> Unfavorite</DropdownMenuItem>
-                                  ) : (
-                                    <DropdownMenuItem onClick={() => handleAction("Favorite", item)} className="text-[#F59E0B] hover:bg-[#2A2A30] cursor-pointer"><Star className="h-4 w-4 mr-2" /> Add to Favorites</DropdownMenuItem>
-                                  )}
-                                  <DropdownMenuItem onClick={() => handleAction("Delete", item)} className="text-[#DC2626] hover:bg-[#2A2A30] cursor-pointer"><Trash2 className="h-4 w-4 mr-2" /> Delete</DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-
-                              <Button 
-                                size="icon" 
-                                className="h-8 w-8 bg-white/10 hover:bg-red-500/20 text-white hover:text-red-400 border-0 backdrop-blur-md rounded-lg transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAction("Delete", item);
-                                }}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
                             </div>
                           </div>
                         </div>
