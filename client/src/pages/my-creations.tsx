@@ -65,6 +65,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useImages } from "@/hooks/use-images";
 import { CalendarHistoryModal } from "@/components/calendar-history-modal";
 import { transferImageToTool } from "@/lib/image-transfer";
+import { useQuery } from "@tanstack/react-query";
+import { foldersApi, type ImageFolder } from "@/lib/api";
 
 
 type ItemType = {
@@ -80,6 +82,7 @@ type ItemType = {
   tags: string[];
   favorite: boolean;
   isPublic: boolean;
+  folderId: string | null;
 };
 
 import { useLocation } from "wouter";
@@ -98,7 +101,15 @@ export default function MyCreations() {
   const [selectedItem, setSelectedItem] = useState<ItemType | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Fetch folders
+  const { data: foldersData, isLoading: isLoadingFolders } = useQuery({
+    queryKey: ["folders"],
+    queryFn: foldersApi.getAll,
+  });
+  const folders = foldersData?.folders || [];
   
   // Fetch images from backend API
   const { images: dbImages, isLoading, toggleFavorite: apiToggleFavorite, deleteImage: apiDeleteImage, setVisibility: apiSetVisibility, hasNextPage, fetchNextPage, isFetchingNextPage, total } = useImages();
@@ -130,6 +141,7 @@ export default function MyCreations() {
       favorite: img.isFavorite || false,
       isPublic: img.isPublic || false,
       aspectRatio: img.aspectRatio || "1:1",
+      folderId: img.folderId || null,
     }));
   }, [dbImages]);
 
@@ -396,12 +408,16 @@ export default function MyCreations() {
   };
 
   const filteredItems = items.filter(item => {
+    // First apply folder filter if active
+    if (activeFolderId && item.folderId !== activeFolderId) return false;
+    
     if (activeFilter === "All") return true;
     if (activeFilter === "My Favourites" && item.favorite) return true;
     if (activeFilter === "My Favourites" && !item.favorite) return false;
     if (activeFilter === "Images" && item.type === "image") return true;
     if (activeFilter === "Mockups" && item.type === "mockup") return true;
     if (activeFilter === "BG Removed" && item.type === "bg-removed") return true;
+    if (activeFilter === "Folders") return true; // Show all when in Folders view
     return false;
   }).filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -533,19 +549,26 @@ export default function MyCreations() {
             <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
               {[
                 { name: "All", count: items.length },
+                { name: "Folders", count: folders.length },
                 { name: "My Favourites", count: items.filter(i => i.favorite).length },
                 { name: "Images", count: items.filter(i => i.type === "image").length },
                 { name: "Mockups", count: items.filter(i => i.type === "mockup").length },
               ].map(filter => (
                 <button
                   key={filter.name}
-                  onClick={() => setActiveFilter(filter.name)}
+                  onClick={() => {
+                    setActiveFilter(filter.name);
+                    if (filter.name !== "Folders") {
+                      setActiveFolderId(null);
+                    }
+                  }}
                   className={cn(
                     "px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 border whitespace-nowrap flex-shrink-0",
                     activeFilter === filter.name 
                       ? "bg-[#F59E0B] text-[#18181B] border-[#F59E0B]" 
                       : "bg-white dark:bg-[#1F1F25] text-[#71717A] border-[#E4E4E7] dark:border-[#2A2A30]"
                   )}
+                  data-testid={`filter-${filter.name.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   {filter.name}
                   <span className={cn("opacity-70", activeFilter === filter.name ? "text-[#18181B]" : "")}>
@@ -636,6 +659,73 @@ export default function MyCreations() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* FOLDERS SECTION - when Folders filter is active */}
+          {activeFilter === "Folders" && !activeFolderId && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-foreground">Your Folders</h2>
+              </div>
+              {isLoadingFolders ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="h-32 bg-muted/50 rounded-xl animate-pulse" />
+                  ))}
+                </div>
+              ) : folders.length === 0 ? (
+                <div className="h-[200px] flex flex-col items-center justify-center text-center bg-card border border-border rounded-xl">
+                  <Folder className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No folders yet</h3>
+                  <p className="text-sm text-muted-foreground max-w-sm">
+                    Create folders to organize your images. Use the Save button on any image to create a folder.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {folders.map((folder: ImageFolder) => {
+                    const folderImages = items.filter(item => item.folderId === folder.id);
+                    return (
+                      <button
+                        key={folder.id}
+                        onClick={() => setActiveFolderId(folder.id)}
+                        className="group relative bg-card border border-border rounded-xl p-4 hover:border-primary/50 hover:shadow-lg transition-all text-left"
+                        data-testid={`folder-card-${folder.id}`}
+                      >
+                        <div 
+                          className="w-12 h-12 rounded-lg flex items-center justify-center mb-3"
+                          style={{ backgroundColor: `${folder.color || '#6366f1'}20` }}
+                        >
+                          <Folder className="h-6 w-6" style={{ color: folder.color || '#6366f1' }} />
+                        </div>
+                        <h3 className="font-semibold text-foreground truncate mb-1">{folder.name}</h3>
+                        <p className="text-xs text-muted-foreground">{folderImages.length} images</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ACTIVE FOLDER HEADER */}
+          {activeFolderId && (
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                onClick={() => setActiveFolderId(null)}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+                Clear folder filter
+              </button>
+              <div className="w-px h-5 bg-border" />
+              <div className="flex items-center gap-2">
+                <Folder className="h-4 w-4" style={{ color: folders.find(f => f.id === activeFolderId)?.color || '#6366f1' }} />
+                <span className="font-medium text-foreground">
+                  {folders.find(f => f.id === activeFolderId)?.name || 'Folder'}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* FAVORITES CONTENT */}
           <div className="flex-1 pb-10">
