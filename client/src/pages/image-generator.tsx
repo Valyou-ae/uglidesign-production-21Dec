@@ -1974,7 +1974,8 @@ export default function ImageGenerator() {
                   </Button>
                 </div>
                 
-                <div className="columns-2 sm:columns-3 md:columns-4 gap-3">
+                {/* Gallery Grid - CSS Grid layout for horizontal flow (left-to-right, newest first) */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {generations.map((gen) => (
                     <motion.div 
                       key={gen.id}
@@ -1982,7 +1983,8 @@ export default function ImageGenerator() {
                       animate={{ opacity: 1, scale: 1 }}
                       onClick={() => setSelectedImage(gen)}
                       className={cn(
-                        "relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border hover:border-primary/50 hover:shadow-lg transition-all break-inside-avoid mb-3",
+                        "relative group rounded-xl overflow-hidden cursor-pointer bg-card border hover:shadow-lg transition-all",
+                        gen.isNew ? "border-2 border-[#E91E63]/50 hover:border-[#E91E63]" : "border-border hover:border-primary/50",
                         gen.aspectRatio === "9:16" && "aspect-[9/16]",
                         gen.aspectRatio === "16:9" && "aspect-[16/9]",
                         gen.aspectRatio === "4:5" && "aspect-[4/5]",
