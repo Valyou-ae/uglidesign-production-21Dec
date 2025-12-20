@@ -1807,7 +1807,7 @@ export default function MockupGenerator() {
                               </div>
 
                               {/* Product Grid */}
-                              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 max-h-[280px] overflow-y-auto pr-1">
+                              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
                                 {(() => {
                                   const searchLower = productSearchQuery.toLowerCase();
                                   const itemsToShow = productSearchQuery
