@@ -1983,12 +1983,12 @@ export default function ImageGenerator() {
                       animate={{ opacity: 1, scale: 1 }}
                       onClick={() => setSelectedImage(gen)}
                       style={{
-                        height: '220px',
-                        width: gen.aspectRatio === "9:16" ? '124px' :
-                               gen.aspectRatio === "16:9" ? '391px' :
-                               gen.aspectRatio === "4:5" ? '176px' :
-                               gen.aspectRatio === "3:4" ? '165px' :
-                               '220px'
+                        height: '260px',
+                        width: gen.aspectRatio === "9:16" ? '146px' :
+                               gen.aspectRatio === "16:9" ? '462px' :
+                               gen.aspectRatio === "4:5" ? '208px' :
+                               gen.aspectRatio === "3:4" ? '195px' :
+                               '260px'
                       }}
                       className={cn(
                         "relative group rounded-xl overflow-hidden cursor-pointer bg-card border hover:shadow-lg transition-all flex-shrink-0",
