@@ -36,7 +36,9 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
               `INSERT INTO image_folders (user_id, name, color) VALUES ($1, 'My Folder', '#6366f1') RETURNING id`,
               [userId]
             );
-            folderId = insertResult.rows[0].id;
+            if (insertResult.rows && insertResult.rows[0]) {
+              folderId = insertResult.rows[0].id;
+            }
           }
         } catch (folderError) {
           logger.error("Folder creation error (non-blocking)", folderError, { source: "images" });
