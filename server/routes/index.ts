@@ -7,5 +7,6 @@ export { registerImageRoutes } from "./images";
 export { registerGenerationRoutes } from "./generation";
 export { registerMockupRoutes } from "./mockup";
 export { registerBackgroundRoutes } from "./background";
+export { registerMoodBoardRoutes } from "./moodboard";
 export { createMiddleware, type Middleware } from "./middleware";
 export { parsePagination } from "./utils";

@@ -37,7 +37,7 @@ import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import { getFromCache, CACHE_TTL, invalidateCache } from "./cache";
 import { verifyGoogleToken } from "./googleAuth";
-import { registerAdminRoutes, registerSuperAdminRoutes, registerAuthRoutes, registerGalleryRoutes, registerUserRoutes, registerImageRoutes, registerGenerationRoutes, registerMockupRoutes, registerBackgroundRoutes, createMiddleware } from "./routes/index";
+import { registerAdminRoutes, registerSuperAdminRoutes, registerAuthRoutes, registerGalleryRoutes, registerUserRoutes, registerImageRoutes, registerGenerationRoutes, registerMockupRoutes, registerBackgroundRoutes, registerMoodBoardRoutes, createMiddleware } from "./routes/index";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -125,6 +125,7 @@ export async function registerRoutes(
   await registerGenerationRoutes(app, sharedMiddleware);
   await registerMockupRoutes(app, sharedMiddleware);
   await registerBackgroundRoutes(app, sharedMiddleware);
+  registerMoodBoardRoutes(app, sharedMiddleware);
 
   // Credit costs for different operations
   const CREDIT_COSTS = {
@@ -779,212 +780,7 @@ export async function registerRoutes(
   // Admin routes are now in server/routes/admin.ts
 
   // Super admin routes are now in server/routes/super-admin.ts
-
-  // ============== PROMPT FAVORITES ROUTES ==============
-
-  app.post("/api/prompts/favorites", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const favoriteData = insertPromptFavoriteSchema.parse({
-        ...req.body,
-        userId,
-      });
-
-      const favorite = await storage.createPromptFavorite(favoriteData);
-      res.status(201).json({ favorite });
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({ message: "Invalid input", errors: error.errors });
-      }
-      console.error("Create prompt favorite error:", error);
-      res.status(500).json({ message: "Failed to save prompt favorite" });
-    }
-  });
-
-  app.get("/api/prompts/favorites", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const favorites = await storage.getPromptFavorites(userId);
-      res.json({ favorites });
-    } catch (error) {
-      console.error("Get prompt favorites error:", error);
-      res.status(500).json({ message: "Failed to fetch prompt favorites" });
-    }
-  });
-
-  app.delete("/api/prompts/favorites/:id", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const { id } = req.params;
-      
-      await storage.deletePromptFavorite(id, userId);
-      res.json({ message: "Prompt favorite deleted successfully" });
-    } catch (error) {
-      console.error("Delete prompt favorite error:", error);
-      res.status(500).json({ message: "Failed to delete prompt favorite" });
-    }
-  });
-
-  // ============== MOOD BOARD ROUTES ==============
-
-  app.get("/api/mood-boards", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const boards = await storage.getMoodBoards(userId);
-      res.json({ boards });
-    } catch (error) {
-      console.error("Get mood boards error:", error);
-      res.status(500).json({ message: "Failed to fetch mood boards" });
-    }
-  });
-
-  app.post("/api/mood-boards", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const { name, description } = req.body;
-      
-      if (!name || typeof name !== 'string') {
-        return res.status(400).json({ message: "Name is required" });
-      }
-
-      const board = await storage.createMoodBoard(userId, name, description);
-      res.status(201).json({ board });
-    } catch (error) {
-      console.error("Create mood board error:", error);
-      res.status(500).json({ message: "Failed to create mood board" });
-    }
-  });
-
-  app.get("/api/mood-boards/:id", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const { id } = req.params;
-      
-      const result = await storage.getMoodBoard(userId, id);
-      
-      if (!result) {
-        return res.status(404).json({ message: "Mood board not found" });
-      }
-      
-      res.json(result);
-    } catch (error) {
-      console.error("Get mood board error:", error);
-      res.status(500).json({ message: "Failed to fetch mood board" });
-    }
-  });
-
-  app.patch("/api/mood-boards/:id", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const { id } = req.params;
-      const { name, description } = req.body;
-      
-      const board = await storage.updateMoodBoard(userId, id, { name, description });
-      
-      if (!board) {
-        return res.status(404).json({ message: "Mood board not found" });
-      }
-      
-      res.json({ board });
-    } catch (error) {
-      console.error("Update mood board error:", error);
-      res.status(500).json({ message: "Failed to update mood board" });
-    }
-  });
-
-  app.delete("/api/mood-boards/:id", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const { id } = req.params;
-      
-      await storage.deleteMoodBoard(userId, id);
-      res.json({ message: "Mood board deleted successfully" });
-    } catch (error) {
-      console.error("Delete mood board error:", error);
-      res.status(500).json({ message: "Failed to delete mood board" });
-    }
-  });
-
-  app.post("/api/mood-boards/:id/items", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const { id } = req.params;
-      const { imageId, positionX, positionY, width, height, zIndex } = req.body;
-
-      if (!imageId) {
-        return res.status(400).json({ message: "Image ID is required" });
-      }
-
-      // Verify board ownership before adding item
-      const isOwner = await storage.verifyBoardOwnership(userId, id);
-      if (!isOwner) {
-        return res.status(404).json({ message: "Mood board not found" });
-      }
-
-      const item = await storage.addItemToBoard(id, imageId, {
-        positionX: positionX ?? 0,
-        positionY: positionY ?? 0,
-        width,
-        height,
-        zIndex,
-      });
-
-      res.status(201).json({ item });
-    } catch (error) {
-      console.error("Add item to board error:", error);
-      res.status(500).json({ message: "Failed to add item to board" });
-    }
-  });
-
-  app.patch("/api/mood-boards/:boardId/items/:itemId", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const { itemId } = req.params;
-      const { positionX, positionY, width, height, zIndex } = req.body;
-
-      // Verify item belongs to a board owned by user
-      const isOwner = await storage.verifyBoardItemOwnership(userId, itemId);
-      if (!isOwner) {
-        return res.status(404).json({ message: "Board item not found" });
-      }
-
-      const item = await storage.updateBoardItem(itemId, {
-        positionX,
-        positionY,
-        width,
-        height,
-        zIndex,
-      });
-
-      if (!item) {
-        return res.status(404).json({ message: "Board item not found" });
-      }
-
-      res.json({ item });
-    } catch (error) {
-      console.error("Update board item error:", error);
-      res.status(500).json({ message: "Failed to update board item" });
-    }
-  });
-
-  app.delete("/api/mood-boards/:boardId/items/:itemId", requireAuth, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const { itemId } = req.params;
-
-      // Verify item belongs to a board owned by user
-      const isOwner = await storage.verifyBoardItemOwnership(userId, itemId);
-      if (!isOwner) {
-        return res.status(404).json({ message: "Board item not found" });
-      }
-
-      await storage.removeItemFromBoard(itemId);
-      res.json({ message: "Item removed from board successfully" });
-    } catch (error) {
-      console.error("Remove item from board error:", error);
-      res.status(500).json({ message: "Failed to remove item from board" });
-    }
-  });
+  // Prompt favorites and mood board routes are now in server/routes/moodboard.ts
 
   // Chat Sessions API
   app.get("/api/chat/sessions", requireAuth, async (req: any, res) => {
