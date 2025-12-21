@@ -31,6 +31,7 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { userApi } from "@/lib/api";
+import { useLoginPopup } from "@/components/login-popup";
 import {
   Popover,
   PopoverContent,
@@ -106,6 +107,7 @@ export function FloatingPromptBar({ onImageGenerated }: FloatingPromptBarProps =
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const googleInitializedRef = useRef(false);
   const pendingGenerationRef = useRef(false);
+  const { openLoginPopup } = useLoginPopup();
 
   const { data: stats } = useQuery({
     queryKey: ["user", "stats"],
@@ -221,7 +223,11 @@ export function FloatingPromptBar({ onImageGenerated }: FloatingPromptBarProps =
         if (!response.ok) {
           const error = await response.json();
           console.error("Guest generation failed:", error);
-          alert(error.message || "Image generation failed. Please try again.");
+          if (response.status === 403) {
+            openLoginPopup();
+          } else {
+            alert(error.message || "Image generation failed. Please try again.");
+          }
           return;
         }
 
