@@ -405,7 +405,7 @@ export function FloatingPromptBar({ onImageGenerated }: FloatingPromptBarProps =
               ) : (
                 <Rocket className="h-4 w-4" />
               )}
-              <span>{isGenerating ? "Creating..." : (isAuthenticated ? "Generate" : "Try UGLI Free")}</span>
+              <span>{isGenerating ? "Creating..." : (isAuthenticated ? "Go Ugly" : "Try UGLI Free")}</span>
             </motion.button>
           </div>
         </div>
