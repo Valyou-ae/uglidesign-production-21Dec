@@ -39,6 +39,7 @@ import { eq, sql } from "drizzle-orm";
 import { getFromCache, CACHE_TTL, invalidateCache } from "./cache";
 import { verifyGoogleToken } from "./googleAuth";
 import { registerAdminRoutes, registerSuperAdminRoutes, registerAuthRoutes, registerGalleryRoutes, registerUserRoutes, registerImageRoutes, registerGenerationRoutes, registerMockupRoutes, registerBackgroundRoutes, registerMoodBoardRoutes, registerChatRoutes, registerBillingRoutes, registerAffiliateRoutes, registerInspirationRoutes, createMiddleware } from "./routes/index";
+import { registerOpenApiRoutes } from "./openapi";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -66,6 +67,22 @@ export async function registerRoutes(
         checks: { database: 'failed' }
       });
     }
+  });
+
+  // API health endpoint with detailed status
+  app.get('/api/health', async (_req, res) => {
+    const { getCircuitStatus } = await import('./circuitBreaker');
+    res.json({
+      status: 'healthy',
+      version: process.env.npm_package_version || '1.0.0',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+      },
+      circuits: getCircuitStatus(),
+    });
   });
 
   // Gemini API key stats endpoint for monitoring (admin-only)
@@ -124,6 +141,7 @@ export async function registerRoutes(
   await registerBillingRoutes(app, sharedMiddleware);
   registerAffiliateRoutes(app, sharedMiddleware);
   await registerInspirationRoutes(app, sharedMiddleware);
+  registerOpenApiRoutes(app);
 
   // Credit costs for different operations
   const CREDIT_COSTS = {
