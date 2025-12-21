@@ -259,11 +259,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createImage(image: InsertImage): Promise<GeneratedImage> {
-    const [created] = await db
-      .insert(generatedImages)
-      .values(image)
-      .returning();
-    return created;
+    try {
+      const [created] = await db
+        .insert(generatedImages)
+        .values(image)
+        .returning();
+      if (!created) {
+        console.error("Image insert returned no result. Input data:", JSON.stringify(image, null, 2).slice(0, 500));
+        throw new Error("Failed to insert image into database");
+      }
+      return created;
+    } catch (error) {
+      console.error("Database error in createImage:", error);
+      throw error;
+    }
   }
 
   async getImageById(imageId: string, userId: string): Promise<GeneratedImage | undefined> {

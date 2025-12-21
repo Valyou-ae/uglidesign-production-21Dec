@@ -53,6 +53,11 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       });
 
       const image = await storage.createImage(imageData);
+      
+      if (!image) {
+        console.error("Failed to create image - storage returned undefined");
+        return res.status(500).json({ message: "Failed to save image to database." });
+      }
 
       // Only save to gallery for discover page if image is public
       if (imageData.isPublic) {
