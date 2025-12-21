@@ -457,27 +457,27 @@ function BrandingHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="shrink-0 bg-[#0A0A0B] border-b border-white/10 px-6 py-6"
+      className="shrink-0 bg-[#0A0A0B] border-b border-white/10 px-6 py-3"
     >
       <div className="max-w-4xl mx-auto text-center">
-        <div className="flex items-center justify-center gap-3 mb-3">
-          <img src={ugliLogo} alt="UGLI" className="h-[67px] object-contain" data-testid="img-ugli-logo" />
+        <div className="flex items-center justify-center gap-3 mb-1.5">
+          <img src={ugliLogo} alt="UGLI" className="h-12 object-contain" data-testid="img-ugli-logo" />
         </div>
         
-        <h1 className="text-lg md:text-xl font-medium text-white/90 mb-1" data-testid="text-tagline">
+        <h1 className="text-base md:text-lg font-medium text-white/90 mb-0.5" data-testid="text-tagline">
           AI-Powered Creative Studio
         </h1>
-        <p className="text-sm text-white/60 mb-4" data-testid="text-description">
+        <p className="text-xs text-white/60 mb-2" data-testid="text-description">
           Generate stunning images, product mockups, and remove backgrounds
         </p>
         
         <Button 
           onClick={() => openLoginPopup()}
-          className="bg-gradient-to-r from-[#ed5387] to-[#9C27B0] hover:from-[#C2185B] hover:to-[#7B1FA2] text-white font-medium px-6 py-2 rounded-full shadow-lg shadow-[#ed5387]/30 transition-all hover:scale-105"
+          className="bg-gradient-to-r from-[#ed5387] to-[#9C27B0] hover:from-[#C2185B] hover:to-[#7B1FA2] text-white font-medium px-5 py-1.5 text-sm rounded-full shadow-lg shadow-[#ed5387]/30 transition-all hover:scale-105"
           data-testid="button-get-started-hero"
         >
           Get Started Free
-          <ArrowRight className="ml-2 h-4 w-4" />
+          <ArrowRight className="ml-2 h-3.5 w-3.5" />
         </Button>
       </div>
     </motion.div>
