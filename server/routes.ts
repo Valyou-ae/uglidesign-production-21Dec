@@ -1652,17 +1652,29 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Missing prompt or guestId" });
       }
 
-      const existing = await db.select().from(guestGenerations).where(eq(guestGenerations.guestId, guestId));
-      if (existing.length > 0) {
+      // Use direct SQL via pool to avoid Neon HTTP driver null response issues
+      const { pool } = await import("./db");
+      
+      // Check if guest has already generated
+      const existingResult = await pool.query(
+        'SELECT id FROM guest_generations WHERE guest_id = $1 LIMIT 1',
+        [guestId]
+      );
+      
+      if (existingResult.rows.length > 0) {
         return res.status(403).json({ message: "Free generation already used. Please login for more." });
       }
 
       const result = await generateGeminiImage(prompt, [], "quality", "1:1", "draft", false);
       if (!result) {
-        return res.status(500).json({ message: "Generation failed" });
+        return res.status(500).json({ message: "Image generation failed. Please try again." });
       }
 
-      await db.insert(guestGenerations).values({ guestId });
+      // Insert guest generation record using pool
+      await pool.query(
+        'INSERT INTO guest_generations (guest_id) VALUES ($1) ON CONFLICT (guest_id) DO NOTHING',
+        [guestId]
+      );
 
       await ensureGuestGalleryUser();
       const imageUrl = `data:${result.mimeType};base64,${result.imageData}`;
@@ -1692,9 +1704,10 @@ export async function registerRoutes(
       await invalidateCache('gallery:images');
 
       return res.json({ imageData: result.imageData, mimeType: result.mimeType });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Guest generation error:", error);
-      return res.status(500).json({ message: "Generation failed" });
+      const message = error?.message?.includes('generation') ? error.message : "Generation failed. Please try again.";
+      return res.status(500).json({ message });
     }
   });
 
