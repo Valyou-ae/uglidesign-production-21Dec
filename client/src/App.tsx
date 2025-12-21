@@ -19,7 +19,6 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
-import NewProject from "@/pages/new-project";
 import UploadDesign from "@/pages/upload-design";
 import BatchProcess from "@/pages/batch-process";
 import ImportUrl from "@/pages/import-url";
@@ -27,7 +26,6 @@ import RandomPrompt from "@/pages/random-prompt";
 import AffiliateProgram from "@/pages/affiliate-program";
 import Pricing from "@/pages/pricing";
 import Landing from "@/pages/landing";
-import MoodBoard from "@/pages/mood-board";
 import StyleTransfer from "@/pages/style-transfer";
 import ChatStudio from "@/pages/chat-studio";
 import AdminDashboard from "@/pages/admin/index";
@@ -104,11 +102,6 @@ function Router() {
           <AffiliateProgram />
         </AuthGuard>
       </Route>
-      <Route path="/new-project">
-        <AuthGuard>
-          <NewProject />
-        </AuthGuard>
-      </Route>
       <Route path="/upload-design">
         <AuthGuard>
           <UploadDesign />
@@ -127,11 +120,6 @@ function Router() {
       <Route path="/random-prompt">
         <AuthGuard>
           <RandomPrompt />
-        </AuthGuard>
-      </Route>
-      <Route path="/mood-boards">
-        <AuthGuard>
-          <MoodBoard />
         </AuthGuard>
       </Route>
       <Route path="/chat-studio">

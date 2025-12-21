@@ -6,7 +6,6 @@ import {
   Image as ImageIcon, 
   Shirt, 
   Scissors, 
-  Folder, 
   Star, 
   Settings, 
   ChevronRight,
@@ -135,7 +134,6 @@ export function Sidebar({ className }: SidebarProps) {
 
   const privateNavigation: NavItem[] = [
     { name: "Chat Studio", shortName: "Chat", icon: MessageCircle, href: "/chat-studio", badge: "New" },
-    { name: "Projects", shortName: "Projects", icon: Folder, href: "/mood-boards" },
     { name: "My Creations", shortName: "Creations", icon: Layers, href: "/my-creations", count: totalCreations > 0 ? totalCreations.toString() : undefined, dataTutorial: "my-creations-link" },
   ];
 
