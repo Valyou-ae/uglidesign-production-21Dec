@@ -2075,14 +2075,22 @@ export default function ImageGenerator() {
                               >
                                 <Copy className="h-4 w-4 mr-2" /> Copy to Clipboard
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleVary(gen); }} className="hover:bg-[#2A2A30] cursor-pointer text-white">
+                              <DropdownMenuItem 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  downloadImage(gen.src, `generated_${gen.id}.png`);
+                                }} 
+                                className="hover:bg-[#2A2A30] cursor-pointer text-white"
+                              >
+                                <Download className="h-4 w-4 mr-2" /> Download
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toast({ title: "Coming Soon", description: "Duplicate feature is coming soon." }); }} className="hover:bg-[#2A2A30] cursor-pointer text-white">
                                 <Copy className="h-4 w-4 mr-2" /> Duplicate
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  setImageToSave(gen);
-                                  setShowFolderModal(true);
+                                  openSaveToFolderModal(gen);
                                 }} 
                                 className="hover:bg-[#2A2A30] cursor-pointer text-white"
                               >
@@ -2118,6 +2126,16 @@ export default function ImageGenerator() {
                                 className="hover:bg-[#2A2A30] cursor-pointer text-white"
                               >
                                 <Palette className="h-4 w-4 mr-2" /> Apply Style Transfer
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                              <DropdownMenuItem 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  setImageToDelete(gen);
+                                }} 
+                                className="hover:bg-[#2A2A30] cursor-pointer text-red-400 hover:text-red-400"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
