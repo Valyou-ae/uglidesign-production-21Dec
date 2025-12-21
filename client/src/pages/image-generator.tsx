@@ -67,7 +67,8 @@ import {
   Crown,
   Medal,
   Award,
-  Eye
+  Eye,
+  FolderInput
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
