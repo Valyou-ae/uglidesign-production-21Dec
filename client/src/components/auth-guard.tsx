@@ -12,8 +12,9 @@ interface GuardProps {
 export function AuthGuard({ children }: GuardProps) {
   const { isLoading, isAuthenticated } = useAuth();
   const { openLoginPopup, isOpen: isPopupOpen } = useLoginPopup();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const popupShownRef = useRef(false);
+  const wasPopupOpenRef = useRef(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !popupShownRef.current) {
@@ -27,6 +28,13 @@ export function AuthGuard({ children }: GuardProps) {
       popupShownRef.current = false;
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (wasPopupOpenRef.current && !isPopupOpen && !isAuthenticated && !isLoading) {
+      setLocation("/");
+    }
+    wasPopupOpenRef.current = isPopupOpen;
+  }, [isPopupOpen, isAuthenticated, isLoading, setLocation]);
 
   if (isLoading) {
     return (
@@ -52,10 +60,11 @@ export function AuthGuard({ children }: GuardProps) {
 
 export function AdminGuard({ children }: GuardProps) {
   const { user, isLoading, isAuthenticated } = useAuth();
-  const { openLoginPopup } = useLoginPopup();
-  const [location] = useLocation();
+  const { openLoginPopup, isOpen: isPopupOpen } = useLoginPopup();
+  const [location, setLocation] = useLocation();
   const toastShownRef = useRef(false);
   const popupShownRef = useRef(false);
+  const wasPopupOpenRef = useRef(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !popupShownRef.current) {
@@ -69,6 +78,13 @@ export function AdminGuard({ children }: GuardProps) {
       popupShownRef.current = false;
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (wasPopupOpenRef.current && !isPopupOpen && !isAuthenticated && !isLoading) {
+      setLocation("/");
+    }
+    wasPopupOpenRef.current = isPopupOpen;
+  }, [isPopupOpen, isAuthenticated, isLoading, setLocation]);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user?.role !== "admin" && !toastShownRef.current) {
@@ -109,10 +125,11 @@ export function AdminGuard({ children }: GuardProps) {
 
 export function SuperAdminGuard({ children }: GuardProps) {
   const { user, isLoading, isAuthenticated } = useAuth();
-  const { openLoginPopup } = useLoginPopup();
-  const [location] = useLocation();
+  const { openLoginPopup, isOpen: isPopupOpen } = useLoginPopup();
+  const [location, setLocation] = useLocation();
   const toastShownRef = useRef(false);
   const popupShownRef = useRef(false);
+  const wasPopupOpenRef = useRef(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !popupShownRef.current) {
@@ -126,6 +143,13 @@ export function SuperAdminGuard({ children }: GuardProps) {
       popupShownRef.current = false;
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (wasPopupOpenRef.current && !isPopupOpen && !isAuthenticated && !isLoading) {
+      setLocation("/");
+    }
+    wasPopupOpenRef.current = isPopupOpen;
+  }, [isPopupOpen, isAuthenticated, isLoading, setLocation]);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user?.role !== "super_admin" && !toastShownRef.current) {
