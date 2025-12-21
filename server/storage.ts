@@ -386,11 +386,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteImage(imageId: string, userId: string): Promise<boolean> {
-    // Use raw SQL for FK column updates to avoid Drizzle issues with null handling
+    // Clear all foreign key references before deleting
     await pool.query(`UPDATE chat_messages SET image_id = NULL WHERE image_id = $1`, [imageId]);
-    
-    // Remove from gallery_images if it exists there
     await pool.query(`DELETE FROM gallery_images WHERE source_image_id = $1`, [imageId]);
+    await pool.query(`DELETE FROM mood_board_items WHERE image_id = $1`, [imageId]);
     
     // Then delete the image
     const result = await db
