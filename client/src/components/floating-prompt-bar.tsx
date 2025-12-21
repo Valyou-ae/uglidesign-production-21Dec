@@ -24,7 +24,8 @@ import {
   Pencil,
   Minus,
   Plus,
-  Smartphone
+  Smartphone,
+  Rocket
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
@@ -402,7 +403,7 @@ export function FloatingPromptBar({ onImageGenerated }: FloatingPromptBarProps =
               {isGenerating ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Sparkles className="h-4 w-4" />
+                <Rocket className="h-4 w-4" />
               )}
               <span>{isGenerating ? "Creating..." : (isAuthenticated ? "Generate" : "Try UGLI Free")}</span>
             </motion.button>
