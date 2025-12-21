@@ -108,9 +108,9 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
   // Supports both authenticated users and guests via session
   app.get("/api/images/:id/image", async (req: Request, res: Response) => {
     try {
-      // Get userId from authenticated user (claims.sub) OR guestId from session
-      const authReq = req as AuthenticatedRequest & { session?: { guestId?: string } };
-      const userId = authReq.user?.claims?.sub || authReq.session?.guestId;
+      // Get userId from authenticated user (claims.sub), passport session, or guestId
+      const authReq = req as AuthenticatedRequest & { session?: { guestId?: string; passport?: { user?: { id?: string } } } };
+      const userId = authReq.user?.claims?.sub || authReq.session?.passport?.user?.id || authReq.session?.guestId;
 
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
