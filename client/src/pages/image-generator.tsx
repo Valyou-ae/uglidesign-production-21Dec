@@ -68,7 +68,11 @@ import {
   Medal,
   Award,
   Eye,
-  FolderInput
+  FolderInput,
+  ArrowUpRight,
+  Shirt,
+  Scissors,
+  ClipboardCopy as ClipboardCopyIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -110,6 +114,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { generateApi, imagesApi, GenerationEvent, promptFavoritesApi, PromptFavorite, foldersApi } from "@/lib/api";
+import { transferImageToTool } from "@/lib/image-transfer";
 import { useAuth } from "@/hooks/use-auth";
 import { Label } from "@/components/ui/label";
 import { useLocation } from "wouter";
@@ -2033,45 +2038,89 @@ export default function ImageGenerator() {
                             className="h-7 w-7 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleVary(gen);
-                            }}
-                            data-testid="button-vary-gallery"
-                          >
-                            <RefreshCw className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            size="icon" 
-                            className="h-7 w-7 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              downloadImage(gen.src, `generated_${gen.id}.png`);
-                            }}
-                            data-testid="button-download-gallery"
-                          >
-                            <Download className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            size="icon" 
-                            className="h-7 w-7 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg"
-                            onClick={(e) => {
-                              e.stopPropagation();
                               toggleFavorite(gen.id);
                             }}
                             data-testid="button-favorite-gallery"
                           >
                             <Star className={cn("h-3 w-3", gen.isFavorite && "fill-yellow-400 text-yellow-400")} />
                           </Button>
-                          <Button 
-                            size="icon" 
-                            className="h-7 w-7 bg-white/10 hover:bg-red-500/80 text-white border-0 backdrop-blur-md rounded-lg ml-auto"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setImageToDelete(gen);
-                            }}
-                            data-testid="button-delete-gallery"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                size="icon" 
+                                className="h-7 w-7 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md rounded-lg ml-auto"
+                                onClick={(e) => e.stopPropagation()}
+                                data-testid="button-more-gallery"
+                              >
+                                <MoreHorizontal className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 bg-[#18181B] border-[#2A2A30]">
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedImage(gen); }} className="hover:bg-[#2A2A30] cursor-pointer text-white">
+                                <ArrowUpRight className="h-4 w-4 mr-2" /> Open
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={async (e) => { 
+                                  e.stopPropagation(); 
+                                  try {
+                                    const response = await fetch(gen.src);
+                                    const blob = await response.blob();
+                                    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                                    toast({ title: "Copied!", description: "Image copied to clipboard." });
+                                  } catch { 
+                                    toast({ variant: "destructive", title: "Copy Failed", description: "Could not copy image." }); 
+                                  }
+                                }} 
+                                className="hover:bg-[#2A2A30] cursor-pointer text-white"
+                              >
+                                <Copy className="h-4 w-4 mr-2" /> Copy to Clipboard
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleVary(gen); }} className="hover:bg-[#2A2A30] cursor-pointer text-white">
+                                <Copy className="h-4 w-4 mr-2" /> Duplicate
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  setImageToSave(gen);
+                                  setShowFolderModal(true);
+                                }} 
+                                className="hover:bg-[#2A2A30] cursor-pointer text-white"
+                              >
+                                <FolderInput className="h-4 w-4 mr-2" /> Move to Project
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator className="bg-[#2A2A30]" />
+                              <DropdownMenuItem 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  const route = transferImageToTool({ id: gen.id, src: gen.src, name: gen.prompt, aspectRatio: gen.aspectRatio, type: "image" }, "mockup");
+                                  setLocation(route);
+                                }} 
+                                className="hover:bg-[#2A2A30] cursor-pointer text-white"
+                              >
+                                <Shirt className="h-4 w-4 mr-2" /> Use in Mockup Creator
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  const route = transferImageToTool({ id: gen.id, src: gen.src, name: gen.prompt, aspectRatio: gen.aspectRatio, type: "image" }, "bg-remover");
+                                  setLocation(route);
+                                }} 
+                                className="hover:bg-[#2A2A30] cursor-pointer text-white"
+                              >
+                                <Scissors className="h-4 w-4 mr-2" /> Remove Background
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  const route = transferImageToTool({ id: gen.id, src: gen.src, name: gen.prompt, aspectRatio: gen.aspectRatio, type: "image" }, "style-transfer");
+                                  setLocation(route);
+                                }} 
+                                className="hover:bg-[#2A2A30] cursor-pointer text-white"
+                              >
+                                <Palette className="h-4 w-4 mr-2" /> Apply Style Transfer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                       {gen.isNew && (
