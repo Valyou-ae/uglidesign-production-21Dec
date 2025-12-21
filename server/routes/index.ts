@@ -6,5 +6,6 @@ export { registerUserRoutes } from "./user";
 export { registerImageRoutes } from "./images";
 export { registerGenerationRoutes } from "./generation";
 export { registerMockupRoutes } from "./mockup";
+export { registerBackgroundRoutes } from "./background";
 export { createMiddleware, type Middleware } from "./middleware";
 export { parsePagination } from "./utils";
