@@ -177,6 +177,14 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
   app.delete("/api/images/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = getUserId(req as AuthenticatedRequest);
+      const authReq = req as AuthenticatedRequest & { session?: { guestId?: string; passport?: { user?: { id?: string } } } };
+      logger.info("Delete image request", { 
+        imageId: req.params.id, 
+        userId, 
+        claimsSub: authReq.user?.claims?.sub,
+        passportId: authReq.session?.passport?.user?.id,
+        guestId: authReq.session?.guestId
+      }, { source: "images" });
       const success = await storage.deleteImage(req.params.id, userId);
       if (!success) {
         return res.status(404).json({ message: "Image not found" });
