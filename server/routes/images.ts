@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { ZodError } from "zod";
 import { storage } from "../storage";
 import { insertImageSchema, insertImageFolderSchema } from "@shared/schema";
-import { invalidateCache } from "../cache";
+import { invalidateCache, getCachedImageBuffer, imageCache } from "../cache";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
 import { parsePagination } from "./utils";
@@ -114,9 +114,22 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
         return res.status(404).json({ message: "Image not found" });
       }
 
-      // Handle base64 data URLs
+      // Handle base64 data URLs with caching for faster repeated access
       const imageUrl = image.imageUrl;
       if (imageUrl.startsWith('data:')) {
+        // Use cached buffer if available, otherwise decode and cache
+        const cached = getCachedImageBuffer(req.params.id, imageUrl);
+        if (cached) {
+          res.set({
+            'Content-Type': cached.mimeType,
+            'Content-Length': cached.buffer.length,
+            'Cache-Control': 'private, max-age=31536000, immutable',
+            'X-Cache': 'HIT'
+          });
+          return res.send(cached.buffer);
+        }
+
+        // Fallback: decode without caching if cache failed
         const matches = imageUrl.match(/^data:([^;]+);base64,(.+)$/);
         if (matches) {
           const mimeType = matches[1];
@@ -126,7 +139,8 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
           res.set({
             'Content-Type': mimeType,
             'Content-Length': buffer.length,
-            'Cache-Control': 'private, max-age=31536000, immutable'
+            'Cache-Control': 'private, max-age=31536000, immutable',
+            'X-Cache': 'MISS'
           });
           return res.send(buffer);
         }

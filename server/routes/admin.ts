@@ -10,6 +10,7 @@ import { adminRateLimiter } from "../rateLimiter";
 import type { Middleware } from "./middleware";
 import { parsePagination } from "./utils";
 import type { AuthenticatedRequest } from "../types";
+import { imageCache, getCacheStats } from "../cache";
 
 export function registerAdminRoutes(app: Express, middleware: Middleware) {
   const { requireAdmin } = middleware;
@@ -324,6 +325,43 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
     } catch (error) {
       console.error("Admin analytics fetch error:", error);
       res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // ============== CACHE MONITORING ==============
+
+  app.get("/api/admin/cache-stats", requireAdmin, adminRateLimiter, async (_req: Request, res: Response) => {
+    try {
+      const stats = getCacheStats();
+      const { pool } = await import("../db");
+
+      // Get database pool stats
+      const dbStats = {
+        totalConnections: pool.totalCount,
+        idleConnections: pool.idleCount,
+        waitingClients: pool.waitingCount,
+      };
+
+      res.json({
+        cache: stats,
+        database: dbStats,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Cache stats error:", error);
+      res.status(500).json({ message: "Failed to fetch cache stats" });
+    }
+  });
+
+  app.post("/api/admin/cache-clear", requireAdmin, adminRateLimiter, async (_req: Request, res: Response) => {
+    try {
+      const { clearCache } = await import("../cache");
+      clearCache();
+      imageCache.clear();
+      res.json({ message: "Cache cleared successfully", timestamp: new Date().toISOString() });
+    } catch (error) {
+      console.error("Cache clear error:", error);
+      res.status(500).json({ message: "Failed to clear cache" });
     }
   });
 }

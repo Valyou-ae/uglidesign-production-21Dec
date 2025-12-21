@@ -94,4 +94,158 @@ export const CACHE_TTL = {
   GALLERY_IMAGES: 5 * 60 * 1000, // 5 minutes
   ANALYTICS: 60 * 1000,          // 1 minute
   USER_STATS: 30 * 1000,         // 30 seconds
+  IMAGE_BUFFER: 30 * 60 * 1000,  // 30 minutes for image buffers
 } as const;
+
+/**
+ * LRU Image Buffer Cache
+ * Stores decoded image buffers for fast serving
+ * Uses memory-based eviction to prevent OOM
+ */
+interface ImageCacheEntry {
+  buffer: Buffer;
+  mimeType: string;
+  lastAccess: number;
+  size: number;
+}
+
+class ImageBufferCache {
+  private cache = new Map<string, ImageCacheEntry>();
+  private currentSize = 0;
+  private readonly maxSizeBytes: number;
+  private readonly maxEntries: number;
+
+  constructor(maxSizeMB: number = 100, maxEntries: number = 500) {
+    this.maxSizeBytes = maxSizeMB * 1024 * 1024;
+    this.maxEntries = maxEntries;
+  }
+
+  get(imageId: string): ImageCacheEntry | undefined {
+    const entry = this.cache.get(imageId);
+    if (entry) {
+      // Update last access for LRU
+      entry.lastAccess = Date.now();
+      return entry;
+    }
+    return undefined;
+  }
+
+  set(imageId: string, buffer: Buffer, mimeType: string): void {
+    const size = buffer.length;
+
+    // Don't cache images larger than 10MB
+    if (size > 10 * 1024 * 1024) {
+      return;
+    }
+
+    // Evict if needed to make room
+    while (
+      (this.currentSize + size > this.maxSizeBytes || this.cache.size >= this.maxEntries) &&
+      this.cache.size > 0
+    ) {
+      this.evictLRU();
+    }
+
+    // Remove existing entry if updating
+    const existing = this.cache.get(imageId);
+    if (existing) {
+      this.currentSize -= existing.size;
+    }
+
+    this.cache.set(imageId, {
+      buffer,
+      mimeType,
+      lastAccess: Date.now(),
+      size,
+    });
+    this.currentSize += size;
+  }
+
+  private evictLRU(): void {
+    let oldest: { key: string; time: number } | null = null;
+
+    for (const [key, entry] of this.cache.entries()) {
+      if (!oldest || entry.lastAccess < oldest.time) {
+        oldest = { key, time: entry.lastAccess };
+      }
+    }
+
+    if (oldest) {
+      const entry = this.cache.get(oldest.key);
+      if (entry) {
+        this.currentSize -= entry.size;
+      }
+      this.cache.delete(oldest.key);
+    }
+  }
+
+  delete(imageId: string): void {
+    const entry = this.cache.get(imageId);
+    if (entry) {
+      this.currentSize -= entry.size;
+      this.cache.delete(imageId);
+    }
+  }
+
+  clear(): void {
+    this.cache.clear();
+    this.currentSize = 0;
+  }
+
+  getStats(): { entries: number; sizeMB: number; maxSizeMB: number } {
+    return {
+      entries: this.cache.size,
+      sizeMB: Math.round((this.currentSize / 1024 / 1024) * 100) / 100,
+      maxSizeMB: this.maxSizeBytes / 1024 / 1024,
+    };
+  }
+}
+
+// Singleton image cache - default 100MB, 500 entries max
+const imageCacheMaxMB = parseInt(process.env.IMAGE_CACHE_MAX_MB || '100');
+export const imageCache = new ImageBufferCache(imageCacheMaxMB, 500);
+
+/**
+ * Get combined cache statistics for monitoring
+ */
+export function getCacheStats(): {
+  general: { entries: number; maxEntries: number };
+  images: { entries: number; sizeMB: number; maxSizeMB: number };
+} {
+  return {
+    general: {
+      entries: cache.size,
+      maxEntries: MAX_CACHE_ENTRIES,
+    },
+    images: imageCache.getStats(),
+  };
+}
+
+/**
+ * Get image from cache or decode from base64
+ */
+export function getCachedImageBuffer(
+  imageId: string,
+  base64DataUrl: string
+): { buffer: Buffer; mimeType: string } | null {
+  // Check cache first
+  const cached = imageCache.get(imageId);
+  if (cached) {
+    return { buffer: cached.buffer, mimeType: cached.mimeType };
+  }
+
+  // Decode and cache
+  const matches = base64DataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!matches) {
+    return null;
+  }
+
+  const mimeType = matches[1];
+  const base64Data = matches[2];
+  const buffer = Buffer.from(base64Data, 'base64');
+
+  // Cache for future requests
+  imageCache.set(imageId, buffer, mimeType);
+
+  return { buffer, mimeType };
+}

@@ -18,11 +18,12 @@ neonConfig.fetchConnectionCache = true;
 const sql = neon(process.env.DATABASE_URL);
 export const db = drizzle(sql, { schema });
 
-// Keep the pool for session store compatibility
+// Connection pool for session store and direct queries
+// Sized for production concurrent user load
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 5,
-  min: 0,
+  max: parseInt(process.env.DB_POOL_MAX || '20'),  // Default 20 connections for production
+  min: parseInt(process.env.DB_POOL_MIN || '2'),   // Keep minimum connections warm
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 30000,
   ssl: { rejectUnauthorized: false },
