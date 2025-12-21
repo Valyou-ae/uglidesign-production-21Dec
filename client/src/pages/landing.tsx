@@ -404,7 +404,7 @@ function ImageScroller({ generatedImage, onLogin }: ImageScrollerProps) {
           setDisplayImages(merged.length > 0 ? merged : SAMPLE_IMAGES);
         }
       })
-      .catch(() => {});
+      .catch((err) => console.warn('Failed to fetch gallery images:', err));
   }, []);
 
   useEffect(() => {

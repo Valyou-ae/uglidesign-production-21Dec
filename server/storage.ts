@@ -136,7 +136,7 @@ export interface IStorage {
   removeItemFromBoard(itemId: string): Promise<void>;
   verifyBoardItemOwnership(userId: string, itemId: string): Promise<boolean>;
 
-  getGalleryImages(): Promise<GalleryImage[]>;
+  getGalleryImages(limit?: number): Promise<GalleryImage[]>;
   getGalleryImageById(imageId: string): Promise<GalleryImage | undefined>;
   getGalleryImageBySourceId(sourceImageId: string): Promise<GalleryImage | undefined>;
   createGalleryImage(data: { title: string; imageUrl: string; creator: string; category?: string; aspectRatio?: string; prompt?: string; sourceImageId?: string }): Promise<GalleryImage>;
@@ -919,8 +919,10 @@ export class DatabaseStorage implements IStorage {
     await db.delete(moodBoardItems).where(eq(moodBoardItems.id, itemId));
   }
 
-  async getGalleryImages(): Promise<GalleryImage[]> {
-    return db.select().from(galleryImages).orderBy(desc(galleryImages.createdAt));
+  async getGalleryImages(limit: number = 200): Promise<GalleryImage[]> {
+    return db.select().from(galleryImages)
+      .orderBy(desc(galleryImages.createdAt))
+      .limit(limit);
   }
 
   async getGalleryImageById(imageId: string): Promise<GalleryImage | undefined> {

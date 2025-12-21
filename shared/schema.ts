@@ -162,7 +162,9 @@ export const promptFavorites = pgTable("prompt_favorites", {
   detail: text("detail"),
   speed: text("speed"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_prompt_favorites_user_id").on(table.userId),
+]);
 
 export const moodBoards = pgTable("mood_boards", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -171,7 +173,10 @@ export const moodBoards = pgTable("mood_boards", {
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_mood_boards_user_id").on(table.userId),
+  index("idx_mood_boards_created_at").on(table.createdAt),
+]);
 
 export const moodBoardItems = pgTable("mood_board_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -183,7 +188,10 @@ export const moodBoardItems = pgTable("mood_board_items", {
   height: integer("height").default(200).notNull(),
   zIndex: integer("z_index").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_mood_board_items_board_id").on(table.boardId),
+  index("idx_mood_board_items_image_id").on(table.imageId),
+]);
 
 export const guestGenerations = pgTable("guest_generations", {
   id: serial("id").primaryKey(),
@@ -225,7 +233,12 @@ export const galleryImages = pgTable("gallery_images", {
   viewCount: integer("view_count").default(0).notNull(),
   useCount: integer("use_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_gallery_images_source_image_id").on(table.sourceImageId),
+  index("idx_gallery_images_created_at").on(table.createdAt),
+  index("idx_gallery_images_category").on(table.category),
+  index("idx_gallery_images_verified").on(table.verified),
+]);
 
 export const dailyInspirations = pgTable("daily_inspirations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -238,7 +251,11 @@ export const dailyInspirations = pgTable("daily_inspirations", {
   featured: boolean("featured").default(false),
   activeDate: timestamp("active_date").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_daily_inspirations_active_date").on(table.activeDate),
+  index("idx_daily_inspirations_featured").on(table.featured),
+  index("idx_daily_inspirations_category").on(table.category),
+]);
 
 export const chatSessions = pgTable("chat_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

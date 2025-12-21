@@ -35,6 +35,7 @@ import { ZodError } from "zod";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import { getFromCache, CACHE_TTL, invalidateCache } from "./cache";
+import { verifyGoogleToken } from "./googleAuth";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -351,23 +352,11 @@ export async function registerRoutes(
         return res.status(500).json({ message: "Google Sign-In not configured" });
       }
 
-      // Decode and verify the JWT token
-      const parts = credential.split('.');
-      if (parts.length !== 3) {
-        return res.status(400).json({ message: "Invalid token format" });
-      }
+      // Securely verify the JWT token with RSA-256 signature verification
+      const payload = await verifyGoogleToken(credential, clientId);
 
-      const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
-      
-      // Verify the token is for our client
-      if (payload.aud !== clientId) {
-        return res.status(401).json({ message: "Invalid token audience" });
-      }
-
-      // Check token expiration
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp && payload.exp < now) {
-        return res.status(401).json({ message: "Token expired" });
+      if (!payload) {
+        return res.status(401).json({ message: "Invalid or expired Google token" });
       }
 
       const { email, name, picture, sub: googleId } = payload;

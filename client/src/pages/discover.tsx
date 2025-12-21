@@ -125,7 +125,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
             setViewTracked(true);
             galleryApi.viewImage(String(item.id))
               .then(result => setViewCount(result.viewCount))
-              .catch(() => {});
+              .catch((err) => console.warn('Failed to track view:', err));
           }
           observer.disconnect();
         }
@@ -162,7 +162,7 @@ function LazyMasonryCard({ item, index, onLike, onUse, onCopy }: { item: Inspira
     setTimeout(() => setCopied(false), 2000);
     
     if (item.isGalleryImage) {
-      galleryApi.useImage(String(item.id)).catch(() => {});
+      galleryApi.useImage(String(item.id)).catch((err) => console.warn('Failed to track use:', err));
       onUse?.(String(item.id));
     }
     
