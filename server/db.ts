@@ -1,4 +1,5 @@
-import { drizzle } from "drizzle-orm/node-postgres";
+import { neon, neonConfig } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
 import pg from "pg";
 import * as schema from "@shared/schema";
 
@@ -10,21 +11,24 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Production-ready connection pool configuration
+// Configure Neon for better connection handling
+neonConfig.fetchConnectionCache = true;
+
+// Use Neon serverless driver for better cloud database connectivity
+const sql = neon(process.env.DATABASE_URL);
+export const db = drizzle(sql, { schema });
+
+// Keep the pool for session store compatibility
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: parseInt(process.env.DB_POOL_MAX || "10", 10), // Maximum connections in pool
-  min: parseInt(process.env.DB_POOL_MIN || "1", 10),  // Minimum idle connections
-  idleTimeoutMillis: 30000,       // Close idle connections after 30 seconds
-  connectionTimeoutMillis: 30000, // Allow more time to connect to cloud DB
-  statement_timeout: 60000,       // Kill queries running longer than 60 seconds
-  application_name: "ugli-design",
-  ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
+  max: 5,
+  min: 0,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 30000,
+  ssl: { rejectUnauthorized: false },
 });
 
 // Handle pool errors
 pool.on("error", (err) => {
   console.error("Unexpected error on idle database client", err);
 });
-
-export const db = drizzle(pool, { schema });
