@@ -2216,7 +2216,7 @@ export default function MockupGenerator() {
                                   </div>
                                   
                                   <TooltipProvider delayDuration={200}>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap justify-center gap-3">
                                       {MOCKUP_ANGLES.map((angle) => {
                                         const isSelected = selectedAngles.includes(angle.id);
                                         return (
@@ -2231,25 +2231,26 @@ export default function MockupGenerator() {
                                                   }
                                                 }}
                                                 className={cn(
-                                                  "relative h-12 w-12 rounded-lg border-2 flex items-center justify-center transition-all",
+                                                  "relative h-20 w-20 rounded-xl border-2 flex flex-col items-center justify-center gap-1.5 transition-all",
                                                   isSelected 
                                                     ? "bg-primary/10 border-primary text-primary" 
                                                     : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30"
                                                 )}
                                                 data-testid={`angle-${angle.id}`}
                                               >
-                                                <angle.icon className="h-5 w-5" />
+                                                <angle.icon className="h-6 w-6" />
+                                                <span className="text-[10px] font-medium leading-tight">{angle.name.split(' ')[0]}</span>
                                                 {angle.recommended && !isSelected && (
-                                                  <div className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full" />
+                                                  <div className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-green-500 rounded-full" />
                                                 )}
                                                 {isSelected && (
                                                   <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5">
-                                                    <Check className="h-2 w-2 text-white" />
+                                                    <Check className="h-2.5 w-2.5 text-white" />
                                                   </div>
                                                 )}
                                               </button>
                                             </TooltipTrigger>
-                                            <TooltipContent side="bottom" className="text-xs">{angle.name}</TooltipContent>
+                                            <TooltipContent side="bottom" className="text-xs">{angle.description}</TooltipContent>
                                           </Tooltip>
                                         );
                                       })}
