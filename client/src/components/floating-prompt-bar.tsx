@@ -397,7 +397,7 @@ export function FloatingPromptBar({ onImageGenerated }: FloatingPromptBarProps =
               ) : (
                 <Sparkles className="h-4 w-4" />
               )}
-              <span>{isGenerating ? "Creating..." : "Generate"}</span>
+              <span>{isGenerating ? "Creating..." : (isAuthenticated ? "Generate" : "Try UGLI Free")}</span>
             </motion.button>
           </div>
         </div>
