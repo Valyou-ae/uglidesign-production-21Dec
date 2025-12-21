@@ -100,6 +100,15 @@
     25% { transform: rotate(-20deg); }
     75% { transform: rotate(10deg); }
   }
+  @keyframes pulse-glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(237, 83, 135, 0.4), 0 0 40px rgba(156, 39, 176, 0.2), 0 0 60px rgba(237, 83, 135, 0.1);
+    }
+    50% { 
+      box-shadow: 0 0 30px rgba(237, 83, 135, 0.6), 0 0 60px rgba(156, 39, 176, 0.35), 0 0 80px rgba(237, 83, 135, 0.2);
+    }
+  }
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
 }
 
 /* LIGHT MODE - Vibrant Bold Theme */
@@ -292,6 +301,20 @@
     }
     50% {
       box-shadow: 0 0 0 8px rgba(233, 30, 99, 0), 0 0 0 16px rgba(156, 39, 176, 0);
+    }
+  }
+  
+  /* Prompt bar glow animation */
+  .animate-pulse-glow {
+    animation: prompt-glow 2.5s ease-in-out infinite;
+  }
+  
+  @keyframes prompt-glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(237, 83, 135, 0.4), 0 0 40px rgba(156, 39, 176, 0.2), 0 0 60px rgba(237, 83, 135, 0.1), inset 0 0 15px rgba(237, 83, 135, 0.03);
+    }
+    50% { 
+      box-shadow: 0 0 35px rgba(237, 83, 135, 0.6), 0 0 70px rgba(156, 39, 176, 0.35), 0 0 100px rgba(237, 83, 135, 0.2), inset 0 0 25px rgba(237, 83, 135, 0.06);
     }
   }
 }

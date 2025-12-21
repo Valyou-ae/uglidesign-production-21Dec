@@ -351,7 +351,7 @@ export function FloatingPromptBar({ onImageGenerated }: FloatingPromptBarProps =
     >
       <motion.div
         layout
-        className="bg-black backdrop-blur-xl border border-[#ed5387]/40 shadow-2xl shadow-black/50 overflow-hidden"
+        className="relative bg-black/90 backdrop-blur-xl border-2 border-[#ed5387]/70 overflow-hidden animate-pulse-glow"
         style={{ borderRadius: isExpanded ? 16 : 9999 }}
         initial={false}
         animate={{
