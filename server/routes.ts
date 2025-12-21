@@ -889,10 +889,11 @@ export async function registerRoutes(
       
       res.json({ image });
     } catch (error) {
+      console.error("Image save error:", error);
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
-      res.status(500).json({ message: "Server error" });
+      res.status(500).json({ message: "Failed to save image. Please try again." });
     }
   });
 
