@@ -5,6 +5,7 @@ import { generationRateLimiter } from "../rateLimiter";
 import { getFromCache, CACHE_TTL, invalidateCache } from "../cache";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 export function registerGalleryRoutes(app: Express, middleware: Middleware) {
   const { requireAuth, getUserId } = middleware;
@@ -32,7 +33,7 @@ export function registerGalleryRoutes(app: Express, middleware: Middleware) {
 
       res.json({ images: imagesWithLikeStatus });
     } catch (error) {
-      console.error("Gallery error:", error);
+      logger.error("Gallery error", error, { source: "gallery" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -46,7 +47,7 @@ export function registerGalleryRoutes(app: Express, middleware: Middleware) {
       invalidateCache('gallery:images');
       res.json(result);
     } catch (error) {
-      console.error("Like error:", error);
+      logger.error("Like error", error, { source: "gallery" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -62,7 +63,7 @@ export function registerGalleryRoutes(app: Express, middleware: Middleware) {
       invalidateCache('gallery:images');
       res.json({ viewCount: image.viewCount });
     } catch (error) {
-      console.error("View tracking error:", error);
+      logger.error("View tracking error", error, { source: "gallery" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -78,7 +79,7 @@ export function registerGalleryRoutes(app: Express, middleware: Middleware) {
       invalidateCache('gallery:images');
       res.json({ useCount: image.useCount });
     } catch (error) {
-      console.error("Use tracking error:", error);
+      logger.error("Use tracking error", error, { source: "gallery" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -112,7 +113,7 @@ export function registerGalleryRoutes(app: Express, middleware: Middleware) {
 
       res.json({ ...image, isLiked });
     } catch (error) {
-      console.error("Gallery image error:", error);
+      logger.error("Gallery image error", error, { source: "gallery" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -148,7 +149,7 @@ export function registerGalleryRoutes(app: Express, middleware: Middleware) {
       // For URL-based images, redirect
       res.redirect(image.imageUrl);
     } catch (error) {
-      console.error("Thumbnail error:", error);
+      logger.error("Thumbnail error", error, { source: "gallery" });
       res.status(500).json({ message: "Server error" });
     }
   });

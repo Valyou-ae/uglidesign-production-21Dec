@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { adminRateLimiter } from "../rateLimiter";
 import type { Middleware } from "./middleware";
+import { logger } from "../logger";
 
 export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
   const { requireSuperAdmin } = middleware;
@@ -11,7 +12,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const overview = await storage.getSuperAdminOverview();
       res.json(overview);
     } catch (error) {
-      console.error("Super admin overview error:", error);
+      logger.error("Super admin overview error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch overview" });
     }
   });
@@ -22,7 +23,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const growth = await storage.getUserGrowthByDay(days);
       res.json({ growth });
     } catch (error) {
-      console.error("Super admin user growth error:", error);
+      logger.error("Super admin user growth error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch user growth" });
     }
   });
@@ -33,7 +34,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const stats = await storage.getGenerationsByDay(days);
       res.json({ stats });
     } catch (error) {
-      console.error("Super admin generation stats error:", error);
+      logger.error("Super admin generation stats error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch generation stats" });
     }
   });
@@ -44,7 +45,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const creators = await storage.getTopCreators(limit);
       res.json({ creators });
     } catch (error) {
-      console.error("Super admin top creators error:", error);
+      logger.error("Super admin top creators error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch top creators" });
     }
   });
@@ -54,7 +55,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const roleStats = await storage.getUsersByRole();
       res.json({ roleStats });
     } catch (error) {
-      console.error("Super admin users by role error:", error);
+      logger.error("Super admin users by role error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch users by role" });
     }
   });
@@ -64,7 +65,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const usage = await storage.getFeatureUsageBreakdown();
       res.json({ usage });
     } catch (error) {
-      console.error("Super admin feature usage error:", error);
+      logger.error("Super admin feature usage error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch feature usage" });
     }
   });
@@ -74,7 +75,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const stats = await storage.getSubscriptionStats();
       res.json(stats);
     } catch (error) {
-      console.error("Super admin subscriptions error:", error);
+      logger.error("Super admin subscriptions error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch subscription stats" });
     }
   });
@@ -85,7 +86,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const affiliates = await storage.getAffiliatePerformance(limit);
       res.json({ affiliates });
     } catch (error) {
-      console.error("Super admin affiliates error:", error);
+      logger.error("Super admin affiliates error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch affiliate performance" });
     }
   });
@@ -96,7 +97,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const revenue = await storage.getRevenueByDay(days);
       res.json({ revenue });
     } catch (error) {
-      console.error("Super admin revenue error:", error);
+      logger.error("Super admin revenue error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch revenue data" });
     }
   });
@@ -107,7 +108,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const dau = await storage.getDailyActiveUsers(days);
       res.json({ dau });
     } catch (error) {
-      console.error("Super admin DAU error:", error);
+      logger.error("Super admin DAU error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch daily active users" });
     }
   });
@@ -117,7 +118,7 @@ export function registerSuperAdminRoutes(app: Express, middleware: Middleware) {
       const retention = await storage.getRetentionRate();
       res.json(retention);
     } catch (error) {
-      console.error("Super admin retention error:", error);
+      logger.error("Super admin retention error", error, { source: "super-admin" });
       res.status(500).json({ message: "Failed to fetch retention rate" });
     }
   });

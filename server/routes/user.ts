@@ -5,6 +5,7 @@ import { storage } from "../storage";
 import { updateProfileSchema } from "@shared/schema";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 export function registerUserRoutes(app: Express, middleware: Middleware) {
   const { requireAuth, getUserId } = middleware;
@@ -111,7 +112,7 @@ export function registerUserRoutes(app: Express, middleware: Middleware) {
         }
       });
     } catch (error) {
-      console.error("Profile photo upload error:", error);
+      logger.error("Profile photo upload error", error, { source: "user" });
       res.status(500).json({ message: "Failed to upload profile photo" });
     }
   });
@@ -145,7 +146,7 @@ export function registerUserRoutes(app: Express, middleware: Middleware) {
         }
       });
     } catch (error) {
-      console.error("Profile photo removal error:", error);
+      logger.error("Profile photo removal error", error, { source: "user" });
       res.status(500).json({ message: "Failed to remove profile photo" });
     }
   });
@@ -181,7 +182,7 @@ export function registerUserRoutes(app: Express, middleware: Middleware) {
       const preferences = await storage.getUserPreferences(userId);
       res.json({ preferences: preferences || null });
     } catch (error) {
-      console.error("Get user preferences error:", error);
+      logger.error("Get user preferences error", error, { source: "user" });
       res.status(500).json({ message: "Failed to get user preferences" });
     }
   });
@@ -197,7 +198,7 @@ export function registerUserRoutes(app: Express, middleware: Middleware) {
       const preferences = await storage.upsertUserPreferences(userId, parseResult.data);
       res.json({ preferences });
     } catch (error) {
-      console.error("Update user preferences error:", error);
+      logger.error("Update user preferences error", error, { source: "user" });
       res.status(500).json({ message: "Failed to update user preferences" });
     }
   });
@@ -213,7 +214,7 @@ export function registerUserRoutes(app: Express, middleware: Middleware) {
       const preferences = await storage.upsertUserPreferences(userId, parseResult.data);
       res.json({ preferences });
     } catch (error) {
-      console.error("Patch user preferences error:", error);
+      logger.error("Patch user preferences error", error, { source: "user" });
       res.status(500).json({ message: "Failed to update user preferences" });
     }
   });
@@ -225,7 +226,7 @@ export function registerUserRoutes(app: Express, middleware: Middleware) {
       const preferences = await getOrCreateUserProfile(userId);
       res.json({ preferences });
     } catch (error) {
-      console.error("Analyze user preferences error:", error);
+      logger.error("Analyze user preferences error", error, { source: "user" });
       res.status(500).json({ message: "Failed to analyze user preferences" });
     }
   });

@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 export async function registerChatRoutes(app: Express, middleware: Middleware) {
   const { requireAuth, getUserId } = middleware;
@@ -20,7 +21,7 @@ export async function registerChatRoutes(app: Express, middleware: Middleware) {
       const sessions = await storage.getChatSessions(userId);
       res.json({ sessions });
     } catch (error) {
-      console.error("Get chat sessions error:", error);
+      logger.error("Get chat sessions error", error, { source: "chat" });
       res.status(500).json({ message: "Failed to get chat sessions" });
     }
   });
@@ -42,7 +43,7 @@ export async function registerChatRoutes(app: Express, middleware: Middleware) {
       const session = await storage.createChatSession(userId, name || "New Chat", projectId);
       res.json({ session, projectId });
     } catch (error) {
-      console.error("Create chat session error:", error);
+      logger.error("Create chat session error", error, { source: "chat" });
       res.status(500).json({ message: "Failed to create chat session" });
     }
   });
@@ -94,7 +95,7 @@ export async function registerChatRoutes(app: Express, middleware: Middleware) {
 
       res.json({ session, messages: enrichedMessages, project });
     } catch (error) {
-      console.error("Get chat session error:", error);
+      logger.error("Get chat session error", error, { source: "chat" });
       res.status(500).json({ message: "Failed to get chat session" });
     }
   });
@@ -112,7 +113,7 @@ export async function registerChatRoutes(app: Express, middleware: Middleware) {
 
       res.json({ session });
     } catch (error) {
-      console.error("Update chat session error:", error);
+      logger.error("Update chat session error", error, { source: "chat" });
       res.status(500).json({ message: "Failed to update chat session" });
     }
   });
@@ -147,7 +148,7 @@ export async function registerChatRoutes(app: Express, middleware: Middleware) {
 
       res.json({ session, name: smartName });
     } catch (error) {
-      console.error("Generate session name error:", error);
+      logger.error("Generate session name error", error, { source: "chat" });
       res.status(500).json({ message: "Failed to generate session name" });
     }
   });
@@ -166,7 +167,7 @@ export async function registerChatRoutes(app: Express, middleware: Middleware) {
         const { getOrCreateUserProfile } = await import("../services/profileAnalyzer");
         userProfile = await getOrCreateUserProfile(userId);
       } catch (e) {
-        console.error("Failed to load user profile:", e);
+        logger.error("Failed to load user profile", e, { source: "chat" });
       }
 
       const enrichedContext = {
@@ -183,7 +184,7 @@ export async function registerChatRoutes(app: Express, middleware: Middleware) {
       const response = await chatWithCreativeAgent(messages, enrichedContext, attachedImage || null);
       res.json(response);
     } catch (error) {
-      console.error("Chat session error:", error);
+      logger.error("Chat session error", error, { source: "chat" });
       res.status(500).json({ message: "Failed to process chat message" });
     }
   });
@@ -196,7 +197,7 @@ export async function registerChatRoutes(app: Express, middleware: Middleware) {
       await storage.deleteChatSession(id, userId);
       res.json({ message: "Chat session deleted" });
     } catch (error) {
-      console.error("Delete chat session error:", error);
+      logger.error("Delete chat session error", error, { source: "chat" });
       res.status(500).json({ message: "Failed to delete chat session" });
     }
   });
@@ -235,13 +236,13 @@ export async function registerChatRoutes(app: Express, middleware: Middleware) {
             zIndex: itemCount,
           });
         } catch (e) {
-          console.error("Failed to add image to project:", e);
+          logger.error("Failed to add image to project", e, { source: "chat" });
         }
       }
 
       res.json({ message });
     } catch (error) {
-      console.error("Add chat message error:", error);
+      logger.error("Add chat message error", error, { source: "chat" });
       res.status(500).json({ message: "Failed to add chat message" });
     }
   });

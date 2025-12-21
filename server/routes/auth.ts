@@ -4,6 +4,7 @@ import { authRateLimiter } from "../rateLimiter";
 import { verifyGoogleToken } from "../googleAuth";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 export function registerAuthRoutes(app: Express, middleware: Middleware) {
   const { requireAuth, getUserId } = middleware;
@@ -32,7 +33,7 @@ export function registerAuthRoutes(app: Express, middleware: Middleware) {
         }
       });
     } catch (error) {
-      console.error("Error fetching user:", error);
+      logger.error("Error fetching user", error, { source: "auth" });
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
@@ -119,7 +120,7 @@ export function registerAuthRoutes(app: Express, middleware: Middleware) {
                                err?.message?.includes('helium');
             if (isDnsError && attempt < maxRetries) {
               const delay = attempt * 1000;
-              console.log(`DNS error on attempt ${attempt}/${maxRetries}, retrying in ${delay}ms...`);
+              logger.info(`DNS error on attempt ${attempt}/${maxRetries}, retrying in ${delay}ms...`, { source: "auth" });
               await new Promise(resolve => setTimeout(resolve, delay));
               continue;
             }
@@ -177,7 +178,7 @@ export function registerAuthRoutes(app: Express, middleware: Middleware) {
       await new Promise<void>((resolve, reject) => {
         (req as AuthenticatedRequest & { login: Function }).login(userSession, (err: Error | null) => {
           if (err) {
-            console.error("Login error:", err);
+            logger.error("Login error", err, { source: "auth" });
             reject(err);
           } else {
             resolve();
@@ -197,7 +198,7 @@ export function registerAuthRoutes(app: Express, middleware: Middleware) {
         }
       });
     } catch (error: unknown) {
-      console.error("Google auth error:", error);
+      logger.error("Google auth error", error, { source: "auth" });
       const err = error as { message?: string; stack?: string };
       const errorMessage = err?.message || "Unknown error";
       res.status(500).json({
@@ -213,7 +214,7 @@ export function registerAuthRoutes(app: Express, middleware: Middleware) {
     if (authReq.session) {
       authReq.session.destroy((err) => {
         if (err) {
-          console.error("Session destroy error:", err);
+          logger.error("Session destroy error", err, { source: "auth" });
         }
         res.clearCookie("connect.sid", {
           path: "/",

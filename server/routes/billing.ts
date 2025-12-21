@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 export async function registerBillingRoutes(app: Express, middleware: Middleware) {
   const { requireAuth, requireAdmin, getUserId } = middleware;
@@ -14,7 +15,7 @@ export async function registerBillingRoutes(app: Express, middleware: Middleware
       const publishableKey = await getStripePublishableKey();
       res.json({ publishableKey });
     } catch (error) {
-      console.error("Stripe config error:", error);
+      logger.error("Stripe config error", error, { source: "billing" });
       res.status(500).json({ message: "Failed to get Stripe configuration" });
     }
   });
@@ -31,7 +32,7 @@ export async function registerBillingRoutes(app: Express, middleware: Middleware
 
       res.json({ products });
     } catch (error) {
-      console.error("Stripe products error:", error);
+      logger.error("Stripe products error", error, { source: "billing" });
       res.status(500).json({ message: "Failed to get products" });
     }
   });
@@ -42,7 +43,7 @@ export async function registerBillingRoutes(app: Express, middleware: Middleware
       const result = await stripeService.syncProductsFromStripe();
       res.json({ success: true, ...result });
     } catch (error) {
-      console.error("Stripe sync error:", error);
+      logger.error("Stripe sync error", error, { source: "billing" });
       res.status(500).json({ message: "Failed to sync products" });
     }
   });
@@ -88,7 +89,7 @@ export async function registerBillingRoutes(app: Express, middleware: Middleware
 
       res.json({ sessionId: session.id, url: session.url });
     } catch (error) {
-      console.error("Stripe checkout error:", error);
+      logger.error("Stripe checkout error", error, { source: "billing" });
       res.status(500).json({ message: "Failed to create checkout session" });
     }
   });
@@ -119,7 +120,7 @@ export async function registerBillingRoutes(app: Express, middleware: Middleware
 
       res.json({ url: session.url });
     } catch (error) {
-      console.error("Stripe portal error:", error);
+      logger.error("Stripe portal error", error, { source: "billing" });
       res.status(500).json({ message: "Failed to create portal session" });
     }
   });
@@ -185,7 +186,7 @@ export async function registerBillingRoutes(app: Express, middleware: Middleware
         plan
       });
     } catch (error) {
-      console.error("Stripe subscription status error:", error);
+      logger.error("Stripe subscription status error", error, { source: "billing" });
       res.status(500).json({ message: "Failed to get subscription status" });
     }
   });

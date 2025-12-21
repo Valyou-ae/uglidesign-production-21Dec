@@ -2,6 +2,7 @@ import { neon, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import pg from "pg";
 import * as schema from "@shared/schema";
+import { logger } from './logger';
 
 const { Pool } = pg;
 
@@ -31,5 +32,5 @@ export const pool = new Pool({
 
 // Handle pool errors
 pool.on("error", (err) => {
-  console.error("Unexpected error on idle database client", err);
+  logger.error("Unexpected error on idle database client", err, { source: 'database' });
 });

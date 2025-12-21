@@ -1,4 +1,5 @@
 import { GoogleGenAI, Modality } from "@google/genai";
+import { logger } from "../logger";
 
 /**
  * Round-Robin API Key Load Balancer for Gemini
@@ -57,7 +58,7 @@ class GeminiKeyManager {
     }
 
     if (multipleKeys.length === 0) {
-      console.warn("[GeminiKeyManager] No API keys configured. Image generation will fail.");
+      logger.warn("[GeminiKeyManager] No API keys configured. Image generation will fail.", { source: "gemini" });
       return;
     }
 
@@ -73,7 +74,7 @@ class GeminiKeyManager {
       });
     }
 
-    console.log(`[GeminiKeyManager] Initialized with ${this.keys.length} API key(s)`);
+    logger.info(`[GeminiKeyManager] Initialized with ${this.keys.length} API key(s)`, { source: "gemini" });
   }
 
   /**
@@ -113,7 +114,7 @@ class GeminiKeyManager {
     } while (this.currentIndex !== startIndex);
 
     // If all keys are unavailable, use the first one anyway (will likely fail but lets us track)
-    console.warn("[GeminiKeyManager] All API keys are rate-limited or erroring. Using first key.");
+    logger.warn("[GeminiKeyManager] All API keys are rate-limited or erroring. Using first key.", { source: "gemini" });
     this.keys[0].requestCount++;
     return this.keys[0].client;
   }
@@ -136,7 +137,7 @@ class GeminiKeyManager {
     const keyState = this.keys.find(k => k.client === client);
     if (keyState) {
       keyState.rateLimitedUntil = new Date(Date.now() + this.RATE_LIMIT_BACKOFF_MS);
-      console.warn(`[GeminiKeyManager] Key ${keyState.key} rate limited until ${keyState.rateLimitedUntil.toISOString()}`);
+      logger.warn(`[GeminiKeyManager] Key ${keyState.key} rate limited until ${keyState.rateLimitedUntil.toISOString()}`, { source: "gemini" });
     }
   }
 
@@ -262,7 +263,7 @@ Respond with JSON in this exact format:
 
     return getDefaultAnalysis();
   } catch (error) {
-    console.error("Prompt analysis failed:", error);
+    logger.error("Prompt analysis failed", error, { source: "gemini" });
     return getDefaultAnalysis();
   }
 }
@@ -369,7 +370,7 @@ Respond with JSON:
         result = JSON.parse(cleanedJson);
       } catch (parseError) {
         // If JSON parsing fails, return fallback with original prompt
-        console.warn("JSON parse failed for enhancePrompt, using original prompt");
+        logger.warn("JSON parse failed for enhancePrompt, using original prompt", { source: "gemini" });
         return {
           enhancedPrompt: originalPrompt,
           negativePrompts: ["blurry", "low quality", "distorted", "deformed", "watermark"],
@@ -409,7 +410,7 @@ Respond with JSON:
       negativePrompts: ["blurry", "low quality", "distorted"],
     };
   } catch (error) {
-    console.error("Prompt enhancement failed:", error);
+    logger.error("Prompt enhancement failed", error, { source: "gemini" });
     return {
       enhancedPrompt: originalPrompt,
       negativePrompts: ["blurry", "low quality", "distorted"],
@@ -445,7 +446,7 @@ export async function generateImage(
     const model = qualityLevel === "premium" ? MODELS.IMAGE_PREMIUM : MODELS.IMAGE_DRAFT;
     
     const startTime = Date.now();
-    console.log(`[Image Generation] Using model: ${model} (quality: ${qualityLevel}, hasText: ${hasTextRequest})`);
+    logger.info(`[Image Generation] Using model: ${model} (quality: ${qualityLevel}, hasText: ${hasTextRequest})`, { source: "gemini" });
 
     // Build config with optimizations for speed
     // Always request IMAGE only to ensure the model generates an image (not just text)
@@ -464,21 +465,21 @@ export async function generateImage(
       contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
       config,
     });
-    
-    console.log(`[Image Generation] API call completed in ${Date.now() - startTime}ms`);
+
+    logger.info(`[Image Generation] API call completed in ${Date.now() - startTime}ms`, { source: "gemini" });
 
     const candidates = response.candidates;
-    console.log(`[Image Generation] Response has ${candidates?.length || 0} candidates`);
+    logger.info(`[Image Generation] Response has ${candidates?.length || 0} candidates`, { source: "gemini" });
     if (!candidates || candidates.length === 0) {
-      console.error("No candidates in response");
-      console.error("[Image Generation] Full response:", JSON.stringify(response, null, 2).slice(0, 500));
+      logger.error("No candidates in response", null, { source: "gemini" });
+      logger.error("[Image Generation] Full response:", JSON.stringify(response, null, 2).slice(0, 500), { source: "gemini" });
       return null;
     }
 
     const content = candidates[0].content;
-    console.log(`[Image Generation] Content has ${content?.parts?.length || 0} parts`);
+    logger.info(`[Image Generation] Content has ${content?.parts?.length || 0} parts`, { source: "gemini" });
     if (!content || !content.parts) {
-      console.error("No content parts in response");
+      logger.error("No content parts in response", null, { source: "gemini" });
       return null;
     }
 
@@ -489,16 +490,16 @@ export async function generateImage(
     for (const part of content.parts) {
       if (part.text) {
         textResponse = part.text;
-        console.log(`[Image Generation] Found text part: ${part.text.slice(0, 100)}...`);
+        logger.info(`[Image Generation] Found text part: ${part.text.slice(0, 100)}...`, { source: "gemini" });
       } else if (part.inlineData && part.inlineData.data) {
         imageData = part.inlineData.data;
         mimeType = part.inlineData.mimeType || "image/png";
-        console.log(`[Image Generation] Found image data: ${imageData.length} bytes, type: ${mimeType}`);
+        logger.info(`[Image Generation] Found image data: ${imageData.length} bytes, type: ${mimeType}`, { source: "gemini" });
       }
     }
 
     if (imageData) {
-      console.log(`[Image Generation] Success! Returning image data`);
+      logger.info(`[Image Generation] Success! Returning image data`, { source: "gemini" });
       keyManager.reportSuccess(client);
       return {
         imageData,
@@ -507,11 +508,11 @@ export async function generateImage(
       };
     }
 
-    console.error("No image data in response parts");
-    console.error("[Image Generation] Parts:", JSON.stringify(content.parts.map((p: any) => Object.keys(p)), null, 2));
+    logger.error("No image data in response parts", null, { source: "gemini" });
+    logger.error("[Image Generation] Parts:", JSON.stringify(content.parts.map((p: any) => Object.keys(p)), null, 2), { source: "gemini" });
     return null;
   } catch (error) {
-    console.error("Image generation failed:", error);
+    logger.error("Image generation failed", error, { source: "gemini" });
     keyManager.reportError(client, error as Error);
     return null;
   }
@@ -569,7 +570,7 @@ Respond with JSON:
 
     return { composition: 7, detail: 7, lighting: 7, overall: 7 };
   } catch (error) {
-    console.error("Image scoring failed:", error);
+    logger.error("Image scoring failed", error, { source: "gemini" });
     return { composition: 7, detail: 7, lighting: 7, overall: 7 };
   }
 }
@@ -591,7 +592,7 @@ export async function generateMultipleImages(
       }
       return result;
     } catch (error) {
-      console.error(`Generation ${index} failed:`, error);
+      logger.error(`Generation ${index} failed`, error, { source: "gemini" });
       results[index] = null;
       if (onProgress) {
         onProgress(index, null);
@@ -669,7 +670,7 @@ Respond with JSON:
 
     return getDefaultDesignAnalysis();
   } catch (error) {
-    console.error("Design analysis failed:", error);
+    logger.error("Design analysis failed", error, { source: "gemini" });
     return getDefaultDesignAnalysis();
   }
 }
@@ -765,7 +766,7 @@ Respond with JSON:
           negativePrompts: result.negativePrompts || ["blurry", "low quality", "distorted", "watermark"],
         };
       } catch (parseError) {
-        console.warn("JSON parse failed for mockup prompt, using fallback");
+        logger.warn("JSON parse failed for mockup prompt, using fallback", { source: "gemini" });
       }
     }
 
@@ -774,7 +775,7 @@ Respond with JSON:
       negativePrompts: ["blurry", "low quality", "distorted", "watermark", "text", "logo"],
     };
   } catch (error) {
-    console.error("Mockup prompt generation failed:", error);
+    logger.error("Mockup prompt generation failed", error, { source: "gemini" });
     return {
       prompt: `Professional product photo of a ${params.productColor} ${params.productType} with a custom printed design, ${params.scene} background, ${params.angle} view, photorealistic studio lighting, 8K quality`,
       negativePrompts: ["blurry", "low quality", "distorted", "watermark"],
@@ -818,17 +819,17 @@ export async function generateMockup(
         generationConfig: { thinkingConfig: { thinkingBudget: 0 } },
       } as any,
     });
-    console.log(`[Mockup Generation] API call completed in ${Date.now() - startTime}ms`);
+    logger.info(`[Mockup Generation] API call completed in ${Date.now() - startTime}ms`, { source: "gemini" });
 
     const candidates = response.candidates;
     if (!candidates || candidates.length === 0) {
-      console.error("No candidates in mockup response");
+      logger.error("No candidates in mockup response", null, { source: "gemini" });
       return null;
     }
 
     const content = candidates[0].content;
     if (!content || !content.parts) {
-      console.error("No content parts in mockup response");
+      logger.error("No content parts in mockup response", null, { source: "gemini" });
       return null;
     }
 
@@ -854,10 +855,10 @@ export async function generateMockup(
       };
     }
 
-    console.error("No image data in mockup response");
+    logger.error("No image data in mockup response", null, { source: "gemini" });
     return null;
   } catch (error) {
-    console.error("Mockup generation failed:", error);
+    logger.error("Mockup generation failed", error, { source: "gemini" });
     keyManager.reportError(client, error as Error);
     return null;
   }
@@ -915,17 +916,17 @@ Generate a beautiful, creative seamless pattern based on this design:`;
         generationConfig: { thinkingConfig: { thinkingBudget: 0 } },
       } as any,
     });
-    console.log(`[Seamless Pattern] API call completed in ${Date.now() - startTime}ms`);
+    logger.info(`[Seamless Pattern] API call completed in ${Date.now() - startTime}ms`, { source: "gemini" });
 
     const candidates = response.candidates;
     if (!candidates || candidates.length === 0) {
-      console.error("No candidates in seamless pattern response");
+      logger.error("No candidates in seamless pattern response", null, { source: "gemini" });
       return null;
     }
 
     const content = candidates[0].content;
     if (!content || !content.parts) {
-      console.error("No content parts in seamless pattern response");
+      logger.error("No content parts in seamless pattern response", null, { source: "gemini" });
       return null;
     }
 
@@ -951,10 +952,10 @@ Generate a beautiful, creative seamless pattern based on this design:`;
       };
     }
 
-    console.error("No image data in seamless pattern response");
+    logger.error("No image data in seamless pattern response", null, { source: "gemini" });
     return null;
   } catch (error) {
-    console.error("AI seamless pattern generation failed:", error);
+    logger.error("AI seamless pattern generation failed", error, { source: "gemini" });
     keyManager.reportError(client, error as Error);
     return null;
   }
@@ -1138,7 +1139,7 @@ Respond in JSON format:
       shouldGenerateImage: false
     };
   } catch (error) {
-    console.error("[CreativeChat] Generation failed:", error);
+    logger.error("[CreativeChat] Generation failed", error, { source: "gemini" });
     return {
       message: "I'm ready to help you create! What would you like to make?",
       shouldGenerateImage: false
@@ -1177,13 +1178,13 @@ Examples of good names:
     
     const candidates = response.candidates;
     if (!candidates || candidates.length === 0) {
-      console.error("[ChatName] No candidates in response");
+      logger.error("[ChatName] No candidates in response", null, { source: "gemini" });
       return `Creative Session ${new Date().toLocaleDateString()}`;
     }
-    
+
     const content = candidates[0].content;
     if (!content || !content.parts || !content.parts[0].text) {
-      console.error("[ChatName] No text in response");
+      logger.error("[ChatName] No text in response", null, { source: "gemini" });
       return `Creative Session ${new Date().toLocaleDateString()}`;
     }
     
@@ -1192,7 +1193,7 @@ Examples of good names:
     
     return name.length > 50 ? name.slice(0, 47) + '...' : name;
   } catch (error) {
-    console.error("[ChatName] Generation failed:", error);
+    logger.error("[ChatName] Generation failed", error, { source: "gemini" });
     return `Creative Session ${new Date().toLocaleDateString()}`;
   }
 }

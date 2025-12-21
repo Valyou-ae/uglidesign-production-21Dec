@@ -3,6 +3,7 @@ import { storage } from "../storage";
 import { generationRateLimiter } from "../rateLimiter";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 export async function registerInspirationRoutes(app: Express, middleware: Middleware) {
   const { requireAuth, getUserId } = middleware;
@@ -15,7 +16,7 @@ export async function registerInspirationRoutes(app: Express, middleware: Middle
       const inspirations = await storage.getDailyInspirations(limit);
       res.json({ inspirations });
     } catch (error) {
-      console.error("Inspirations error:", error);
+      logger.error("Inspirations error", error, { source: "inspiration" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -28,7 +29,7 @@ export async function registerInspirationRoutes(app: Express, middleware: Middle
       }
       res.json(inspiration);
     } catch (error) {
-      console.error("Today's inspiration error:", error);
+      logger.error("Today's inspiration error", error, { source: "inspiration" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -39,7 +40,7 @@ export async function registerInspirationRoutes(app: Express, middleware: Middle
       const inspirations = await storage.getFeaturedInspirations(limit);
       res.json({ inspirations });
     } catch (error) {
-      console.error("Featured inspirations error:", error);
+      logger.error("Featured inspirations error", error, { source: "inspiration" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -54,7 +55,7 @@ export async function registerInspirationRoutes(app: Express, middleware: Middle
 
       res.json({ recommendations, analysis: { profileCompleteness: analysis.profileCompleteness } });
     } catch (error) {
-      console.error("Personalized prompts error:", error);
+      logger.error("Personalized prompts error", error, { source: "inspiration" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -68,7 +69,7 @@ export async function registerInspirationRoutes(app: Express, middleware: Middle
       const byCategory = getStylePresetsByCategory();
       res.json({ presets, byCategory });
     } catch (error) {
-      console.error("Style presets error:", error);
+      logger.error("Style presets error", error, { source: "inspiration" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -100,7 +101,7 @@ export async function registerInspirationRoutes(app: Express, middleware: Middle
         image: `data:image/png;base64,${result.imageBase64}`
       });
     } catch (error) {
-      console.error("Style transfer preset error:", error);
+      logger.error("Style transfer preset error", error, { source: "inspiration" });
       res.status(500).json({ message: "Style transfer failed" });
     }
   });
@@ -132,7 +133,7 @@ export async function registerInspirationRoutes(app: Express, middleware: Middle
         image: `data:image/png;base64,${result.imageBase64}`
       });
     } catch (error) {
-      console.error("Style transfer custom error:", error);
+      logger.error("Style transfer custom error", error, { source: "inspiration" });
       res.status(500).json({ message: "Style transfer failed" });
     }
   });

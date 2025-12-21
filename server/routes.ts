@@ -6,6 +6,7 @@ import { createServer, type Server } from "http";
 import sharp from "sharp";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { logger } from "./logger";
 import { 
   authRateLimiter, 
   passwordResetLimiter, 
@@ -95,7 +96,7 @@ export async function registerRoutes(
         }
       });
     } catch (error) {
-      console.error("Gemini stats error:", error);
+      logger.error("Gemini stats error", error, { source: "routes" });
       res.status(500).json({ message: "Failed to get Gemini stats" });
     }
   });
@@ -105,15 +106,8 @@ export async function registerRoutes(
 
   await setupAuth(app);
 
-  // TEST_MODE bypasses authentication - NEVER enable in production
-  const isTestMode = process.env.TEST_MODE === "true" && process.env.NODE_ENV !== "production";
-  if (process.env.TEST_MODE === "true" && process.env.NODE_ENV === "production") {
-    console.error("WARNING: TEST_MODE is ignored in production for security reasons");
-  }
-  const TEST_USER_ID = "86375c89-623d-4e4f-b05b-056bc1663bf5";
-
   // Create shared middleware for route modules
-  const sharedMiddleware = createMiddleware(isTestMode);
+  const sharedMiddleware = createMiddleware();
 
   // Register modularized routes
   registerAdminRoutes(app, sharedMiddleware);
@@ -204,7 +198,7 @@ export async function registerRoutes(
     
     for (const pattern of sensitivePatterns) {
       if (pattern.test(message)) {
-        console.error("Sanitized error (sensitive pattern detected):", message);
+        logger.error("Sanitized error (sensitive pattern detected)", null, { source: "routes", message });
         return fallback;
       }
     }
@@ -231,65 +225,6 @@ export async function registerRoutes(
     }
     
     return fallback;
-  };
-
-  const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-    if (isTestMode) {
-      (req as AuthenticatedRequest).user = (req as AuthenticatedRequest).user || { claims: { sub: TEST_USER_ID } };
-      return next();
-    }
-    return isAuthenticated(req, res, next);
-  };
-
-  const getUserId = (req: AuthenticatedRequest): string => {
-    if (isTestMode) {
-      return TEST_USER_ID;
-    }
-    return req.user?.claims?.sub || '';
-  };
-
-  const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
-    requireAuth(req, res, async () => {
-      try {
-        const userId = getUserId(req as AuthenticatedRequest);
-        const user = await storage.getUser(userId);
-
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
-
-        if (user.role !== 'admin') {
-          return res.status(403).json({ message: "Access denied. Admin privileges required." });
-        }
-
-        next();
-      } catch (error) {
-        console.error("Admin auth error:", error);
-        res.status(500).json({ message: "Authentication error" });
-      }
-    });
-  };
-
-  const requireSuperAdmin = async (req: Request, res: Response, next: NextFunction) => {
-    requireAuth(req, res, async () => {
-      try {
-        const userId = getUserId(req as AuthenticatedRequest);
-        const user = await storage.getUser(userId);
-        
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
-        
-        if (user.role !== 'super_admin') {
-          return res.status(403).json({ message: "Access denied. Super Admin privileges required." });
-        }
-        
-        next();
-      } catch (error) {
-        console.error("Super Admin auth error:", error);
-        res.status(500).json({ message: "Authentication error" });
-      }
-    });
   };
 
   // All routes have been modularized into server/routes/

@@ -11,6 +11,7 @@ import type { Middleware } from "./middleware";
 import { parsePagination } from "./utils";
 import type { AuthenticatedRequest } from "../types";
 import { imageCache, getCacheStats } from "../cache";
+import { logger } from "../logger";
 
 export function registerAdminRoutes(app: Express, middleware: Middleware) {
   const { requireAdmin } = middleware;
@@ -47,7 +48,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
         }
       });
     } catch (error) {
-      console.error("Admin users fetch error:", error);
+      logger.error("Admin users fetch error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to fetch users" });
     }
   });
@@ -82,7 +83,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
         }
       });
     } catch (error) {
-      console.error("Admin role update error:", error);
+      logger.error("Admin role update error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to update user role" });
     }
   });
@@ -96,7 +97,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       const page = Math.floor(offset / limit) + 1;
       res.json({ contacts, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
-      console.error("Admin contacts fetch error:", error);
+      logger.error("Admin contacts fetch error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to fetch contacts" });
     }
   });
@@ -112,7 +113,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
 
       res.json({ contact });
     } catch (error) {
-      console.error("Admin contact fetch error:", error);
+      logger.error("Admin contact fetch error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to fetch contact" });
     }
   });
@@ -126,7 +127,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
-      console.error("Admin contact create error:", error);
+      logger.error("Admin contact create error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to create contact" });
     }
   });
@@ -146,7 +147,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
-      console.error("Admin contact update error:", error);
+      logger.error("Admin contact update error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to update contact" });
     }
   });
@@ -163,7 +164,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       await storage.deleteContact(id);
       res.json({ message: "Contact deleted successfully" });
     } catch (error) {
-      console.error("Admin contact delete error:", error);
+      logger.error("Admin contact delete error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to delete contact" });
     }
   });
@@ -177,7 +178,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       const page = Math.floor(offset / limit) + 1;
       res.json({ deals, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
-      console.error("Admin deals fetch error:", error);
+      logger.error("Admin deals fetch error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to fetch deals" });
     }
   });
@@ -193,7 +194,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
 
       res.json({ deal });
     } catch (error) {
-      console.error("Admin deal fetch error:", error);
+      logger.error("Admin deal fetch error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to fetch deal" });
     }
   });
@@ -207,7 +208,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
-      console.error("Admin deal create error:", error);
+      logger.error("Admin deal create error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to create deal" });
     }
   });
@@ -227,7 +228,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
-      console.error("Admin deal update error:", error);
+      logger.error("Admin deal update error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to update deal" });
     }
   });
@@ -244,7 +245,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       await storage.deleteDeal(id);
       res.json({ message: "Deal deleted successfully" });
     } catch (error) {
-      console.error("Admin deal delete error:", error);
+      logger.error("Admin deal delete error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to delete deal" });
     }
   });
@@ -258,7 +259,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       const page = Math.floor(offset / limit) + 1;
       res.json({ activities, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
-      console.error("Admin activities fetch error:", error);
+      logger.error("Admin activities fetch error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to fetch activities" });
     }
   });
@@ -272,7 +273,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
-      console.error("Admin activity create error:", error);
+      logger.error("Admin activity create error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to create activity" });
     }
   });
@@ -292,7 +293,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
-      console.error("Admin activity update error:", error);
+      logger.error("Admin activity update error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to update activity" });
     }
   });
@@ -311,7 +312,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       await storage.deleteActivity(id);
       res.json({ message: "Activity deleted successfully" });
     } catch (error) {
-      console.error("Admin activity delete error:", error);
+      logger.error("Admin activity delete error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to delete activity" });
     }
   });
@@ -323,7 +324,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       const analytics = await storage.getAnalytics();
       res.json({ analytics });
     } catch (error) {
-      console.error("Admin analytics fetch error:", error);
+      logger.error("Admin analytics fetch error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to fetch analytics" });
     }
   });
@@ -348,7 +349,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.error("Cache stats error:", error);
+      logger.error("Cache stats error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to fetch cache stats" });
     }
   });
@@ -360,7 +361,7 @@ export function registerAdminRoutes(app: Express, middleware: Middleware) {
       imageCache.clear();
       res.json({ message: "Cache cleared successfully", timestamp: new Date().toISOString() });
     } catch (error) {
-      console.error("Cache clear error:", error);
+      logger.error("Cache clear error", error, { source: "admin" });
       res.status(500).json({ message: "Failed to clear cache" });
     }
   });

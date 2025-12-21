@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 export async function registerBackgroundRoutes(app: Express, middleware: Middleware) {
   const { requireAuth } = middleware;
@@ -44,7 +45,7 @@ export async function registerBackgroundRoutes(app: Express, middleware: Middlew
         result
       });
     } catch (error) {
-      console.error("Background removal error:", error);
+      logger.error("Background removal error", error, { source: "background" });
       const errorMessage = error instanceof Error ? error.message : "Background removal failed";
       res.status(500).json({
         success: false,
@@ -142,7 +143,7 @@ export async function registerBackgroundRoutes(app: Express, middleware: Middlew
       } catch (batchError) {
         hasError = true;
         const errorMessage = batchError instanceof Error ? batchError.message : "Batch processing failed";
-        console.error("Batch background removal error:", batchError);
+        logger.error("Batch background removal error", batchError, { source: "background" });
 
         sendEvent("error", {
           message: errorMessage,
@@ -169,7 +170,7 @@ export async function registerBackgroundRoutes(app: Express, middleware: Middlew
 
       res.end();
     } catch (error) {
-      console.error("Background removal batch error:", error);
+      logger.error("Background removal batch error", error, { source: "background" });
       const errorMessage = error instanceof Error ? error.message : "Batch processing failed";
 
       if (!res.headersSent) {
@@ -242,7 +243,7 @@ export async function registerBackgroundRoutes(app: Express, middleware: Middlew
 
       res.json(presets);
     } catch (error) {
-      console.error("Background removal presets error:", error);
+      logger.error("Background removal presets error", error, { source: "background" });
       res.status(500).json({
         success: false,
         message: "Failed to fetch presets"

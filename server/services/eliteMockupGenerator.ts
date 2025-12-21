@@ -4,6 +4,7 @@
  */
 
 import { GoogleGenAI, Modality } from "@google/genai";
+import { logger } from "../logger";
 import type {
   MockupAngle,
   ModelDetails,
@@ -150,7 +151,7 @@ Respond with JSON:
       return JSON.parse(rawJson) as DesignAnalysis;
     }
   } catch (error) {
-    console.error("Design analysis failed:", error);
+    logger.error("Design analysis failed", error, { source: "eliteMockupGenerator" });
   }
 
   return {
@@ -271,7 +272,7 @@ STYLE:
       lastError = new Error("No image data in response");
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`Headshot attempt ${attempt + 1}/${maxRetries} failed:`, error);
+      logger.error(`Headshot attempt ${attempt + 1}/${maxRetries} failed`, error, { source: "eliteMockupGenerator" });
       
       if (attempt < maxRetries - 1) {
         await new Promise(resolve => 
@@ -929,13 +930,13 @@ ${renderSpec.fullPrompt}`
 
     const candidates = response.candidates;
     if (!candidates || candidates.length === 0) {
-      console.error("No candidates in mockup response");
+      logger.error("No candidates in mockup response", { source: "eliteMockupGenerator" });
       return null;
     }
 
     const content = candidates[0].content;
     if (!content || !content.parts) {
-      console.error("No content parts in mockup response");
+      logger.error("No content parts in mockup response", { source: "eliteMockupGenerator" });
       return null;
     }
 
@@ -951,10 +952,10 @@ ${renderSpec.fullPrompt}`
       }
     }
 
-    console.error("No image data in mockup response");
+    logger.error("No image data in mockup response", { source: "eliteMockupGenerator" });
     return null;
   } catch (error) {
-    console.error("Single mockup generation failed:", error);
+    logger.error("Single mockup generation failed", error, { source: "eliteMockupGenerator" });
     return null;
   } finally {
     releaseConcurrencySlot();
@@ -977,7 +978,7 @@ export async function generateMockupWithRetry(
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`Attempt ${attempt + 1}/${maxRetries} failed:`, error);
+      logger.error(`Attempt ${attempt + 1}/${maxRetries} failed`, error, { source: "eliteMockupGenerator" });
 
       if (attempt < maxRetries - 1) {
         await new Promise(resolve => 
@@ -987,7 +988,7 @@ export async function generateMockupWithRetry(
     }
   }
 
-  console.error(`All ${maxRetries} attempts failed. Last error:`, lastError);
+  logger.error(`All ${maxRetries} attempts failed. Last error`, lastError, { source: "eliteMockupGenerator" });
   return null;
 }
 
@@ -1012,7 +1013,7 @@ export async function generateMockupBatch(
   if (request.existingPersonaLock) {
     personaLock = request.existingPersonaLock as PersonaLock;
     personaHeadshot = personaLock.headshot;
-    console.log("Reusing existing persona lock for consistent model appearance");
+    logger.info("Reusing existing persona lock for consistent model appearance", { source: "eliteMockupGenerator" });
   } else if (request.product.isWearable && request.modelDetails) {
     try {
       personaLock = await generatePersonaLock(request.modelDetails);
@@ -1020,9 +1021,9 @@ export async function generateMockupBatch(
       try {
         personaHeadshot = await generatePersonaHeadshot(personaLock);
         personaLock.headshot = personaHeadshot;
-        console.log("Persona headshot generated successfully");
+        logger.info("Persona headshot generated successfully", { source: "eliteMockupGenerator" });
       } catch (headshotError) {
-        console.warn("Persona headshot generation failed, proceeding without it:", headshotError);
+        logger.warn("Persona headshot generation failed, proceeding without it", headshotError, { source: "eliteMockupGenerator" });
         if (onError) {
           onError({
             type: 'persona_lock_failed',
@@ -1032,7 +1033,7 @@ export async function generateMockupBatch(
         }
       }
     } catch (error) {
-      console.warn("Persona lock generation failed, proceeding without model:", error);
+      logger.warn("Persona lock generation failed, proceeding without model", error, { source: "eliteMockupGenerator" });
     }
   }
 

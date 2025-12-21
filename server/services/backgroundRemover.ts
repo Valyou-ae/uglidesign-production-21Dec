@@ -15,6 +15,7 @@ import type {
   BackgroundRemovalQuality,
   BackgroundRemovalJobStatus
 } from "@shared/mockupTypes";
+import { logger } from "../logger";
 
 const genAI = new GoogleGenAI({ 
   apiKey: process.env.GEMINI_API_KEY || process.env.AI_INTEGRATIONS_GEMINI_API_KEY || ""
@@ -56,7 +57,7 @@ async function applyChromaKey(
   chromaColor: { r: number; g: number; b: number } = { r: 255, g: 0, b: 255 },
   tolerance: number = 60
 ): Promise<string> {
-  console.log(`applyChromaKey: Removing color RGB(${chromaColor.r},${chromaColor.g},${chromaColor.b}) with tolerance ${tolerance}`);
+  logger.info(`applyChromaKey: Removing color RGB(${chromaColor.r},${chromaColor.g},${chromaColor.b}) with tolerance ${tolerance}`, { source: "backgroundRemover" });
   
   const imageBuffer = Buffer.from(imageBase64, 'base64');
   const image = sharp(imageBuffer);
@@ -101,10 +102,10 @@ async function applyChromaKey(
     }
   }
   
-  console.log(`applyChromaKey: ${transparentCount} fully transparent, ${semiTransparentCount} semi-transparent, out of ${width * height} pixels`);
+  logger.info(`applyChromaKey: ${transparentCount} fully transparent, ${semiTransparentCount} semi-transparent, out of ${width * height} pixels`, { source: "backgroundRemover" });
   
   if (transparentCount < (width * height) * 0.05) {
-    console.warn('applyChromaKey: Warning - less than 5% pixels made transparent, chroma key may have failed');
+    logger.warn('applyChromaKey: Warning - less than 5% pixels made transparent, chroma key may have failed', { source: "backgroundRemover" });
   }
   
   const result = await sharp(resultPixels, {
@@ -302,7 +303,7 @@ VERIFICATION CHECKLIST:
 async function removeBackgroundWithReplicate(
   imageBase64: string
 ): Promise<string> {
-  console.log('removeBackgroundWithReplicate: Starting Replicate background removal...');
+  logger.info('removeBackgroundWithReplicate: Starting Replicate background removal...', { source: "backgroundRemover" });
   
   const dataUri = `data:image/png;base64,${imageBase64}`;
   
@@ -343,7 +344,7 @@ async function removeBackgroundWithReplicate(
     .png()
     .toBuffer();
   
-  console.log('removeBackgroundWithReplicate: Successfully removed background');
+  logger.info('removeBackgroundWithReplicate: Successfully removed background', { source: "backgroundRemover" });
   return pngBuffer.toString('base64');
 }
 
@@ -364,7 +365,7 @@ async function generateMagentaBackground(
   const { prompt, negativePrompts } = buildMagentaBackgroundPrompt(options);
   const fullPrompt = `${prompt}\n\nAVOID: ${negativePrompts.join(", ")}`;
 
-  console.log('generateMagentaBackground: Requesting magenta background replacement...');
+  logger.info('generateMagentaBackground: Requesting magenta background replacement...', { source: "backgroundRemover" });
 
   const response = await genAI.models.generateContent({
     model: MODELS.IMAGE_GENERATION,
@@ -399,7 +400,7 @@ async function generateMagentaBackground(
 
   for (const part of content.parts) {
     if (part.inlineData && part.inlineData.data) {
-      console.log('generateMagentaBackground: Received magenta background image from AI');
+      logger.info('generateMagentaBackground: Received magenta background image from AI', { source: "backgroundRemover" });
       return part.inlineData.data;
     }
   }
@@ -414,7 +415,7 @@ async function generateBackgroundReplacement(
   const { prompt, negativePrompts } = buildBackgroundReplacementPrompt(options);
   const fullPrompt = `${prompt}\n\nAVOID: ${negativePrompts.join(", ")}`;
 
-  console.log(`generateBackgroundReplacement: Requesting ${options.outputType} background...`);
+  logger.info(`generateBackgroundReplacement: Requesting ${options.outputType} background...`, { source: "backgroundRemover" });
 
   const response = await genAI.models.generateContent({
     model: MODELS.IMAGE_GENERATION,
@@ -449,7 +450,7 @@ async function generateBackgroundReplacement(
 
   for (const part of content.parts) {
     if (part.inlineData && part.inlineData.data) {
-      console.log('generateBackgroundReplacement: Received result from AI');
+      logger.info('generateBackgroundReplacement: Received result from AI', { source: "backgroundRemover" });
       return part.inlineData.data;
     }
   }
@@ -495,12 +496,12 @@ export async function removeBackground(
       let resultImageData: string;
 
       if (normalizedOptions.outputType === 'transparent') {
-        console.log('Using Replicate bria/remove-background for transparent background...');
+        logger.info('Using Replicate bria/remove-background for transparent background...', { source: "backgroundRemover" });
         
         const replicatePromise = removeBackgroundWithReplicate(imageBase64);
         resultImageData = await Promise.race([replicatePromise, timeoutPromise]);
       } else {
-        console.log(`Using direct replacement for ${normalizedOptions.outputType} background...`);
+        logger.info(`Using direct replacement for ${normalizedOptions.outputType} background...`, { source: "backgroundRemover" });
         
         const replacementPromise = generateBackgroundReplacement(imageBase64, normalizedOptions);
         resultImageData = await Promise.race([replacementPromise, timeoutPromise]);
@@ -517,11 +518,11 @@ export async function removeBackground(
 
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`Background removal attempt ${attempt + 1}/${GENERATION_CONFIG.MAX_RETRIES} failed:`, lastError.message);
+      logger.error(`Background removal attempt ${attempt + 1}/${GENERATION_CONFIG.MAX_RETRIES} failed`, lastError, { source: "backgroundRemover" });
 
       if (attempt < GENERATION_CONFIG.MAX_RETRIES - 1) {
         const delay = calculateRetryDelay(attempt);
-        console.log(`Retrying in ${Math.round(delay)}ms...`);
+        logger.info(`Retrying in ${Math.round(delay)}ms...`, { source: "backgroundRemover" });
         await sleep(delay);
       }
     }

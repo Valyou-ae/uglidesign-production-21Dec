@@ -2,23 +2,14 @@ import type { Request, Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "../types";
 import { isAuthenticated } from "../replitAuth";
 import { storage } from "../storage";
+import { logger } from "../logger";
 
-// Test mode configuration
-const TEST_USER_ID = "test-user-123";
-
-export function createMiddleware(isTestMode: boolean) {
+export function createMiddleware() {
   const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-    if (isTestMode) {
-      (req as AuthenticatedRequest).user = (req as AuthenticatedRequest).user || { claims: { sub: TEST_USER_ID } };
-      return next();
-    }
     return isAuthenticated(req, res, next);
   };
 
   const getUserId = (req: AuthenticatedRequest): string => {
-    if (isTestMode) {
-      return TEST_USER_ID;
-    }
     return req.user?.claims?.sub || '';
   };
 
@@ -38,7 +29,7 @@ export function createMiddleware(isTestMode: boolean) {
 
         next();
       } catch (error) {
-        console.error("Admin auth error:", error);
+        logger.error("Admin auth error", error, { source: "middleware" });
         res.status(500).json({ message: "Authentication error" });
       }
     });
@@ -60,7 +51,7 @@ export function createMiddleware(isTestMode: boolean) {
 
         next();
       } catch (error) {
-        console.error("Super Admin auth error:", error);
+        logger.error("Super Admin auth error", error, { source: "middleware" });
         res.status(500).json({ message: "Authentication error" });
       }
     });
@@ -71,7 +62,6 @@ export function createMiddleware(isTestMode: boolean) {
     getUserId,
     requireAdmin,
     requireSuperAdmin,
-    isTestMode,
   };
 }
 

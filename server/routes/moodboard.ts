@@ -4,6 +4,7 @@ import { storage } from "../storage";
 import { insertPromptFavoriteSchema } from "@shared/schema";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
   const { requireAuth, getUserId } = middleware;
@@ -24,7 +25,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
-      console.error("Create prompt favorite error:", error);
+      logger.error("Create prompt favorite error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to save prompt favorite" });
     }
   });
@@ -35,7 +36,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
       const favorites = await storage.getPromptFavorites(userId);
       res.json({ favorites });
     } catch (error) {
-      console.error("Get prompt favorites error:", error);
+      logger.error("Get prompt favorites error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to fetch prompt favorites" });
     }
   });
@@ -48,7 +49,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
       await storage.deletePromptFavorite(id, userId);
       res.json({ message: "Prompt favorite deleted successfully" });
     } catch (error) {
-      console.error("Delete prompt favorite error:", error);
+      logger.error("Delete prompt favorite error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to delete prompt favorite" });
     }
   });
@@ -61,7 +62,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
       const boards = await storage.getMoodBoards(userId);
       res.json({ boards });
     } catch (error) {
-      console.error("Get mood boards error:", error);
+      logger.error("Get mood boards error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to fetch mood boards" });
     }
   });
@@ -78,7 +79,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
       const board = await storage.createMoodBoard(userId, name, description);
       res.status(201).json({ board });
     } catch (error) {
-      console.error("Create mood board error:", error);
+      logger.error("Create mood board error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to create mood board" });
     }
   });
@@ -96,7 +97,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
 
       res.json(result);
     } catch (error) {
-      console.error("Get mood board error:", error);
+      logger.error("Get mood board error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to fetch mood board" });
     }
   });
@@ -115,7 +116,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
 
       res.json({ board });
     } catch (error) {
-      console.error("Update mood board error:", error);
+      logger.error("Update mood board error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to update mood board" });
     }
   });
@@ -128,7 +129,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
       await storage.deleteMoodBoard(userId, id);
       res.json({ message: "Mood board deleted successfully" });
     } catch (error) {
-      console.error("Delete mood board error:", error);
+      logger.error("Delete mood board error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to delete mood board" });
     }
   });
@@ -159,7 +160,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
 
       res.status(201).json({ item });
     } catch (error) {
-      console.error("Add item to board error:", error);
+      logger.error("Add item to board error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to add item to board" });
     }
   });
@@ -190,7 +191,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
 
       res.json({ item });
     } catch (error) {
-      console.error("Update board item error:", error);
+      logger.error("Update board item error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to update board item" });
     }
   });
@@ -209,7 +210,7 @@ export function registerMoodBoardRoutes(app: Express, middleware: Middleware) {
       await storage.removeItemFromBoard(itemId);
       res.json({ message: "Item removed from board successfully" });
     } catch (error) {
-      console.error("Remove item from board error:", error);
+      logger.error("Remove item from board error", error, { source: "moodboard" });
       res.status(500).json({ message: "Failed to remove item from board" });
     }
   });

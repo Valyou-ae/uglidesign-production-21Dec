@@ -1,4 +1,5 @@
 import { GoogleGenAI, Modality } from "@google/genai";
+import { logger } from "../logger";
 
 const genAI = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || process.env.AI_INTEGRATIONS_GEMINI_API_KEY || ""
@@ -130,14 +131,14 @@ async function retryWithBackoff<T>(
       return await operation();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`Style transfer attempt ${attempt + 1} failed:`, lastError.message);
+      logger.error(`Style transfer attempt ${attempt + 1} failed`, lastError, { source: "styleTransfer" });
 
       if (attempt < maxRetries - 1) {
         const delayMs = Math.min(
           GENERATION_CONFIG.BASE_RETRY_DELAY_MS * Math.pow(2, attempt),
           GENERATION_CONFIG.MAX_RETRY_DELAY_MS
         );
-        console.log(`Retrying in ${delayMs}ms...`);
+        logger.info(`Retrying in ${delayMs}ms...`, { source: "styleTransfer" });
         await delay(delayMs);
       }
     }
@@ -176,7 +177,7 @@ export async function transferStyleFromPreset(
     return { success: false, error: `Unknown style preset: ${presetId}` };
   }
 
-  console.log(`Style transfer: Applying preset "${preset.name}" with strength ${options.styleStrength}`);
+  logger.info(`Style transfer: Applying preset "${preset.name}" with strength ${options.styleStrength}`, { source: "styleTransfer" });
 
   try {
     const result = await retryWithBackoff(async () => {
@@ -216,11 +217,11 @@ export async function transferStyleFromPreset(
       throw new Error("No image generated in response");
     });
 
-    console.log(`Style transfer: Successfully applied "${preset.name}" style`);
+    logger.info(`Style transfer: Successfully applied "${preset.name}" style`, { source: "styleTransfer" });
     return { success: true, imageBase64: result };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error(`Style transfer failed:`, message);
+    logger.error(`Style transfer failed`, error instanceof Error ? error : new Error(message), { source: "styleTransfer" });
     return { success: false, error: message };
   }
 }
@@ -230,7 +231,7 @@ export async function transferStyleFromImage(
   styleImageBase64: string,
   options: StyleTransferOptions
 ): Promise<{ success: boolean; imageBase64?: string; error?: string }> {
-  console.log(`Style transfer: Applying custom style with strength ${options.styleStrength}`);
+  logger.info(`Style transfer: Applying custom style with strength ${options.styleStrength}`, { source: "styleTransfer" });
 
   try {
     const result = await retryWithBackoff(async () => {
@@ -278,11 +279,11 @@ export async function transferStyleFromImage(
       throw new Error("No image generated in response");
     });
 
-    console.log(`Style transfer: Successfully applied custom style`);
+    logger.info(`Style transfer: Successfully applied custom style`, { source: "styleTransfer" });
     return { success: true, imageBase64: result };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error(`Style transfer failed:`, message);
+    logger.error(`Style transfer failed`, error instanceof Error ? error : new Error(message), { source: "styleTransfer" });
     return { success: false, error: message };
   }
 }

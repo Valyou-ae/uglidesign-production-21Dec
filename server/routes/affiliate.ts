@@ -5,6 +5,7 @@ import { insertWithdrawalSchema, withdrawalRequestSchema } from "@shared/schema"
 import { getFromCache, CACHE_TTL } from "../cache";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 export function registerAffiliateRoutes(app: Express, middleware: Middleware) {
   const { requireAuth, getUserId } = middleware;
@@ -104,7 +105,7 @@ export function registerAffiliateRoutes(app: Express, middleware: Middleware) {
       );
       res.json({ leaderboard, period });
     } catch (error) {
-      console.error("Leaderboard error:", error);
+      logger.error("Leaderboard error", error, { source: "affiliate" });
       res.status(500).json({ message: "Failed to fetch leaderboard" });
     }
   });
@@ -117,7 +118,7 @@ export function registerAffiliateRoutes(app: Express, middleware: Middleware) {
       const stats = await storage.getReferralStats(userId);
       res.json(stats);
     } catch (error) {
-      console.error("Referral stats error:", error);
+      logger.error("Referral stats error", error, { source: "affiliate" });
       res.status(500).json({ message: "Failed to fetch referral stats" });
     }
   });
@@ -139,7 +140,7 @@ export function registerAffiliateRoutes(app: Express, middleware: Middleware) {
 
       res.json({ success: true, referrerCredits: 5, message: "Referral code applied! Your referrer earned 5 bonus credits." });
     } catch (error) {
-      console.error("Apply referral error:", error);
+      logger.error("Apply referral error", error, { source: "affiliate" });
       res.status(500).json({ message: "Failed to apply referral code" });
     }
   });
@@ -162,7 +163,7 @@ export function registerAffiliateRoutes(app: Express, middleware: Middleware) {
 
       res.json({ code, message: "Referral code generated successfully" });
     } catch (error) {
-      console.error("Generate referral code error:", error);
+      logger.error("Generate referral code error", error, { source: "affiliate" });
       res.status(500).json({ message: "Failed to generate referral code" });
     }
   });

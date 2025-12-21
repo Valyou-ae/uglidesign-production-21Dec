@@ -6,6 +6,7 @@ import { invalidateCache, getCachedImageBuffer, imageCache } from "../cache";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
 import { parsePagination } from "./utils";
+import { logger } from "../logger";
 
 export function registerImageRoutes(app: Express, middleware: Middleware) {
   const { requireAuth, getUserId } = middleware;
@@ -38,7 +39,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
             folderId = insertResult.rows[0].id;
           }
         } catch (folderError) {
-          console.error("Folder creation error (non-blocking):", folderError);
+          logger.error("Folder creation error (non-blocking)", folderError, { source: "images" });
           // Continue without folder - folderId remains undefined/null
         }
       }
@@ -70,7 +71,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
 
       res.json({ image });
     } catch (error) {
-      console.error("Image save error:", error);
+      logger.error("Image save error", error, { source: "images" });
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
@@ -270,7 +271,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       const counts = await storage.getImageCountsByMonth(userId, year, month);
       res.json({ counts });
     } catch (error) {
-      console.error("Calendar data error:", error);
+      logger.error("Calendar data error", error, { source: "images" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -293,7 +294,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       const images = await storage.getImagesByDateRange(userId, startDate, endDate);
       res.json({ images });
     } catch (error) {
-      console.error("Images by date error:", error);
+      logger.error("Images by date error", error, { source: "images" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -306,7 +307,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       const folder = await storage.getOrCreateDefaultFolder(userId);
       res.json({ folder });
     } catch (error) {
-      console.error("Get default folder error:", error);
+      logger.error("Get default folder error", error, { source: "images" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -317,7 +318,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       const folders = await storage.getFoldersByUser(userId);
       res.json({ folders });
     } catch (error) {
-      console.error("Get folders error:", error);
+      logger.error("Get folders error", error, { source: "images" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -332,7 +333,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid folder data", errors: error.errors });
       }
-      console.error("Create folder error:", error);
+      logger.error("Create folder error", error, { source: "images" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -349,7 +350,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       }
       res.json({ folder });
     } catch (error) {
-      console.error("Update folder error:", error);
+      logger.error("Update folder error", error, { source: "images" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -362,7 +363,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       await storage.deleteFolder(id, userId);
       res.json({ success: true });
     } catch (error) {
-      console.error("Delete folder error:", error);
+      logger.error("Delete folder error", error, { source: "images" });
       res.status(500).json({ message: "Server error" });
     }
   });
@@ -379,7 +380,7 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       }
       res.json({ image });
     } catch (error) {
-      console.error("Move image to folder error:", error);
+      logger.error("Move image to folder error", error, { source: "images" });
       res.status(500).json({ message: "Server error" });
     }
   });

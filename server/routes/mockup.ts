@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import type { Middleware } from "./middleware";
+import { logger } from "../logger";
 
 export async function registerMockupRoutes(app: Express, middleware: Middleware) {
   const { requireAuth } = middleware;
@@ -24,7 +25,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
       const analysis = await analyzeDesign(base64Data);
       res.json({ analysis });
     } catch (error) {
-      console.error("Design analysis error:", error);
+      logger.error("Design analysis error", error, { source: "mockup" });
       res.status(500).json({ message: "Analysis failed" });
     }
   });
@@ -88,7 +89,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
 
       res.end();
     } catch (error) {
-      console.error("Mockup generation error:", error);
+      logger.error("Mockup generation error", error, { source: "mockup" });
       res.write(`event: error\ndata: ${JSON.stringify({ message: "Mockup generation failed" })}\n\n`);
       res.end();
     }
@@ -330,7 +331,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
             sendEvent("status", { stage: "failed", message: "Model generation failed - please try again", progress: 0 });
           }
         } catch (batchErr) {
-          console.error("Elite mockup batch error:", batchErr);
+          logger.error("Elite mockup batch error", batchErr, { source: "mockup" });
           const errorMessage = batchErr instanceof Error ? batchErr.message : String(batchErr);
           const isPersonaLockError = errorMessage.includes('Persona Lock failed');
 
@@ -385,7 +386,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
 
       res.end();
     } catch (error) {
-      console.error("Batch mockup generation error:", error);
+      logger.error("Batch mockup generation error", error, { source: "mockup" });
       res.write(`event: error\ndata: ${JSON.stringify({ message: "Batch generation failed" })}\n\n`);
       res.end();
     }
@@ -414,7 +415,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
       const homeLivingProducts = getHomeLivingProducts();
       res.json({ dtgProducts, aopProducts, accessoryProducts, homeLivingProducts });
     } catch (error) {
-      console.error("Products fetch error:", error);
+      logger.error("Products fetch error", error, { source: "mockup" });
       res.status(500).json({ message: "Failed to fetch products" });
     }
   });
@@ -426,7 +427,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
       }));
       res.json({ styles });
     } catch (error) {
-      console.error("Brand styles fetch error:", error);
+      logger.error("Brand styles fetch error", error, { source: "mockup" });
       res.status(500).json({ message: "Failed to fetch brand styles" });
     }
   });
@@ -442,7 +443,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
       const analysis = await analyzeDesignForMockup(base64Data);
       res.json({ analysis });
     } catch (error) {
-      console.error("Elite design analysis error:", error);
+      logger.error("Elite design analysis error", error, { source: "mockup" });
       res.status(500).json({ message: "Analysis failed" });
     }
   });
@@ -542,7 +543,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
       sendEvent("stream_end", { success: batchCompleted && !personaLockFailed, timestamp: Date.now() });
       res.end();
     } catch (error) {
-      console.error("Elite mockup generation error:", error);
+      logger.error("Elite mockup generation error", error, { source: "mockup" });
       res.write(`event: error\ndata: ${JSON.stringify({ message: "Elite mockup generation failed", type: "system_error" })}\n\n`);
       res.end();
     }
@@ -565,7 +566,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
         res.status(500).json({ message: "Refinement failed" });
       }
     } catch (error) {
-      console.error("Elite mockup refinement error:", error);
+      logger.error("Elite mockup refinement error", error, { source: "mockup" });
       res.status(500).json({ message: "Refinement failed" });
     }
   });
@@ -602,7 +603,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
         res.status(500).json({ success: false, message: "Failed to generate AI-enhanced pattern. Please try again." });
       }
     } catch (error) {
-      console.error("AI seamless pattern generation error:", error);
+      logger.error("AI seamless pattern generation error", error, { source: "mockup" });
       res.status(500).json({ success: false, message: "AI pattern generation failed" });
     }
   });

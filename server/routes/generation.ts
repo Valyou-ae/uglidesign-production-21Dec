@@ -4,6 +4,7 @@ import { invalidateCache } from "../cache";
 import { generationRateLimiter, guestGenerationLimiter } from "../rateLimiter";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
+import { logger } from "../logger";
 
 const GUEST_GALLERY_USER_ID = "guest-gallery-user";
 
@@ -90,7 +91,7 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
 
       return res.json({ imageData: result.imageData, mimeType: result.mimeType });
     } catch (error: unknown) {
-      console.error("Guest generation error:", error);
+      logger.error("Guest generation error", error, { source: "generation" });
       const err = error as { message?: string };
       const message = err?.message?.includes('generation') ? err.message : "Generation failed. Please try again.";
       return res.status(500).json({ message });
@@ -109,7 +110,7 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
       const analysis = await analyzePrompt(prompt);
       res.json({ analysis });
     } catch (error) {
-      console.error("Analysis error:", error);
+      logger.error("Analysis error", error, { source: "generation" });
       res.status(500).json({ message: "Analysis failed" });
     }
   });
@@ -195,7 +196,7 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
                   });
                   await invalidateCache('gallery:images');
                 } catch (galleryError) {
-                  console.error("Failed to add draft image to gallery:", galleryError);
+                  logger.error("Failed to add draft image to gallery", galleryError, { source: "generation" });
                 }
               }
 
@@ -207,7 +208,7 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
                 progress: `${currentCount}/${count}`,
               });
             } catch (saveError) {
-              console.error("Failed to save draft image:", saveError);
+              logger.error("Failed to save draft image", saveError, { source: "generation" });
               // Fallback: send image data directly
               sendEvent("image", {
                 index,
@@ -238,7 +239,7 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
 
       res.end();
     } catch (error) {
-      console.error("Draft generation error:", error);
+      logger.error("Draft generation error", error, { source: "generation" });
       res.write(`event: error\ndata: ${JSON.stringify({ message: "Generation failed" })}\n\n`);
       res.end();
     }
@@ -314,7 +315,7 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
           sendEvent("progress", { completed: currentCount, total: count });
 
           if (result) {
-            console.log(`[Premium Gen] Image ${index} generated successfully, saving to database...`);
+            logger.info(`[Premium Gen] Image ${index} generated successfully, saving to database...`, { source: "generation" });
             const imageUrl = `data:${result.mimeType};base64,${result.imageData}`;
 
             try {
@@ -343,13 +344,13 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
                   });
                   // Invalidate gallery cache so new image appears immediately
                   await invalidateCache('gallery:images');
-                  console.log(`[Premium Gen] Image ${index} added to public gallery`);
+                  logger.info(`[Premium Gen] Image ${index} added to public gallery`, { source: "generation" });
                 } catch (galleryError) {
-                  console.error("Failed to add image to gallery:", galleryError);
+                  logger.error("Failed to add image to gallery", galleryError, { source: "generation" });
                 }
               }
 
-              console.log(`[Premium Gen] Image ${index} saved with ID ${savedImage.id}, sending to client...`);
+              logger.info(`[Premium Gen] Image ${index} saved with ID ${savedImage.id}, sending to client...`, { source: "generation" });
               // Send small event with just the ID - frontend will fetch the image separately
               sendEvent("final_image", {
                 index,
@@ -357,9 +358,9 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
                 mimeType: result.mimeType,
                 progress: `${currentCount}/${count}`,
               });
-              console.log(`[Premium Gen] Image ${index} event sent to client`);
+              logger.info(`[Premium Gen] Image ${index} event sent to client`, { source: "generation" });
             } catch (saveError) {
-              console.error("Failed to save image to database:", saveError);
+              logger.error("Failed to save image to database", saveError, { source: "generation" });
               // Fallback: send image data directly if save failed
               sendEvent("final_image", {
                 index,
@@ -370,7 +371,7 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
             }
             return { success: true, index };
           } else {
-            console.log(`[Premium Gen] Image ${index} generation returned null`);
+            logger.info(`[Premium Gen] Image ${index} generation returned null`, { source: "generation" });
             sendEvent("image_error", { index, error: "Generation failed" });
             return { success: false, index };
           }
@@ -394,7 +395,7 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
 
       res.end();
     } catch (error) {
-      console.error("Final generation error:", error);
+      logger.error("Final generation error", error, { source: "generation" });
       res.write(`event: error\ndata: ${JSON.stringify({ message: "Generation failed" })}\n\n`);
       res.end();
     }
@@ -432,7 +433,7 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
         res.status(500).json({ message: "Image generation failed" });
       }
     } catch (error) {
-      console.error("Single generation error:", error);
+      logger.error("Single generation error", error, { source: "generation" });
       res.status(500).json({ message: "Generation failed" });
     }
   });

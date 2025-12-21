@@ -1,6 +1,7 @@
 import { getStripeSync, getUncachableStripeClient } from './stripeClient';
 import { storage } from './storage';
 import Stripe from 'stripe';
+import { logger } from './logger';
 
 export class WebhookHandlers {
   static async processWebhook(payload: Buffer, signature: string, uuid: string): Promise<void> {
@@ -22,7 +23,7 @@ export class WebhookHandlers {
     try {
       await WebhookHandlers.handleCommissionTracking(payload, signature);
     } catch (error) {
-      console.error('Commission tracking error:', error);
+      logger.error('Commission tracking error', error, { source: 'webhook' });
       // Don't throw - we don't want to fail the webhook for commission errors
     }
   }
@@ -31,14 +32,14 @@ export class WebhookHandlers {
     // Use Stripe SDK to verify and construct the event
     const stripe = await getUncachableStripeClient();
     if (!stripe) {
-      console.log('Commission: Stripe not configured');
+      logger.info('Commission: Stripe not configured', { source: 'webhook' });
       return;
     }
 
     // Require webhook secret for security - without it we cannot verify the webhook signature
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      console.error('Commission: STRIPE_WEBHOOK_SECRET not configured, skipping commission tracking for security');
+      logger.error('Commission: STRIPE_WEBHOOK_SECRET not configured, skipping commission tracking for security', null, { source: 'webhook' });
       return;
     }
     
@@ -48,7 +49,7 @@ export class WebhookHandlers {
     try {
       event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
     } catch (err: any) {
-      console.error('Commission: Webhook signature verification failed:', err.message);
+      logger.error('Commission: Webhook signature verification failed', err, { source: 'webhook' });
       return;
     }
     
@@ -71,20 +72,20 @@ export class WebhookHandlers {
     // Check for idempotency - if we already processed this session, skip
     const existingCommission = await storage.getCommissionByStripeSessionId(sessionId);
     if (existingCommission) {
-      console.log('Commission: Already processed session', sessionId);
+      logger.info(`Commission: Already processed session ${sessionId}`, { source: 'webhook' });
       return;
     }
 
     // Find the user who made the purchase by their Stripe customer ID
     const buyer = await storage.getUserByStripeCustomerId(customerId);
     if (!buyer) {
-      console.log('Commission: No user found for customer', customerId);
+      logger.info(`Commission: No user found for customer ${customerId}`, { source: 'webhook' });
       return;
     }
 
     // Check if this user was referred
     if (!buyer.referredBy) {
-      console.log('Commission: User has no referrer', buyer.id);
+      logger.info(`Commission: User has no referrer ${buyer.id}`, { source: 'webhook' });
       return;
     }
 
@@ -99,6 +100,6 @@ export class WebhookHandlers {
     // Create the commission record with session ID for idempotency (storing as cents for precision)
     await storage.createCommission(buyer.referredBy, buyer.id, commissionAmount, sessionId);
     
-    console.log(`Commission created: ${commissionAmount} cents for referrer ${buyer.referredBy} from buyer ${buyer.id} (session: ${sessionId})`);
+    logger.info(`Commission created: ${commissionAmount} cents for referrer ${buyer.referredBy} from buyer ${buyer.id} (session: ${sessionId})`, { source: 'webhook' });
   }
 }
