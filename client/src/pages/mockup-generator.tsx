@@ -1766,33 +1766,45 @@ export default function MockupGenerator() {
                                         )}
                                         data-testid={`product-card-${item.name.replace(/\s+/g, '-').toLowerCase()}`}
                                       >
-                                        {hasImage ? (
-                                          <div className="relative w-12 h-12 rounded-md overflow-hidden">
-                                            <img 
-                                              src={item.image} 
-                                              alt={item.name}
-                                              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200 group-hover:opacity-0"
-                                            />
-                                            <img 
-                                              src={item.hoverImage} 
-                                              alt={`${item.name} hover`}
-                                              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200 opacity-0 group-hover:opacity-100"
-                                            />
-                                          </div>
-                                        ) : (
-                                          <div 
-                                            className={cn(
-                                              "w-8 h-8 rounded-md flex items-center justify-center transition-colors",
-                                              isSelected ? "bg-primary/20" : "bg-muted"
-                                            )}
-                                          >
-                                            <div 
-                                              className="w-5 h-5"
-                                              style={{ color: isSelected ? "#ed5387" : "currentColor" }}
-                                              dangerouslySetInnerHTML={{ __html: silhouette.svg }}
-                                            />
-                                          </div>
-                                        )}
+                                        <div className="relative w-12 h-12 rounded-md overflow-hidden">
+                                          {hasImage ? (
+                                            <>
+                                              <img 
+                                                src={item.image} 
+                                                alt={item.name}
+                                                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200 group-hover:opacity-0"
+                                              />
+                                              <img 
+                                                src={item.hoverImage} 
+                                                alt={`${item.name} hover`}
+                                                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200 opacity-0 group-hover:opacity-100"
+                                              />
+                                            </>
+                                          ) : (
+                                            <>
+                                              <div className={cn(
+                                                "absolute inset-0 flex items-center justify-center transition-all duration-200 group-hover:opacity-0",
+                                                isSelected ? "bg-primary/30" : "bg-zinc-800"
+                                              )}>
+                                                <div 
+                                                  className="w-6 h-6 opacity-40"
+                                                  style={{ color: isSelected ? "#ed5387" : "#888" }}
+                                                  dangerouslySetInnerHTML={{ __html: silhouette.svg }}
+                                                />
+                                              </div>
+                                              <div className={cn(
+                                                "absolute inset-0 flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100",
+                                                isSelected ? "bg-primary/40" : "bg-zinc-700"
+                                              )}>
+                                                <div 
+                                                  className="w-6 h-6 opacity-60"
+                                                  style={{ color: isSelected ? "#ed5387" : "#aaa" }}
+                                                  dangerouslySetInnerHTML={{ __html: silhouette.svg }}
+                                                />
+                                              </div>
+                                            </>
+                                          )}
+                                        </div>
                                         <span className={cn(
                                           "text-xs text-center font-medium leading-tight line-clamp-2",
                                           isSelected ? "text-primary" : "text-muted-foreground"
