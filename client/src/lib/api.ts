@@ -439,6 +439,8 @@ function parseMockupSSEStream(
     }
 
     let buffer = "";
+    let eventsReceived = 0;
+    let imageEventReceived = false;
 
     const processCompleteEvents = () => {
       // SSE events are terminated by double newline (\n\n)
@@ -467,7 +469,13 @@ function parseMockupSSEStream(
         if (dataStr) {
           try {
             const data = JSON.parse(dataStr);
-            console.log("SSE Event received:", eventType, eventType === "image" ? { ...data, imageData: data.imageData ? `[${data.imageData.length} chars]` : undefined } : data);
+            eventsReceived++;
+            if (eventType === "image") {
+              imageEventReceived = true;
+              console.log("SSE Image Event received:", { imageDataLength: data.imageData?.length, mimeType: data.mimeType, angle: data.angle, color: data.color });
+            } else {
+              console.log("SSE Event received:", eventType, data);
+            }
             onEvent({ type: eventType, data });
           } catch (e) {
             console.error("Failed to parse mockup SSE data:", dataStr.substring(0, 100) + "...", e);
@@ -478,22 +486,37 @@ function parseMockupSSEStream(
 
     const read = async () => {
       try {
+        let chunkCount = 0;
         while (true) {
           const { done, value } = await reader.read();
           if (done) {
+            console.log(`SSE Stream ended. Chunks: ${chunkCount}, Events: ${eventsReceived}, ImageReceived: ${imageEventReceived}, BufferRemaining: ${buffer.length}`);
             // Process any remaining complete events in buffer
             if (buffer.trim()) {
               processCompleteEvents();
             }
+            // Log if there's still unprocessed data (incomplete event)
+            if (buffer.length > 0) {
+              console.warn("SSE Stream ended with incomplete data in buffer:", buffer.substring(0, 200) + (buffer.length > 200 ? "..." : ""));
+            }
             break;
           }
 
-          buffer += decoder.decode(value, { stream: true });
+          chunkCount++;
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+          
+          // Log large chunks (image data)
+          if (chunk.length > 10000) {
+            console.log(`SSE Received large chunk #${chunkCount}: ${chunk.length} bytes, buffer now: ${buffer.length} bytes`);
+          }
+          
           processCompleteEvents();
         }
         resolve();
-      } catch (error) {
-        reject(error);
+      } catch (error: any) {
+        console.error("SSE Stream read error:", error?.message || error?.name || error, "Type:", typeof error);
+        reject(error instanceof Error ? error : new Error(String(error) || "Stream read failed"));
       }
     };
 
