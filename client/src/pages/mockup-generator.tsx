@@ -136,9 +136,10 @@ import moodBold from "@assets/generated_images/mood_image_for_bold_vibrant_style
 // Types
 type JourneyType = "DTG" | "AOP" | null;
 type WizardStep = 
-  | "design"    // Upload + Style (+ Seamless for AOP)
-  | "product"   // Product picker + Colors + Scene
-  | "output";   // Angles + Quality + Generate
+  | "design"      // Upload design (+ Seamless for AOP)
+  | "product"     // Product picker only
+  | "customize"   // Sizes + Colors + Model + Scene
+  | "output";     // Angles + Quality + Generate
 
 type AgeGroup = "ADULT" | "YOUNG_ADULT" | "TEEN";
 type Sex = "MALE" | "FEMALE";
@@ -185,8 +186,8 @@ interface GeneratedMockupData {
   size: string;
 }
 
-const DTG_STEPS: WizardStep[] = ["design", "product", "output"];
-const AOP_STEPS: WizardStep[] = ["design", "product", "output"];
+const DTG_STEPS: WizardStep[] = ["design", "product", "customize", "output"];
+const AOP_STEPS: WizardStep[] = ["design", "product", "customize", "output"];
 
 interface ProductItem {
   name: string;
@@ -1401,11 +1402,13 @@ export default function MockupGenerator() {
                       const icons: Record<WizardStep, typeof Cloud> = {
                         design: Palette,
                         product: ShoppingBag,
+                        customize: Layers,
                         output: Wand2
                       };
                       const stepLabels: Record<WizardStep, string> = {
                         design: "Design",
                         product: "Product",
+                        customize: "Customize",
                         output: "Output"
                       };
                       const StepIcon = icons[step];
@@ -1788,7 +1791,34 @@ export default function MockupGenerator() {
                                 })()}
                               </div>
                             </div>
+                          </div>
 
+                          {/* Footer Navigation */}
+                          <div className="pt-4 border-t border-border flex items-center justify-between gap-3 shrink-0">
+                            <Button variant="ghost" onClick={handleBack} className="gap-2 min-h-[44px]" data-testid="button-back">
+                              <ChevronLeft className="h-4 w-4" /> <span className="hidden sm:inline">Back</span>
+                            </Button>
+                            <Button
+                              onClick={handleNext}
+                              disabled={!selectedProductType}
+                              className={cn(
+                                "gap-2 px-6 min-h-[44px] flex-1 sm:flex-none max-w-[200px]",
+                                selectedProductType
+                                  ? "bg-primary hover:bg-[#C2185B] text-white" 
+                                  : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
+                              )}
+                              data-testid="button-next"
+                            >
+                              Next Step <ChevronRight className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ========== STEP 3: CUSTOMIZE (Sizes + Colors + Model + Scene) ========== */}
+                      {currentStep === "customize" && (
+                        <div className="flex flex-col h-full animate-fade-in">
+                          <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6 pb-4">
                             {/* Sizes + Colors */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                               {/* Sizes */}
@@ -2050,10 +2080,10 @@ export default function MockupGenerator() {
                             </Button>
                             <Button
                               onClick={handleNext}
-                              disabled={!selectedProductType || selectedSizes.length === 0 || (journey !== "AOP" && selectedColors.length === 0) || environmentPrompt.length <= 5}
+                              disabled={selectedSizes.length === 0 || (journey !== "AOP" && selectedColors.length === 0) || environmentPrompt.length <= 5}
                               className={cn(
                                 "gap-2 px-6 min-h-[44px] flex-1 sm:flex-none max-w-[200px]",
-                                (selectedProductType && selectedSizes.length > 0 && (journey === "AOP" || selectedColors.length > 0) && environmentPrompt.length > 5)
+                                (selectedSizes.length > 0 && (journey === "AOP" || selectedColors.length > 0) && environmentPrompt.length > 5)
                                   ? "bg-primary hover:bg-[#C2185B] text-white" 
                                   : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                               )}
@@ -2065,7 +2095,7 @@ export default function MockupGenerator() {
                         </div>
                       )}
 
-                      {/* ========== STEP 3: OUTPUT (Angles + Quality + Generate) ========== */}
+                      {/* ========== STEP 4: OUTPUT (Angles + Quality + Generate) ========== */}
                       {currentStep === "output" && (
                         <div className="h-full flex flex-col">
                           {!generatedMockups.length && !isGenerating ? (
@@ -2158,7 +2188,7 @@ export default function MockupGenerator() {
                                       </SelectTrigger>
                                       <SelectContent>
                                         {OUTPUT_QUALITY_OPTIONS.map((q) => (
-                                          <SelectItem key={q.id} value={q.id}>{q.label} ({q.resolution})</SelectItem>
+                                          <SelectItem key={q.id} value={q.id}>{q.name} ({q.resolution})</SelectItem>
                                         ))}
                                       </SelectContent>
                                     </Select>
@@ -2257,7 +2287,7 @@ export default function MockupGenerator() {
                                       initial={{ opacity: 0, scale: 0.9 }}
                                       animate={{ opacity: 1, scale: 1 }}
                                       className="relative aspect-square rounded-xl overflow-hidden border border-border bg-muted/30 group cursor-pointer"
-                                      onClick={() => setSelectedMockupDetails({ ...mockup, index })}
+                                      onClick={() => setSelectedMockupDetails({ ...mockup, index, brandStyle: "ECOMMERCE_CLEAN" })}
                                       data-testid={`mockup-${index}`}
                                     >
                                       <img src={mockup.src} alt={`Mockup ${index + 1}`} className="w-full h-full object-cover" />
