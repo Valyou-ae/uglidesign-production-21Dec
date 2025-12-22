@@ -1859,11 +1859,11 @@ export default function MockupGenerator() {
                                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                               />
                                               {(item.category === "Men's Clothing" || item.category === "Women's Clothing" || item.category === "Kids' Clothing") && (
-                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                <div className="absolute inset-x-0 top-[28%] flex justify-center pointer-events-none">
                                                   <img 
                                                     src={designHereOverlay}
                                                     alt="Print area"
-                                                    className="w-[45%] h-auto opacity-70 mt-[-5%]"
+                                                    className="w-[38%] h-auto opacity-80"
                                                   />
                                                 </div>
                                               )}
