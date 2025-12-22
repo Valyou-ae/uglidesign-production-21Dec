@@ -272,6 +272,8 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
               const completedOverall = (sizeIndex * jobsPerSize) + completed;
               const progress = 10 + Math.round((completedOverall / totalJobs) * 85);
 
+              logger.info("onProgress callback called", { source: "mockup", jobId: job.id, jobStatus: job.status, hasResult: !!job.result, hasImageData: !!job.result?.imageData });
+
               const batchJob = {
                 id: job.id,
                 color: job.color.name,
@@ -286,6 +288,7 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
 
               if (job.status === 'completed' && job.result) {
                 totalGeneratedCount++;
+                logger.info("Sending completed image via SSE", { source: "mockup", jobId: job.id, imageDataLength: job.result.imageData?.length || 0 });
                 sendEvent("job_update", batchJob);
                 sendEvent("image", {
                   jobId: job.id, angle: job.angle, color: job.color.name, size: currentSize,
