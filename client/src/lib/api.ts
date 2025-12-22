@@ -439,28 +439,37 @@ function parseMockupSSEStream(
     }
 
     let buffer = "";
-    let currentEventType: MockupEventType = "status";
 
-    const processBuffer = () => {
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+    const processCompleteEvents = () => {
+      // SSE events are terminated by double newline (\n\n)
+      // Only process complete events to handle large data spanning multiple chunks
+      const eventDelimiter = "\n\n";
+      let delimiterIndex: number;
+      
+      while ((delimiterIndex = buffer.indexOf(eventDelimiter)) !== -1) {
+        const eventBlock = buffer.slice(0, delimiterIndex);
+        buffer = buffer.slice(delimiterIndex + eventDelimiter.length);
         
-        if (line === "") {
-          continue;
+        // Parse the complete event block
+        const lines = eventBlock.split("\n");
+        let eventType: MockupEventType = "status";
+        let dataStr = "";
+        
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (trimmedLine.startsWith("event: ")) {
+            eventType = trimmedLine.slice(7).trim() as MockupEventType;
+          } else if (trimmedLine.startsWith("data: ")) {
+            dataStr = trimmedLine.slice(6);
+          }
         }
-
-        if (line.startsWith("event: ")) {
-          currentEventType = line.slice(7).trim() as MockupEventType;
-        } else if (line.startsWith("data: ")) {
+        
+        if (dataStr) {
           try {
-            const jsonStr = line.slice(6);
-            const data = JSON.parse(jsonStr);
-            onEvent({ type: currentEventType, data });
+            const data = JSON.parse(dataStr);
+            onEvent({ type: eventType, data });
           } catch (e) {
-            console.error("Failed to parse mockup SSE data:", line, e);
+            console.error("Failed to parse mockup SSE data:", dataStr.substring(0, 100) + "...", e);
           }
         }
       }
@@ -471,14 +480,15 @@ function parseMockupSSEStream(
         while (true) {
           const { done, value } = await reader.read();
           if (done) {
+            // Process any remaining complete events in buffer
             if (buffer.trim()) {
-              processBuffer();
+              processCompleteEvents();
             }
             break;
           }
 
           buffer += decoder.decode(value, { stream: true });
-          processBuffer();
+          processCompleteEvents();
         }
         resolve();
       } catch (error) {
