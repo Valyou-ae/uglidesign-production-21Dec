@@ -132,72 +132,6 @@ import moodUrban from "@assets/generated_images/mood_image_for_urban_street_styl
 import moodNatural from "@assets/generated_images/mood_image_for_natural_organic_style.png";
 import moodBold from "@assets/generated_images/mood_image_for_bold_vibrant_style.png";
 
-// Import brand archetype images
-import brandUrbanEdge from "@assets/generated_images/urban_edge_brand_style.png";
-import brandSoftMinimalist from "@assets/generated_images/soft_minimalist_brand_style.png";
-import brandBoldPlayful from "@assets/generated_images/bold_playful_brand_style.png";
-import brandPremiumLuxe from "@assets/generated_images/premium_luxe_brand_style.png";
-import brandVintageAuthentic from "@assets/generated_images/vintage_authentic_brand_style.png";
-
-// Brand style data with images, taglines, and mood keywords
-const BRAND_STYLES = [
-  { 
-    id: "ECOMMERCE_CLEAN", 
-    name: "E-Commerce Clean", 
-    img: brandSoftMinimalist, 
-    tagline: "Clean & Professional",
-    keywords: ["Minimal", "Trust", "Conversion", "Clarity"]
-  },
-  { 
-    id: "EDITORIAL_FASHION", 
-    name: "Editorial Fashion", 
-    img: brandUrbanEdge, 
-    tagline: "Dramatic & Bold",
-    keywords: ["High Fashion", "Editorial", "Dramatic", "Artistic"]
-  },
-  { 
-    id: "VINTAGE_RETRO", 
-    name: "Vintage Retro", 
-    img: brandVintageAuthentic, 
-    tagline: "Nostalgic & Timeless",
-    keywords: ["Classic", "Authentic", "Heritage", "Warm"]
-  },
-  { 
-    id: "STREET_URBAN", 
-    name: "Street Style Urban", 
-    img: brandUrbanEdge, 
-    tagline: "Gritty & Authentic",
-    keywords: ["Urban", "Raw", "Street", "Edge"]
-  },
-  { 
-    id: "MINIMALIST_MODERN", 
-    name: "Minimalist Modern", 
-    img: brandSoftMinimalist, 
-    tagline: "Less is More",
-    keywords: ["Sleek", "Refined", "Elegant", "Simple"]
-  },
-  { 
-    id: "BOLD_PLAYFUL", 
-    name: "Bold & Playful", 
-    img: brandBoldPlayful, 
-    tagline: "Vibrant & Energetic",
-    keywords: ["Fun", "Colorful", "Dynamic", "Youth"]
-  },
-  { 
-    id: "PREMIUM_LUXE", 
-    name: "Premium Luxe", 
-    img: brandPremiumLuxe, 
-    tagline: "Sophisticated & Elite",
-    keywords: ["Luxury", "Premium", "Exclusive", "Opulent"]
-  },
-  { 
-    id: "NATURAL_ORGANIC", 
-    name: "Natural Organic", 
-    img: moodNatural, 
-    tagline: "Earthy & Sustainable",
-    keywords: ["Eco", "Natural", "Organic", "Earthy"]
-  },
-];
 
 // Types
 type JourneyType = "DTG" | "AOP" | null;
@@ -240,7 +174,6 @@ interface MockupDetails {
   angle: string;
   color: string;
   size: string;
-  brandStyle: string;
   index: number;
 }
 
@@ -781,7 +714,6 @@ export default function MockupGenerator() {
   const [selectedColors, setSelectedColors] = useState<string[]>(["White"]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["M"]);
   const [selectedAngles, setSelectedAngles] = useState<string[]>(["front"]);
-  const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [modelDetails, setModelDetails] = useState<ModelDetails>({
     age: "ADULT",
     sex: "MALE",
@@ -1156,7 +1088,7 @@ export default function MockupGenerator() {
       return;
     }
 
-    const styleName = selectedStyle || "minimal";
+    const styleName = "minimal";
     const productName = selectedProductType || "t-shirt";
     const isAopJourney = journey === "AOP";
     const colors = isAopJourney ? ["White"] : (selectedColors.length > 0 ? selectedColors : ["White"]);
@@ -1590,53 +1522,7 @@ export default function MockupGenerator() {
                               )}
                             </div>
 
-                            {/* Section 2: Brand Style - Compact Round Icons */}
-                            <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
-                              <div className="flex items-center gap-2 mb-3">
-                                <Sparkles className="h-4 w-4 text-primary" />
-                                <h3 className="text-sm font-bold text-foreground">Brand Style</h3>
-                                {selectedStyle && <Badge variant="secondary" className="text-[10px] ml-auto">{BRAND_STYLES.find(s => s.id === selectedStyle)?.name}</Badge>}
-                              </div>
-                              
-                              <div className="flex justify-between gap-1">
-                                {BRAND_STYLES.map((style) => {
-                                  const isSelected = selectedStyle === style.id;
-                                  return (
-                                    <div key={style.id} className="flex flex-col items-center flex-1 min-w-0">
-                                      <button 
-                                        onClick={() => setSelectedStyle(style.id)}
-                                        data-testid={`style-card-${style.id}`}
-                                        className={cn(
-                                          "relative w-full aspect-square rounded-full overflow-hidden border-2 transition-all duration-200 hover:scale-105 active:scale-95",
-                                          isSelected 
-                                            ? "border-primary ring-2 ring-primary/30" 
-                                            : "border-border hover:border-primary/50"
-                                        )}
-                                      >
-                                        <img 
-                                          src={style.img} 
-                                          alt={style.name} 
-                                          className="w-full h-full object-cover" 
-                                        />
-                                        {isSelected && (
-                                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                                            <Check className="h-4 w-4 text-white drop-shadow-lg" />
-                                          </div>
-                                        )}
-                                      </button>
-                                      <span className={cn(
-                                        "text-xs mt-1.5 text-center truncate w-full",
-                                        isSelected ? "text-primary font-medium" : "text-muted-foreground"
-                                      )}>
-                                        {style.name}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-
-                            {/* Section 3: Seamless Pattern (AOP only, when not already seamless) */}
+                            {/* Section 2: Seamless Pattern (AOP only, when not already seamless) */}
                             {journey === "AOP" && uploadedImage && !isAlreadySeamless && (
                               <div className="bg-card rounded-xl border border-border p-4 sm:p-6">
                                 <div className="flex items-center gap-2 mb-4">
@@ -1744,10 +1630,10 @@ export default function MockupGenerator() {
                             </Button>
                             <Button
                               onClick={handleNext}
-                              disabled={!uploadedImage || !selectedStyle || (journey === "AOP" && !isAlreadySeamless && !selectedVariationId)}
+                              disabled={!uploadedImage || (journey === "AOP" && !isAlreadySeamless && !selectedVariationId)}
                               className={cn(
                                 "gap-2 px-6 min-h-[44px] flex-1 sm:flex-none max-w-[200px]",
-                                (uploadedImage && selectedStyle && (journey !== "AOP" || isAlreadySeamless || selectedVariationId))
+                                (uploadedImage && (journey !== "AOP" || isAlreadySeamless || selectedVariationId))
                                   ? "bg-primary hover:bg-[#C2185B] text-white" 
                                   : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                               )}
@@ -2304,10 +2190,6 @@ export default function MockupGenerator() {
                                     <div className="bg-card/80 rounded-lg p-2 border">
                                       <span className="text-muted-foreground">Product:</span>
                                       <p className="font-medium truncate">{selectedProductType || "T-Shirt"}</p>
-                                    </div>
-                                    <div className="bg-card/80 rounded-lg p-2 border">
-                                      <span className="text-muted-foreground">Style:</span>
-                                      <p className="font-medium truncate">{BRAND_STYLES.find(s => s.id === selectedStyle)?.name || "Minimal"}</p>
                                     </div>
                                     <div className="bg-card/80 rounded-lg p-2 border">
                                       <span className="text-muted-foreground">Model:</span>
