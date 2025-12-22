@@ -1590,53 +1590,7 @@ export default function MockupGenerator() {
                               )}
                             </div>
 
-                            {/* Section 2: Brand Style - Compact Round Icons */}
-                            <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
-                              <div className="flex items-center gap-2 mb-3">
-                                <Sparkles className="h-4 w-4 text-primary" />
-                                <h3 className="text-sm font-bold text-foreground">Brand Style</h3>
-                                {selectedStyle && <Badge variant="secondary" className="text-[10px] ml-auto">{BRAND_STYLES.find(s => s.id === selectedStyle)?.name}</Badge>}
-                              </div>
-                              
-                              <div className="flex justify-between gap-1">
-                                {BRAND_STYLES.map((style) => {
-                                  const isSelected = selectedStyle === style.id;
-                                  return (
-                                    <div key={style.id} className="flex flex-col items-center flex-1 min-w-0">
-                                      <button 
-                                        onClick={() => setSelectedStyle(style.id)}
-                                        data-testid={`style-card-${style.id}`}
-                                        className={cn(
-                                          "relative w-full aspect-square rounded-full overflow-hidden border-2 transition-all duration-200 hover:scale-105 active:scale-95",
-                                          isSelected 
-                                            ? "border-primary ring-2 ring-primary/30" 
-                                            : "border-border hover:border-primary/50"
-                                        )}
-                                      >
-                                        <img 
-                                          src={style.img} 
-                                          alt={style.name} 
-                                          className="w-full h-full object-cover" 
-                                        />
-                                        {isSelected && (
-                                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                                            <Check className="h-4 w-4 text-white drop-shadow-lg" />
-                                          </div>
-                                        )}
-                                      </button>
-                                      <span className={cn(
-                                        "text-xs mt-1.5 text-center truncate w-full",
-                                        isSelected ? "text-primary font-medium" : "text-muted-foreground"
-                                      )}>
-                                        {style.name}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-
-                            {/* Section 3: Seamless Pattern (AOP only, when not already seamless) */}
+                            {/* Section 2: Seamless Pattern (AOP only, when not already seamless) */}
                             {journey === "AOP" && uploadedImage && !isAlreadySeamless && (
                               <div className="bg-card rounded-xl border border-border p-4 sm:p-6">
                                 <div className="flex items-center gap-2 mb-4">
