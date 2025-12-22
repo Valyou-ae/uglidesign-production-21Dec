@@ -272,7 +272,7 @@ STYLE:
       lastError = new Error("No image data in response");
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      logger.error(`Headshot attempt ${attempt + 1}/${maxRetries} failed`, error, { source: "eliteMockupGenerator" });
+      logger.error(`Headshot attempt ${attempt + 1}/${maxRetries} failed`, lastError, { source: "eliteMockupGenerator" });
       
       if (attempt < maxRetries - 1) {
         await new Promise(resolve => 
@@ -978,7 +978,7 @@ export async function generateMockupWithRetry(
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      logger.error(`Attempt ${attempt + 1}/${maxRetries} failed`, error, { source: "eliteMockupGenerator" });
+      logger.error(`Attempt ${attempt + 1}/${maxRetries} failed`, lastError, { source: "eliteMockupGenerator" });
 
       if (attempt < maxRetries - 1) {
         await new Promise(resolve => 
@@ -1023,7 +1023,7 @@ export async function generateMockupBatch(
         personaLock.headshot = personaHeadshot;
         logger.info("Persona headshot generated successfully", { source: "eliteMockupGenerator" });
       } catch (headshotError) {
-        logger.warn("Persona headshot generation failed, proceeding without it", headshotError, { source: "eliteMockupGenerator" });
+        logger.warn("Persona headshot generation failed, proceeding without it", { source: "eliteMockupGenerator", error: headshotError instanceof Error ? headshotError.message : String(headshotError) });
         if (onError) {
           onError({
             type: 'persona_lock_failed',
@@ -1033,7 +1033,7 @@ export async function generateMockupBatch(
         }
       }
     } catch (error) {
-      logger.warn("Persona lock generation failed, proceeding without model", error, { source: "eliteMockupGenerator" });
+      logger.warn("Persona lock generation failed, proceeding without model", { source: "eliteMockupGenerator", error: error instanceof Error ? error.message : String(error) });
     }
   }
 
