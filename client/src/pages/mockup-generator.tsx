@@ -1444,7 +1444,7 @@ export default function MockupGenerator() {
             <div className="flex-1 p-4 lg:p-10 overflow-hidden flex flex-col">
               <div className="flex-1 bg-card border border-border rounded-[20px] shadow-sm overflow-hidden flex flex-col relative max-w-[1400px] mx-auto w-full">
                 
-                <div className="flex-1 overflow-y-auto p-5 md:p-8 lg:p-12 scroll-smooth">
+                <div className="flex-1 overflow-y-auto scrollbar-hide p-5 md:p-8 lg:p-12 scroll-smooth">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentStep}
@@ -1459,7 +1459,7 @@ export default function MockupGenerator() {
                       {/* ========== STEP 1: DESIGN (Upload + Style + Seamless for AOP) ========== */}
                       {currentStep === "design" && (
                         <div className="flex flex-col h-full">
-                          <div className="flex-1 overflow-y-auto space-y-6 pb-4">
+                          <div className="flex-1 overflow-y-auto scrollbar-hide space-y-6 pb-4">
                             {/* Section 1: Upload Design */}
                             <div className="bg-card rounded-xl border border-border p-4 sm:p-6">
                               <div className="flex items-center gap-2 mb-4">
@@ -1655,7 +1655,7 @@ export default function MockupGenerator() {
                       {/* ========== STEP 2: PRODUCT (Product picker only) ========== */}
                       {currentStep === "product" && (
                         <div className="flex flex-col h-full animate-fade-in">
-                          <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6 pb-4">
+                          <div className="flex-1 overflow-y-auto scrollbar-hide space-y-4 sm:space-y-6 pb-4">
                             {/* Product Picker - Visual Grid */}
                             <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
                               <div className="flex items-center justify-between mb-4">
@@ -1823,7 +1823,7 @@ export default function MockupGenerator() {
                       {/* ========== STEP 3: CUSTOMIZE (Sizes + Colors + Model + Scene) ========== */}
                       {currentStep === "customize" && (
                         <div className="flex flex-col h-full animate-fade-in">
-                          <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6 pb-4">
+                          <div className="flex-1 overflow-y-auto scrollbar-hide space-y-4 sm:space-y-6 pb-4">
                             {/* Sizes + Colors */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                               {/* Sizes */}
@@ -2105,7 +2105,7 @@ export default function MockupGenerator() {
                         <div className="h-full flex flex-col">
                           {!generatedMockups.length && !isGenerating ? (
                             <div className="flex-1 flex flex-col">
-                              <div className="flex-1 overflow-y-auto space-y-4 pb-4">
+                              <div className="flex-1 overflow-y-auto scrollbar-hide space-y-4 pb-4">
                                 {/* Angles Selection */}
                                 <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
                                   <div className="flex items-center justify-between mb-3">
