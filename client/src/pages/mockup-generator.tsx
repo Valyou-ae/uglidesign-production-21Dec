@@ -1060,15 +1060,29 @@ export default function MockupGenerator() {
     setCurrentStepIndex(0);
   };
 
+  // Categories that should skip the customize (size/colors) step
+  const skipCustomizeCategories = ["Accessories", "Home & Living"];
+  const shouldSkipCustomize = skipCustomizeCategories.includes(activeCategory);
+
   const handleNext = () => {
     if (currentStepIndex < steps.length - 1) {
-      setCurrentStepIndex(currentStepIndex + 1);
+      // Skip customize step for Accessories and Home & Living
+      if (currentStep === "product" && shouldSkipCustomize) {
+        setCurrentStepIndex(currentStepIndex + 2); // Skip to output
+      } else {
+        setCurrentStepIndex(currentStepIndex + 1);
+      }
     }
   };
 
   const handleBack = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(currentStepIndex - 1);
+      // Skip customize step when going back for Accessories and Home & Living
+      if (currentStep === "output" && shouldSkipCustomize) {
+        setCurrentStepIndex(currentStepIndex - 2); // Skip back to product
+      } else {
+        setCurrentStepIndex(currentStepIndex - 1);
+      }
     } else {
       setJourney(null);
     }
