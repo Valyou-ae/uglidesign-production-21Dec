@@ -134,6 +134,17 @@ import moodUrban from "@assets/generated_images/mood_image_for_urban_street_styl
 import moodNatural from "@assets/generated_images/mood_image_for_natural_organic_style.png";
 import moodBold from "@assets/generated_images/mood_image_for_bold_vibrant_style.png";
 
+// Import ethnicity face avatars
+import ethnicityWhite from "@assets/generated_images/white_ethnicity_face_avatar.png";
+import ethnicityBlack from "@assets/generated_images/black_ethnicity_face_avatar.png";
+import ethnicityHispanic from "@assets/generated_images/hispanic_ethnicity_face_avatar.png";
+import ethnicityAsian from "@assets/generated_images/asian_ethnicity_face_avatar.png";
+import ethnicityIndian from "@assets/generated_images/indian_ethnicity_face_avatar.png";
+import ethnicitySEAsian from "@assets/generated_images/se_asian_ethnicity_face_avatar.png";
+import ethnicityMidEast from "@assets/generated_images/mid_eastern_ethnicity_avatar.png";
+import ethnicityIndigenous from "@assets/generated_images/indigenous_ethnicity_avatar.png";
+import ethnicityDiverse from "@assets/generated_images/diverse_ethnicity_avatar.png";
+
 
 // Types
 type JourneyType = "DTG" | "AOP" | null;
@@ -2005,15 +2016,15 @@ export default function MockupGenerator() {
                                       <label className="text-xs font-semibold text-muted-foreground mb-2 block">Ethnicity</label>
                                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                                         {[
-                                          { value: "White", label: "White", image: "/attached_assets/generated_images/white_ethnicity_face_avatar.png" },
-                                          { value: "Black", label: "Black", image: "/attached_assets/generated_images/black_ethnicity_face_avatar.png" },
-                                          { value: "Hispanic", label: "Hispanic", image: "/attached_assets/generated_images/hispanic_ethnicity_face_avatar.png" },
-                                          { value: "Asian", label: "Asian", image: "/attached_assets/generated_images/asian_ethnicity_face_avatar.png" },
-                                          { value: "Indian", label: "Indian", image: "/attached_assets/generated_images/indian_ethnicity_face_avatar.png" },
-                                          { value: "Southeast Asian", label: "SE Asian", image: "/attached_assets/generated_images/se_asian_ethnicity_face_avatar.png" },
-                                          { value: "Middle Eastern", label: "Mid Eastern", image: "/attached_assets/generated_images/mid_eastern_ethnicity_avatar.png" },
-                                          { value: "Indigenous", label: "Indigenous", image: "/attached_assets/generated_images/indigenous_ethnicity_avatar.png" },
-                                          { value: "Diverse", label: "Diverse", image: "/attached_assets/generated_images/diverse_ethnicity_avatar.png" },
+                                          { value: "White", label: "White", image: ethnicityWhite },
+                                          { value: "Black", label: "Black", image: ethnicityBlack },
+                                          { value: "Hispanic", label: "Hispanic", image: ethnicityHispanic },
+                                          { value: "Asian", label: "Asian", image: ethnicityAsian },
+                                          { value: "Indian", label: "Indian", image: ethnicityIndian },
+                                          { value: "Southeast Asian", label: "SE Asian", image: ethnicitySEAsian },
+                                          { value: "Middle Eastern", label: "Mid Eastern", image: ethnicityMidEast },
+                                          { value: "Indigenous", label: "Indigenous", image: ethnicityIndigenous },
+                                          { value: "Diverse", label: "Diverse", image: ethnicityDiverse },
                                         ].map((option) => (
                                           <button
                                             key={option.value}
