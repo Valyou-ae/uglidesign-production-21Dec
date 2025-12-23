@@ -1074,39 +1074,70 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteGalleryImageBySourceId(sourceImageId: string, imageUrl?: string, prompt?: string): Promise<void> {
+    // Use pool directly to avoid Neon HTTP driver caching issues
+    const { pool } = await import("./db");
+    
     // First try to find by sourceImageId
-    let [galleryImage] = await db
-      .select()
-      .from(galleryImages)
-      .where(eq(galleryImages.sourceImageId, sourceImageId));
+    let result = await pool.query(
+      `SELECT id FROM gallery_images WHERE source_image_id = $1`,
+      [sourceImageId]
+    );
+    
+    let galleryImageId = result.rows[0]?.id;
     
     // Fallback: try to find by imageUrl for older images without sourceImageId
-    if (!galleryImage && imageUrl) {
-      [galleryImage] = await db
-        .select()
-        .from(galleryImages)
-        .where(eq(galleryImages.imageUrl, imageUrl));
+    if (!galleryImageId && imageUrl) {
+      result = await pool.query(
+        `SELECT id FROM gallery_images WHERE image_url = $1`,
+        [imageUrl]
+      );
+      galleryImageId = result.rows[0]?.id;
     }
     
     // Fallback 2: try to find by prompt for older images without sourceImageId or different imageUrl
-    if (!galleryImage && prompt) {
-      [galleryImage] = await db
-        .select()
-        .from(galleryImages)
-        .where(eq(galleryImages.prompt, prompt));
+    if (!galleryImageId && prompt) {
+      result = await pool.query(
+        `SELECT id FROM gallery_images WHERE prompt = $1`,
+        [prompt]
+      );
+      galleryImageId = result.rows[0]?.id;
     }
     
-    if (galleryImage) {
+    if (galleryImageId) {
       // Delete associated likes
-      await db.delete(galleryImageLikes).where(eq(galleryImageLikes.imageId, galleryImage.id));
+      await pool.query(`DELETE FROM gallery_image_likes WHERE image_id = $1`, [galleryImageId]);
       // Delete the gallery image
-      await db.delete(galleryImages).where(eq(galleryImages.id, galleryImage.id));
+      await pool.query(`DELETE FROM gallery_images WHERE id = $1`, [galleryImageId]);
     }
   }
 
   async getGalleryImageBySourceId(sourceImageId: string): Promise<GalleryImage | undefined> {
-    const [image] = await db.select().from(galleryImages).where(eq(galleryImages.sourceImageId, sourceImageId));
-    return image || undefined;
+    // Use pool directly to avoid Neon HTTP driver caching issues
+    const { pool } = await import("./db");
+    
+    const result = await pool.query(
+      `SELECT * FROM gallery_images WHERE source_image_id = $1`,
+      [sourceImageId]
+    );
+    
+    if (result.rows.length === 0) return undefined;
+    
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      sourceImageId: row.source_image_id,
+      title: row.title,
+      imageUrl: row.image_url,
+      creator: row.creator,
+      verified: row.verified,
+      category: row.category,
+      likeCount: row.like_count,
+      viewCount: row.view_count,
+      useCount: row.use_count,
+      prompt: row.prompt,
+      aspectRatio: row.aspect_ratio,
+      createdAt: row.created_at,
+    };
   }
 
   async incrementGalleryImageView(imageId: string): Promise<GalleryImage | undefined> {
