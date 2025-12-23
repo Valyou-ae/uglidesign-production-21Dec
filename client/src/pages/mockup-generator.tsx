@@ -2014,7 +2014,7 @@ export default function MockupGenerator() {
                                     {/* Ethnicity Section */}
                                     <div className="mt-4">
                                       <label className="text-xs font-semibold text-muted-foreground mb-2 block">Ethnicity</label>
-                                      <div className="flex flex-wrap gap-3 justify-start">
+                                      <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2 w-full">
                                         {[
                                           { value: "White", label: "White", image: ethnicityWhite },
                                           { value: "Black", label: "Black", image: ethnicityBlack },
@@ -2029,10 +2029,10 @@ export default function MockupGenerator() {
                                           <button
                                             key={option.value}
                                             onClick={() => setModelDetails({...modelDetails, ethnicity: option.value as any})}
-                                            className="flex flex-col items-center gap-1 group"
+                                            className="flex flex-col items-center gap-1.5 group"
                                           >
                                             <div className={cn(
-                                              "rounded-full p-0.5 transition-all",
+                                              "rounded-full p-0.5 transition-all w-full aspect-square",
                                               modelDetails.ethnicity === option.value
                                                 ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
                                                 : "hover:ring-2 hover:ring-muted-foreground/30 hover:ring-offset-2 hover:ring-offset-background"
@@ -2040,11 +2040,11 @@ export default function MockupGenerator() {
                                               <img 
                                                 src={option.image} 
                                                 alt={option.label}
-                                                className="h-14 w-14 rounded-full object-cover"
+                                                className="w-full h-full rounded-full object-cover"
                                               />
                                             </div>
                                             <span className={cn(
-                                              "text-[10px] font-medium leading-tight text-center",
+                                              "text-xs font-medium leading-tight text-center",
                                               modelDetails.ethnicity === option.value
                                                 ? "text-primary"
                                                 : "text-muted-foreground group-hover:text-foreground"
