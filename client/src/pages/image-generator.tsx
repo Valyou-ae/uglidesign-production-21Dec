@@ -431,27 +431,41 @@ export default function ImageGenerator() {
         return;
       }
 
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      
-      const pngBlob = blob.type === 'image/png' ? blob : await new Promise<Blob>((resolve) => {
+      // Create a promise that loads the image and converts to PNG blob
+      const pngBlob = await new Promise<Blob>((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = 'anonymous';
+        
         img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0);
-          canvas.toBlob((b) => resolve(b || blob), 'image/png');
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('Could not get canvas context'));
+              return;
+            }
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error('Failed to create blob'));
+              }
+            }, 'image/png');
+          } catch (e) {
+            reject(e);
+          }
         };
-        img.onerror = () => resolve(blob);
+        
+        img.onerror = () => reject(new Error('Failed to load image'));
         img.src = imageUrl;
       });
       
       await navigator.clipboard.write([
         new ClipboardItem({
-          [pngBlob.type]: pngBlob
+          'image/png': pngBlob
         })
       ]);
       
