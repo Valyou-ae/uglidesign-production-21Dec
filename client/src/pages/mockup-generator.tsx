@@ -1962,7 +1962,7 @@ export default function MockupGenerator() {
                                     {/* Gender Section */}
                                     <div className="mt-3">
                                       <label className="text-xs font-semibold text-muted-foreground mb-2 block">Gender</label>
-                                      <div className="grid grid-cols-2 gap-1.5">
+                                      <div className="grid grid-cols-2 gap-2">
                                         {[
                                           { value: "MALE", icon: User, label: "Male" },
                                           { value: "FEMALE", icon: Users, label: "Female" },
@@ -1971,14 +1971,14 @@ export default function MockupGenerator() {
                                             key={option.value}
                                             onClick={() => setModelDetails({...modelDetails, sex: option.value as "MALE" | "FEMALE"})}
                                             className={cn(
-                                              "flex items-center justify-center gap-1 py-2 rounded-lg border transition-all text-xs font-medium",
+                                              "flex flex-col items-center justify-center gap-2 py-3 rounded-lg border transition-all",
                                               modelDetails.sex === option.value
                                                 ? "bg-primary/10 border-primary text-primary"
                                                 : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30"
                                             )}
                                           >
-                                            <option.icon className="h-3.5 w-3.5" />
-                                            <span>{option.label}</span>
+                                            <option.icon className="h-6 w-6" />
+                                            <span className="text-sm font-medium">{option.label}</span>
                                           </button>
                                         ))}
                                       </div>
@@ -1987,7 +1987,7 @@ export default function MockupGenerator() {
                                     {/* Ethnicity Section */}
                                     <div className="mt-4">
                                       <label className="text-xs font-semibold text-muted-foreground mb-2 block">Ethnicity</label>
-                                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                                         {[
                                           { value: "White", label: "White" },
                                           { value: "Black", label: "Black" },
@@ -2003,14 +2003,14 @@ export default function MockupGenerator() {
                                             key={option.value}
                                             onClick={() => setModelDetails({...modelDetails, ethnicity: option.value as any})}
                                             className={cn(
-                                              "flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg border transition-all text-xs font-medium",
+                                              "flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-lg border transition-all",
                                               modelDetails.ethnicity === option.value
                                                 ? "bg-primary/10 border-primary text-primary"
                                                 : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30"
                                             )}
                                           >
-                                            <User className="h-3.5 w-3.5" />
-                                            <span className="text-[10px] leading-tight text-center">{option.label}</span>
+                                            <User className="h-6 w-6" />
+                                            <span className="text-xs font-medium leading-tight text-center">{option.label}</span>
                                           </button>
                                         ))}
                                       </div>
@@ -2072,14 +2072,14 @@ export default function MockupGenerator() {
                                           key={i}
                                           onClick={() => setEnvironmentPrompt(template.prompt)}
                                           className={cn(
-                                            "flex flex-col items-center justify-center gap-1 p-2 rounded-lg border transition-all h-[60px]",
+                                            "flex flex-col items-center justify-center gap-2 p-3 rounded-lg border transition-all h-[80px]",
                                             environmentPrompt === template.prompt
                                               ? "bg-primary/10 border-primary"
                                               : "bg-muted/30 border-border hover:border-primary/30"
                                           )}
                                         >
-                                          <template.icon className={cn("h-4 w-4", environmentPrompt === template.prompt ? "text-primary" : "text-muted-foreground")} />
-                                          <span className={cn("text-[10px] font-medium", environmentPrompt === template.prompt ? "text-primary" : "text-muted-foreground")}>{template.label}</span>
+                                          <template.icon className={cn("h-7 w-7", environmentPrompt === template.prompt ? "text-primary" : "text-muted-foreground")} />
+                                          <span className={cn("text-sm font-medium", environmentPrompt === template.prompt ? "text-primary" : "text-muted-foreground")}>{template.label}</span>
                                         </button>
                                       ))}
                                     </div>
