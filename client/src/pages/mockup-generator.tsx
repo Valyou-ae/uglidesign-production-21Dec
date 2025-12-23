@@ -145,7 +145,7 @@ type WizardStep =
 
 type AgeGroup = "ADULT" | "YOUNG_ADULT" | "TEEN";
 type Sex = "MALE" | "FEMALE";
-type Ethnicity = "CAUCASIAN" | "AFRICAN" | "ASIAN" | "SOUTHEAST_ASIAN" | "HISPANIC" | "SOUTH_ASIAN" | "MIDDLE_EASTERN" | "INDIGENOUS" | "MIXED";
+type Ethnicity = "White" | "Black" | "Hispanic" | "Asian" | "Indian" | "Southeast Asian" | "Middle Eastern" | "Indigenous" | "Diverse";
 type ModelSize = "XS" | "S" | "M" | "L" | "XL" | "XXL";
 type OutputQuality = "standard" | "high" | "ultra";
 type HairStyle = "Short" | "Medium" | "Long" | "Bald";
@@ -724,7 +724,7 @@ export default function MockupGenerator() {
   const [modelDetails, setModelDetails] = useState<ModelDetails>({
     age: "ADULT",
     sex: "MALE",
-    ethnicity: "CAUCASIAN",
+    ethnicity: "White",
     modelSize: "M"
   });
   const [useModel, setUseModel] = useState<boolean>(true);
@@ -1958,41 +1958,64 @@ export default function MockupGenerator() {
                                 </div>
                                 
                                 {useModel && (
-                                  <div className="grid grid-cols-4 sm:grid-cols-12 gap-1.5 mt-3">
-                                    {/* Gender - 2 columns */}
-                                    {[
-                                      { value: "MALE", icon: User, label: "Male" },
-                                      { value: "FEMALE", icon: Users, label: "Female" },
-                                    ].map((option) => (
-                                      <button
-                                        key={option.value}
-                                        onClick={() => setModelDetails({...modelDetails, sex: option.value as "MALE" | "FEMALE"})}
-                                        className={cn(
-                                          "flex items-center justify-center gap-1 py-2 rounded-lg border transition-all text-xs font-medium",
-                                          modelDetails.sex === option.value
-                                            ? "bg-primary/10 border-primary text-primary"
-                                            : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30"
-                                        )}
-                                      >
-                                        <option.icon className="h-3.5 w-3.5" />
-                                        <span>{option.label}</span>
-                                      </button>
-                                    ))}
-
-                                    {/* Ethnicity - 2 columns */}
-                                    <Select value={modelDetails.ethnicity} onValueChange={(v) => setModelDetails({...modelDetails, ethnicity: v as any})}>
-                                      <SelectTrigger className="h-9 text-xs col-span-2"><SelectValue placeholder="Ethnicity" /></SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="WHITE">White</SelectItem>
-                                        <SelectItem value="BLACK">Black</SelectItem>
-                                        <SelectItem value="ASIAN">Asian</SelectItem>
-                                        <SelectItem value="LATINO">Latino</SelectItem>
-                                        <SelectItem value="MIDDLE_EASTERN">Middle Eastern</SelectItem>
-                                        <SelectItem value="MIXED">Mixed</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-
-                                  </div>
+                                  <>
+                                    {/* Gender Section */}
+                                    <div className="mt-3">
+                                      <label className="text-xs font-semibold text-muted-foreground mb-2 block">Gender</label>
+                                      <div className="grid grid-cols-2 gap-1.5">
+                                        {[
+                                          { value: "MALE", icon: User, label: "Male" },
+                                          { value: "FEMALE", icon: Users, label: "Female" },
+                                        ].map((option) => (
+                                          <button
+                                            key={option.value}
+                                            onClick={() => setModelDetails({...modelDetails, sex: option.value as "MALE" | "FEMALE"})}
+                                            className={cn(
+                                              "flex items-center justify-center gap-1 py-2 rounded-lg border transition-all text-xs font-medium",
+                                              modelDetails.sex === option.value
+                                                ? "bg-primary/10 border-primary text-primary"
+                                                : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30"
+                                            )}
+                                          >
+                                            <option.icon className="h-3.5 w-3.5" />
+                                            <span>{option.label}</span>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Ethnicity Section */}
+                                    <div className="mt-4">
+                                      <label className="text-xs font-semibold text-muted-foreground mb-2 block">Ethnicity</label>
+                                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                                        {[
+                                          { value: "White", label: "White" },
+                                          { value: "Black", label: "Black" },
+                                          { value: "Hispanic", label: "Hispanic" },
+                                          { value: "Asian", label: "Asian" },
+                                          { value: "Indian", label: "Indian" },
+                                          { value: "Southeast Asian", label: "SE Asian" },
+                                          { value: "Middle Eastern", label: "Mid Eastern" },
+                                          { value: "Indigenous", label: "Indigenous" },
+                                          { value: "Diverse", label: "Diverse" },
+                                        ].map((option) => (
+                                          <button
+                                            key={option.value}
+                                            onClick={() => setModelDetails({...modelDetails, ethnicity: option.value as any})}
+                                            className={cn(
+                                              "flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg border transition-all text-xs font-medium",
+                                              modelDetails.ethnicity === option.value
+                                                ? "bg-primary/10 border-primary text-primary"
+                                                : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30"
+                                            )}
+                                          >
+                                            <User className="h-3.5 w-3.5" />
+                                            <span className="text-[10px] leading-tight text-center">{option.label}</span>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </>
                                 )}
                               </div>
                             )}
