@@ -846,11 +846,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPromptFavorites(userId: string): Promise<PromptFavorite[]> {
-    return db
+    const results = await db
       .select()
       .from(promptFavorites)
       .where(eq(promptFavorites.userId, userId))
       .orderBy(desc(promptFavorites.createdAt));
+    return results || [];
   }
 
   async deletePromptFavorite(id: string, userId: string): Promise<void> {
