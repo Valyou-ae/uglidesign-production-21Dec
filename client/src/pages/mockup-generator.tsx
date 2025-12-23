@@ -105,7 +105,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { getTransferredImage, clearTransferredImage, fetchImageAsDataUrl } from "@/lib/image-transfer";
+import { getTransferredImage, clearTransferredImage, fetchImageAsDataUrl, transferImageToTool } from "@/lib/image-transfer";
+import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { mockupApi, MockupEvent } from "@/lib/api";
 import {
@@ -710,6 +711,7 @@ const isNonWearableCategory = (category: string): boolean => {
 };
 
 export default function MockupGenerator() {
+  const [, setLocation] = useLocation();
   const [journey, setJourney] = useState<JourneyType>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -2323,29 +2325,60 @@ export default function MockupGenerator() {
 
                               {/* Action Bar */}
                               {!isGenerating && generatedMockups.length > 0 && (
-                                <div className="pt-4 border-t border-border flex items-center justify-between gap-3 shrink-0">
-                                  <Button variant="outline" onClick={() => setJourney(null)} data-testid="button-start-over">
-                                    Start Over
-                                  </Button>
-                                  <div className="flex gap-2">
+                                <div className="pt-4 border-t border-border flex flex-col gap-3 shrink-0">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <Button variant="outline" onClick={() => setJourney(null)} data-testid="button-start-over">
+                                      Start Over
+                                    </Button>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        variant="outline"
+                                        onClick={handleGenerate}
+                                        data-testid="button-regenerate"
+                                      >
+                                        <RotateCw className="h-4 w-4 mr-1" /> Regenerate
+                                      </Button>
+                                      <Button
+                                        onClick={downloadAllAsZip}
+                                        disabled={isDownloadingZip}
+                                        className="bg-primary hover:bg-primary/90 text-white"
+                                        data-testid="button-download-all"
+                                      >
+                                        {isDownloadingZip ? (
+                                          <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Creating ZIP...</>
+                                        ) : (
+                                          <><Archive className="h-4 w-4 mr-1" /> Download All ({generatedMockups.length})</>
+                                        )}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span className="text-xs text-muted-foreground">Use mockup in:</span>
                                     <Button
                                       variant="outline"
-                                      onClick={handleGenerate}
-                                      data-testid="button-regenerate"
+                                      size="sm"
+                                      onClick={() => {
+                                        if (generatedMockups.length > 0) {
+                                          const route = transferImageToTool({
+                                            id: `mockup-${Date.now()}`,
+                                            src: generatedMockups[0].src,
+                                            name: `${selectedProductType} mockup`,
+                                            type: "mockup"
+                                          }, "bg-remover");
+                                          setLocation(route);
+                                        }
+                                      }}
+                                      data-testid="button-to-bg-remover"
                                     >
-                                      <RotateCw className="h-4 w-4 mr-1" /> Regenerate
+                                      <Scissors className="h-4 w-4 mr-1" /> BG Remover
                                     </Button>
                                     <Button
-                                      onClick={downloadAllAsZip}
-                                      disabled={isDownloadingZip}
-                                      className="bg-primary hover:bg-primary/90 text-white"
-                                      data-testid="button-download-all"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setLocation("/image-generator")}
+                                      data-testid="button-to-image-generator"
                                     >
-                                      {isDownloadingZip ? (
-                                        <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Creating ZIP...</>
-                                      ) : (
-                                        <><Archive className="h-4 w-4 mr-1" /> Download All ({generatedMockups.length})</>
-                                      )}
+                                      <Wand2 className="h-4 w-4 mr-1" /> Image Creator
                                     </Button>
                                   </div>
                                 </div>
