@@ -317,4 +317,13 @@
       box-shadow: 0 0 15px rgba(237, 83, 135, 0.45), 0 0 30px rgba(156, 39, 176, 0.25), 0 0 45px rgba(237, 83, 135, 0.12);
     }
   }
+  
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
