@@ -2406,7 +2406,7 @@ export default function ImageGenerator() {
 
                   <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8">
                     {/* Actions */}
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-6 gap-2">
                       <Button 
                         variant="ghost" 
                         className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
