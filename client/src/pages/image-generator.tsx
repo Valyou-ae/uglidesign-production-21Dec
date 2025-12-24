@@ -2519,11 +2519,11 @@ export default function ImageGenerator() {
                     </Button>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8">
+                  <div className="flex-1 overflow-y-auto p-4 md:p-5 space-y-4">
                     {/* Prompt - at top */}
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Prompt</label>
-                      <div className="bg-muted/30 rounded-xl p-4 text-sm text-muted-foreground leading-relaxed border border-border relative group">
+                      <div className="bg-muted/30 rounded-lg p-3 text-sm text-muted-foreground leading-relaxed border border-border relative group">
                         {selectedImage.prompt}
                         <Button 
                           size="icon" 
@@ -2541,7 +2541,7 @@ export default function ImageGenerator() {
 
                     {/* Edit Image Section - prominent styling */}
                     {selectedImage.id && !selectedImage.id.startsWith("sample-") && (
-                      <div className="space-y-3 bg-gradient-to-br from-[#ed5387]/10 to-[#ed5387]/5 rounded-xl p-4 border border-[#ed5387]/20">
+                      <div className="space-y-2 bg-gradient-to-br from-[#ed5387]/10 to-[#ed5387]/5 rounded-lg p-3 border border-[#ed5387]/20">
                         <label className="text-xs font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
                           <Wand2 className="h-4 w-4 text-[#ed5387]" />
                           Edit with UGLI AI
@@ -2582,7 +2582,7 @@ export default function ImageGenerator() {
 
                     {/* Version History - horizontal row with arrows */}
                     {imageVersions.length > 1 && (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
                           <HistoryIcon className="h-3 w-3" />
                           Version History ({imageVersions.length})
@@ -2648,12 +2648,12 @@ export default function ImageGenerator() {
                           const selectedVersion = imageVersions.find(v => v.id === selectedImage.id);
                           if (!selectedVersion) return null;
                           return (
-                            <div className="bg-muted/30 rounded-lg p-3 border border-border">
-                              <div className="text-xs font-medium text-foreground mb-1">
+                            <div className="bg-muted/30 rounded-md p-2 border border-border">
+                              <div className="text-[11px] font-medium text-foreground">
                                 {selectedVersion.versionNumber === 0 ? "Original" : `Version ${selectedVersion.versionNumber}`}
-                              </div>
-                              <div className="text-[11px] text-muted-foreground">
-                                {selectedVersion.editPrompt || (selectedVersion.versionNumber === 0 ? "Original creation" : "Edited version")}
+                                <span className="font-normal text-muted-foreground ml-2">
+                                  {selectedVersion.editPrompt || (selectedVersion.versionNumber === 0 ? "Original creation" : "Edited version")}
+                                </span>
                               </div>
                             </div>
                           );
@@ -2662,86 +2662,86 @@ export default function ImageGenerator() {
                     )}
 
                     {/* Actions - moved to bottom */}
-                    <div className="grid grid-cols-6 gap-2">
+                    <div className="grid grid-cols-6 gap-1.5">
                       <Button 
                         variant="ghost" 
-                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                        className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
                         onClick={() => openSaveToFolderModal(selectedImage)}
                         disabled={isSaving}
                         data-testid="button-save-library"
                       >
-                        <FolderInput className={cn("h-5 w-5", isSaving && "animate-pulse")} />
-                        <span className="text-[10px]">{isSaving ? "Moving..." : "Folder"}</span>
+                        <FolderInput className={cn("h-4 w-4", isSaving && "animate-pulse")} />
+                        <span className="text-[9px]">{isSaving ? "Moving..." : "Folder"}</span>
                       </Button>
                       
                       <Button 
                         variant="ghost" 
-                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                        className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
                         onClick={() => copyImageToClipboard(selectedImage.src)}
                         data-testid="button-copy-detail"
                       >
-                        <ClipboardCopy className="h-5 w-5" />
-                        <span className="text-[10px]">Copy</span>
+                        <ClipboardCopy className="h-4 w-4" />
+                        <span className="text-[9px]">Copy</span>
                       </Button>
                       
                       <Button 
                         variant="ghost" 
-                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                        className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
                         onClick={() => handleVary(selectedImage)}
                         disabled={isVarying || status === "generating"}
                         data-testid="button-vary"
                       >
-                        <RefreshCw className={cn("h-5 w-5", isVarying && "animate-spin")} />
-                        <span className="text-[10px]">Vary</span>
+                        <RefreshCw className={cn("h-4 w-4", isVarying && "animate-spin")} />
+                        <span className="text-[9px]">Vary</span>
                       </Button>
                       
                       <Button 
                         variant="ghost" 
-                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                        className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
                         onClick={() => {
                           const route = transferImageToTool({ src: selectedImage.src, name: selectedImage.prompt, id: selectedImage.id }, "mockup");
                           setLocation(route);
                         }}
                         data-testid="button-use-mockup"
                       >
-                        <Shirt className="h-5 w-5" />
-                        <span className="text-[10px]">Mockup</span>
+                        <Shirt className="h-4 w-4" />
+                        <span className="text-[9px]">Mockup</span>
                       </Button>
                       
                       <Button 
                         variant="ghost" 
-                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                        className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
                         onClick={() => {
                           const route = transferImageToTool({ src: selectedImage.src, name: selectedImage.prompt, id: selectedImage.id }, "style-transfer");
                           setLocation(route);
                         }}
                         data-testid="button-style-transfer"
                       >
-                        <Palette className="h-5 w-5" />
-                        <span className="text-[10px]">Style</span>
+                        <Palette className="h-4 w-4" />
+                        <span className="text-[9px]">Style</span>
                       </Button>
                       
                       <Button 
                         variant="ghost" 
-                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                        className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
                         onClick={() => {
                           const route = transferImageToTool({ src: selectedImage.src, name: selectedImage.prompt, id: selectedImage.id }, "bg-remover");
                           setLocation(route);
                         }}
                         data-testid="button-remove-bg"
                       >
-                        <Scissors className="h-5 w-5" />
-                        <span className="text-[10px]">Remove BG</span>
+                        <Scissors className="h-4 w-4" />
+                        <span className="text-[9px]">Remove BG</span>
                       </Button>
                     </div>
 
                     {/* Details */}
-                    <div className="space-y-4">
-                      <div className="flex justify-between py-2 border-b border-border">
+                    <div className="space-y-1">
+                      <div className="flex justify-between py-1.5 border-b border-border">
                         <span className="text-xs text-muted-foreground">Style</span>
                         <span className="text-xs font-medium text-foreground capitalize">{selectedImage.style}</span>
                       </div>
-                      <div className="flex justify-between py-2 border-b border-border">
+                      <div className="flex justify-between py-1.5 border-b border-border">
                         <span className="text-xs text-muted-foreground">Dimensions</span>
                         <span className="text-xs font-medium text-foreground">
                           {(() => {
@@ -2757,17 +2757,17 @@ export default function ImageGenerator() {
                           })()}
                         </span>
                       </div>
-                      <div className="flex justify-between py-2 border-b border-border">
+                      <div className="flex justify-between py-1.5 border-b border-border">
                         <span className="text-xs text-muted-foreground">Ratio</span>
                         <span className="text-xs font-medium text-foreground">{selectedImage.aspectRatio || "1:1"}</span>
                       </div>
-                      <div className="flex justify-between py-2 border-b border-border">
+                      <div className="flex justify-between py-1.5 border-b border-border">
                         <span className="text-xs text-muted-foreground">Date Created</span>
                         <span className="text-xs font-medium text-foreground">
                           {selectedImage.timestamp ? new Date(selectedImage.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Just now'}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-border">
+                      <div className="flex justify-between items-center py-1.5 border-b border-border">
                         <span className="text-xs text-muted-foreground">Visibility</span>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-foreground">
