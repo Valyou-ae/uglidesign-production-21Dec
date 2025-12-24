@@ -204,6 +204,9 @@ export interface IStorage {
   moveImageToFolder(imageId: string, userId: string, folderId: string | null): Promise<GeneratedImage | undefined>;
   getOrCreateDefaultFolder(userId: string): Promise<ImageFolder>;
   
+  // Image Version History
+  getImageVersionHistory(rootImageId: string): Promise<GeneratedImage[]>;
+  
   // Mockup Version History
   saveMockupVersion(version: InsertMockupVersion): Promise<MockupVersion>;
   getMockupVersions(userId: string, sessionId: string, filters?: { angle?: string; color?: string; size?: string; productName?: string }): Promise<MockupVersion[]>;
@@ -1832,6 +1835,20 @@ export class DatabaseStorage implements IStorage {
     }).returning();
     
     return folder;
+  }
+
+  // Image Version History
+  async getImageVersionHistory(rootImageId: string): Promise<GeneratedImage[]> {
+    // Get the original image and all its children (edited versions)
+    const versions = await db
+      .select()
+      .from(generatedImages)
+      .where(
+        sql`${generatedImages.id} = ${rootImageId} OR ${generatedImages.parentImageId} = ${rootImageId}`
+      )
+      .orderBy(generatedImages.versionNumber);
+    
+    return versions;
   }
 
   // Mockup Version History

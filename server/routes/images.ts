@@ -400,4 +400,105 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       res.status(500).json({ message: "Server error" });
     }
   });
+
+  // Edit an image using AI - creates a new version
+  app.post("/api/images/:id/edit", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = getUserId(req as AuthenticatedRequest);
+      const { id } = req.params;
+      const { editPrompt } = req.body;
+
+      if (!editPrompt || typeof editPrompt !== "string" || editPrompt.trim().length === 0) {
+        return res.status(400).json({ message: "Edit prompt is required" });
+      }
+
+      // Get the original image
+      const originalImage = await storage.getImageById(id, userId);
+      if (!originalImage) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+
+      // Get the base64 image data from the URL
+      let imageBase64 = originalImage.imageUrl;
+      if (imageBase64.startsWith("data:")) {
+        // Extract base64 from data URL
+        const matches = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
+        if (matches) {
+          imageBase64 = matches[2];
+        }
+      }
+
+      // Import and call the editImage function
+      const { editImage } = await import("../services/gemini");
+      const result = await editImage(imageBase64, editPrompt.trim());
+
+      if (!result) {
+        return res.status(500).json({ message: "Failed to edit image. Please try again." });
+      }
+
+      // Determine next version number
+      const rootImageId = originalImage.parentImageId || originalImage.id;
+      const versions = await storage.getImageVersionHistory(rootImageId);
+      const nextVersion = versions.length + 1;
+
+      // Create new image entry as a child of the original
+      const newImageUrl = `data:${result.mimeType};base64,${result.imageData}`;
+      const newImage = await storage.createImage({
+        userId,
+        imageUrl: newImageUrl,
+        prompt: originalImage.prompt,
+        style: originalImage.style,
+        aspectRatio: originalImage.aspectRatio,
+        generationType: "edit",
+        folderId: originalImage.folderId,
+        parentImageId: rootImageId,
+        editPrompt: editPrompt.trim(),
+        versionNumber: nextVersion,
+      });
+
+      res.json({ 
+        image: {
+          ...newImage,
+          imageUrl: `/api/images/${newImage?.id}/image`
+        }
+      });
+    } catch (error) {
+      logger.error("Image edit error", error, { source: "images" });
+      res.status(500).json({ message: "Failed to edit image. Please try again." });
+    }
+  });
+
+  // Get version history for an image
+  app.get("/api/images/:id/versions", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = getUserId(req as AuthenticatedRequest);
+      const { id } = req.params;
+
+      // Get the original image to find the root
+      const image = await storage.getImageById(id, userId);
+      if (!image) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+
+      // Find root image ID (either this image if it has no parent, or the parent)
+      const rootImageId = image.parentImageId || image.id;
+      
+      // Get all versions in the chain
+      const versions = await storage.getImageVersionHistory(rootImageId);
+
+      // Return optimized version list
+      const optimizedVersions = versions.map(v => ({
+        id: v.id,
+        imageUrl: `/api/images/${v.id}/image`,
+        editPrompt: v.editPrompt,
+        versionNumber: v.versionNumber,
+        createdAt: v.createdAt,
+      }));
+
+      res.json({ versions: optimizedVersions, rootImageId });
+    } catch (error) {
+      logger.error("Get versions error", error, { source: "images" });
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 }

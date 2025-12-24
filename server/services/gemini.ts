@@ -518,6 +518,100 @@ export async function generateImage(
   }
 }
 
+/**
+ * Edit an existing image using a natural language prompt
+ * @param sourceImageBase64 - The base64-encoded source image data (without data URL prefix)
+ * @param editPrompt - Natural language description of the edit (e.g., "remove the jacket", "change color to green")
+ * @param mimeType - MIME type of the source image (default: image/png)
+ * @returns The edited image result or null if failed
+ */
+export async function editImage(
+  sourceImageBase64: string,
+  editPrompt: string,
+  mimeType: string = "image/png"
+): Promise<GeneratedImageResult | null> {
+  const client = keyManager.getNextClient();
+
+  try {
+    const startTime = Date.now();
+    logger.info(`[Image Edit] Starting edit with prompt: ${editPrompt.slice(0, 100)}...`, { source: "gemini" });
+
+    // Use imagen model for editing with image input
+    const config: any = {
+      responseModalities: [Modality.IMAGE],
+    };
+
+    const response = await client.models.generateContent({
+      model: MODELS.IMAGE_PREMIUM, // Use premium model for editing
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                data: sourceImageBase64,
+                mimeType,
+              },
+            },
+            {
+              text: `Edit this image according to the following instruction: ${editPrompt}. 
+                     Keep the overall composition and style similar to the original. 
+                     Apply only the changes specified in the instruction.`,
+            },
+          ],
+        },
+      ],
+      config,
+    });
+
+    logger.info(`[Image Edit] API call completed in ${Date.now() - startTime}ms`, { source: "gemini" });
+
+    const candidates = response.candidates;
+    if (!candidates || candidates.length === 0) {
+      logger.error("[Image Edit] No candidates in response", null, { source: "gemini" });
+      return null;
+    }
+
+    const content = candidates[0].content;
+    if (!content || !content.parts) {
+      logger.error("[Image Edit] No content parts in response", null, { source: "gemini" });
+      return null;
+    }
+
+    let imageData = "";
+    let resultMimeType = "image/png";
+    let textResponse = "";
+
+    for (const part of content.parts) {
+      if (part.text) {
+        textResponse = part.text;
+        logger.info(`[Image Edit] Found text part: ${part.text.slice(0, 100)}...`, { source: "gemini" });
+      } else if (part.inlineData && part.inlineData.data) {
+        imageData = part.inlineData.data;
+        resultMimeType = part.inlineData.mimeType || "image/png";
+        logger.info(`[Image Edit] Found image data: ${imageData.length} bytes, type: ${resultMimeType}`, { source: "gemini" });
+      }
+    }
+
+    if (imageData) {
+      logger.info(`[Image Edit] Success! Returning edited image`, { source: "gemini" });
+      keyManager.reportSuccess(client);
+      return {
+        imageData,
+        mimeType: resultMimeType,
+        text: textResponse || undefined,
+      };
+    }
+
+    logger.error("[Image Edit] No image data in response", null, { source: "gemini" });
+    return null;
+  } catch (error) {
+    logger.error("[Image Edit] Failed", error, { source: "gemini" });
+    keyManager.reportError(client, error as Error);
+    return null;
+  }
+}
+
 export async function scoreImage(
   imageBase64: string,
   originalPrompt: string
