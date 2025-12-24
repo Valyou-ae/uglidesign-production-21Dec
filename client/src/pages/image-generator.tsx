@@ -108,7 +108,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { generateApi, imagesApi, GenerationEvent, promptFavoritesApi, PromptFavorite, foldersApi } from "@/lib/api";
+import { generateApi, imagesApi, GenerationEvent, promptFavoritesApi, PromptFavorite, foldersApi, leaderboardApi, LeaderboardUser, inspirationsApi, DailyInspiration } from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
 import { Label } from "@/components/ui/label";
 import { useLocation } from "wouter";
@@ -255,6 +255,20 @@ export default function ImageGenerator() {
   } = useTutorial();
 
   const { credits, invalidate: invalidateCredits } = useCredits();
+
+  // Fetch leaderboard data
+  const { data: leaderboardData } = useQuery({
+    queryKey: ['leaderboard', 'weekly'],
+    queryFn: () => leaderboardApi.get('weekly', 5),
+    staleTime: 60000, // 1 minute
+  });
+
+  // Fetch daily inspirations
+  const { data: inspirationsData } = useQuery({
+    queryKey: ['inspirations'],
+    queryFn: () => inspirationsApi.getAll(3),
+    staleTime: 300000, // 5 minutes
+  });
 
   useEffect(() => {
     if (tutorialCompleted) return;
@@ -2151,34 +2165,40 @@ export default function ImageGenerator() {
                   <Star className="h-3 w-3 text-white" />
                 </div>
                 <h3 className="font-semibold text-sm text-foreground">Top Creators</h3>
+                <span className="text-[10px] text-muted-foreground ml-auto">This Week</span>
               </div>
               <div className="space-y-2">
-                {[
-                  { rank: 1, name: "CreativeAI", images: 156, badge: "🥇" },
-                  { rank: 2, name: "DesignPro", images: 142, badge: "🥈" },
-                  { rank: 3, name: "ArtMaster", images: 128, badge: "🥉" },
-                  { rank: 4, name: "PixelWizard", images: 97 },
-                  { rank: 5, name: "DreamMaker", images: 84 },
-                ].map((user) => (
-                  <div 
-                    key={user.rank} 
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                    data-testid={`leaderboard-user-${user.rank}`}
-                  >
-                    <span className="text-xs font-bold text-muted-foreground w-4">
-                      {user.badge || `#${user.rank}`}
-                    </span>
-                    <Avatar className="h-7 w-7">
-                      <AvatarFallback className="bg-gradient-to-br from-[#ed5387] to-[#9C27B0] text-white text-[10px]">
-                        {user.name.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-foreground truncate">{user.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{user.images} creations</p>
+                {(leaderboardData?.leaderboard || []).length > 0 ? (
+                  leaderboardData!.leaderboard.map((creator, idx) => (
+                    <div 
+                      key={creator.userId} 
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                      data-testid={`leaderboard-user-${idx + 1}`}
+                    >
+                      <span className="text-xs font-bold text-muted-foreground w-4">
+                        {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}
+                      </span>
+                      <Avatar className="h-7 w-7">
+                        {creator.profileImageUrl ? (
+                          <AvatarImage src={creator.profileImageUrl} alt={creator.displayName || creator.username || ''} />
+                        ) : null}
+                        <AvatarFallback className="bg-gradient-to-br from-[#ed5387] to-[#9C27B0] text-white text-[10px]">
+                          {(creator.displayName || creator.username || 'U').slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-foreground truncate">
+                          {creator.displayName || creator.username || 'Anonymous'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">{creator.imageCount} creations</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center py-4">
+                    No creators yet. Be the first!
+                  </p>
+                )}
               </div>
             </div>
 
@@ -2191,29 +2211,51 @@ export default function ImageGenerator() {
                 <h3 className="font-semibold text-sm text-foreground">Daily Inspiration</h3>
               </div>
               <div className="space-y-3">
-                {[
-                  { prompt: "Mystical forest with bioluminescent mushrooms at twilight", style: "Fantasy", uses: 234 },
-                  { prompt: "Futuristic cyberpunk cityscape with neon rain", style: "Sci-Fi", uses: 189 },
-                  { prompt: "Serene Japanese garden in autumn with koi pond", style: "Peaceful", uses: 156 },
-                ].map((inspiration, idx) => (
-                  <div 
-                    key={idx}
-                    onClick={() => setPrompt(inspiration.prompt)}
-                    className="p-3 rounded-lg border border-border bg-muted/30 hover:bg-muted/60 hover:border-[#ed5387]/30 transition-all cursor-pointer group"
-                    data-testid={`daily-inspiration-${idx}`}
-                  >
-                    <p className="text-xs text-foreground line-clamp-2 mb-2 group-hover:text-[#ed5387] transition-colors">
-                      {inspiration.prompt}
-                    </p>
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                      <span className="px-1.5 py-0.5 bg-muted rounded">{inspiration.style}</span>
-                      <span className="flex items-center gap-1">
-                        <Wand2 className="h-3 w-3" />
-                        {inspiration.uses} uses
-                      </span>
+                {(inspirationsData?.inspirations || []).length > 0 ? (
+                  inspirationsData!.inspirations.map((inspiration, idx) => (
+                    <div 
+                      key={inspiration.id}
+                      onClick={() => setPrompt(inspiration.prompt)}
+                      className="p-3 rounded-lg border border-border bg-muted/30 hover:bg-muted/60 hover:border-[#ed5387]/30 transition-all cursor-pointer group"
+                      data-testid={`daily-inspiration-${idx}`}
+                    >
+                      <p className="text-xs text-foreground line-clamp-2 mb-2 group-hover:text-[#ed5387] transition-colors">
+                        {inspiration.prompt}
+                      </p>
+                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                        <span className="px-1.5 py-0.5 bg-muted rounded">{inspiration.category}</span>
+                        {inspiration.featured && (
+                          <span className="flex items-center gap-1 text-[#E3B436]">
+                            <Star className="h-3 w-3" />
+                            Featured
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <>
+                    {[
+                      { prompt: "Mystical forest with bioluminescent mushrooms at twilight", category: "Fantasy" },
+                      { prompt: "Futuristic cyberpunk cityscape with neon rain", category: "Sci-Fi" },
+                      { prompt: "Serene Japanese garden in autumn with koi pond", category: "Peaceful" },
+                    ].map((inspiration, idx) => (
+                      <div 
+                        key={idx}
+                        onClick={() => setPrompt(inspiration.prompt)}
+                        className="p-3 rounded-lg border border-border bg-muted/30 hover:bg-muted/60 hover:border-[#ed5387]/30 transition-all cursor-pointer group"
+                        data-testid={`daily-inspiration-${idx}`}
+                      >
+                        <p className="text-xs text-foreground line-clamp-2 mb-2 group-hover:text-[#ed5387] transition-colors">
+                          {inspiration.prompt}
+                        </p>
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                          <span className="px-1.5 py-0.5 bg-muted rounded">{inspiration.category}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
 

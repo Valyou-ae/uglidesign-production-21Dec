@@ -982,6 +982,23 @@ export const inspirationsApi = {
     fetchApi<{ inspirations: DailyInspiration[] }>(`/inspirations/featured${limit ? `?limit=${limit}` : ""}`),
 };
 
+// Leaderboard API
+export interface LeaderboardUser {
+  userId: string;
+  username: string | null;
+  displayName: string | null;
+  profileImageUrl: string | null;
+  imageCount: number;
+  likeCount: number;
+  viewCount: number;
+  rank: number;
+}
+
+export const leaderboardApi = {
+  get: (period: 'weekly' | 'monthly' | 'all-time' = 'weekly', limit: number = 5) =>
+    fetchApi<{ leaderboard: LeaderboardUser[]; period: string }>(`/leaderboard?period=${period}&limit=${limit}`),
+};
+
 export interface PromptRecommendation {
   id: string;
   prompt: string;
