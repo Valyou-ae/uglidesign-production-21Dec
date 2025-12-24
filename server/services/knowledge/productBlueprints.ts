@@ -2504,6 +2504,18 @@ export function getProduct(id: string): Product | undefined {
   return ALL_PRODUCTS.find(p => p.id === id);
 }
 
+export function getProductSizes(productId: string): ProductSize[] | undefined {
+  const product = getProduct(productId);
+  if (product?.sizes) {
+    return product.sizes;
+  }
+  return undefined;
+}
+
+export function getAllProducts(): Product[] {
+  return [...ALL_PRODUCTS];
+}
+
 export function getDTGProducts(): Product[] {
   return [...DTG_PRODUCTS];
 }
@@ -2518,10 +2530,6 @@ export function getAccessoryProducts(): Product[] {
 
 export function getHomeLivingProducts(): Product[] {
   return [...HOME_LIVING_PRODUCTS];
-}
-
-export function getAllProducts(): Product[] {
-  return [...ALL_PRODUCTS];
 }
 
 export function getProductsByCategory(category: string): Product[] {

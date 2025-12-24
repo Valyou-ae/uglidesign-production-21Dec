@@ -627,6 +627,71 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
     }
   });
 
+  // ============== PRODUCT DATA ROUTES ==============
+  const { getProduct, getProductSizes, getAllProducts, getProductByFrontendName } = await import("../services/knowledge");
+
+  app.get("/api/products", async (_req: Request, res: Response) => {
+    try {
+      const products = getAllProducts();
+      const productList = products.map(p => ({
+        id: p.id,
+        name: p.name,
+        frontendName: p.frontendName,
+        category: p.category,
+        subcategory: p.subcategory,
+        genderTarget: p.genderTarget,
+        printMethod: p.printMethod,
+        isWearable: p.isWearable,
+      }));
+      res.json({ products: productList });
+    } catch (error) {
+      logger.error("Failed to get products", error, { source: "mockup" });
+      res.status(500).json({ message: "Failed to get products" });
+    }
+  });
+
+  app.get("/api/products/:productId", async (req: Request, res: Response) => {
+    try {
+      const { productId } = req.params;
+      const product = getProduct(productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      res.json({ product });
+    } catch (error) {
+      logger.error("Failed to get product", error, { source: "mockup" });
+      res.status(500).json({ message: "Failed to get product" });
+    }
+  });
+
+  app.get("/api/products/:productId/sizes", async (req: Request, res: Response) => {
+    try {
+      const { productId } = req.params;
+      const sizes = getProductSizes(productId);
+      if (!sizes) {
+        return res.status(404).json({ message: "Product not found or no sizes available" });
+      }
+      res.json({ sizes });
+    } catch (error) {
+      logger.error("Failed to get product sizes", error, { source: "mockup" });
+      res.status(500).json({ message: "Failed to get product sizes" });
+    }
+  });
+
+  app.get("/api/products/lookup/:name", async (req: Request, res: Response) => {
+    try {
+      const { name } = req.params;
+      const product = getProductByFrontendName(decodeURIComponent(name));
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      res.json({ product });
+    } catch (error) {
+      logger.error("Failed to lookup product", error, { source: "mockup" });
+      res.status(500).json({ message: "Failed to lookup product" });
+    }
+  });
+
   // ============== AI SEAMLESS PATTERN ROUTES ==============
   const { generateAISeamlessPattern } = await import("../services/gemini");
 
