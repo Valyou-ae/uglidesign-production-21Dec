@@ -2604,12 +2604,12 @@ export default function MockupGenerator() {
                       {/* ========== STEP 3: CUSTOMIZE (Sizes + Colors + Model + Scene) ========== */}
                       {currentStep === "customize" && (
                         <div className="flex flex-col h-full animate-fade-in">
-                          <div className="flex-1 overflow-y-auto scrollbar-hide space-y-3 sm:space-y-4 pb-4">
+                          <div className="flex-1 overflow-y-auto scrollbar-hide space-y-2 sm:space-y-3 pb-2">
                             {/* Sizes + Colors */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                               {/* Sizes */}
-                              <div className="bg-card rounded-xl border border-border p-3 sm:p-4">
-                                <div className="flex items-center justify-between mb-3">
+                              <div className="bg-card rounded-xl border border-border p-3">
+                                <div className="flex items-center justify-between mb-2">
                                   <label className="text-sm font-bold text-foreground">Sizes</label>
                                   <Badge variant="secondary" className="text-xs">
                                     {isLoadingSizes ? "Loading..." : `${selectedSizes.length} selected`}
@@ -2651,8 +2651,8 @@ export default function MockupGenerator() {
                               </div>
 
                               {/* Colors */}
-                              <div className="bg-card rounded-xl border border-border p-3 sm:p-4">
-                                <div className="flex items-center justify-between mb-3">
+                              <div className="bg-card rounded-xl border border-border p-3">
+                                <div className="flex items-center justify-between mb-2">
                                   <label className="text-sm font-bold text-foreground">Colors</label>
                                   {journey !== "AOP" && <Badge variant="secondary" className="text-xs">{selectedColors.length} selected</Badge>}
                                 </div>
@@ -2719,8 +2719,8 @@ export default function MockupGenerator() {
                             </div>
 
                             {/* Scene/Display Options (ALL products) */}
-                            <div className="bg-card rounded-xl border border-border p-3 sm:p-4">
-                              <div className="flex items-center justify-between mb-3">
+                            <div className="bg-card rounded-xl border border-border p-3">
+                              <div className="flex items-center justify-between mb-2">
                                 <label className="text-sm font-bold text-foreground">
                                   {isNonWearableCategory(effectiveActiveCategory) ? "Scene Type" : "Model Display"}
                                 </label>
@@ -2849,13 +2849,13 @@ export default function MockupGenerator() {
                               </div>
 
                             {/* Seasonal Themes */}
-                            <div className="bg-card rounded-xl border border-border p-3 sm:p-4">
-                              <div className="flex items-center gap-2 mb-3">
+                            <div className="bg-card rounded-xl border border-border p-3">
+                              <div className="flex items-center gap-2 mb-2">
                                 <Sparkles className="h-4 w-4 text-primary" />
                                 <label className="text-sm font-bold text-foreground">Seasonal Theme</label>
                                 <Badge variant="secondary" className="text-xs ml-auto">Optional</Badge>
                               </div>
-                              <p className="text-xs text-muted-foreground mb-3">
+                              <p className="text-xs text-muted-foreground mb-2">
                                 Add festive backgrounds and styling for holidays and events
                               </p>
                               <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -2867,7 +2867,7 @@ export default function MockupGenerator() {
                                       key={theme.id}
                                       onClick={() => setSelectedSeasonalTheme(theme.id)}
                                       className={cn(
-                                        "relative flex flex-col items-center gap-2 p-3 rounded-xl border transition-all",
+                                        "relative flex flex-col items-center gap-1 p-2 rounded-xl border transition-all",
                                         isSelected
                                           ? "border-primary bg-primary/10 ring-2 ring-primary/20"
                                           : "border-border hover:border-primary/50 hover:bg-muted/50"
@@ -2875,11 +2875,11 @@ export default function MockupGenerator() {
                                       data-testid={`seasonal-theme-${theme.id}`}
                                     >
                                       <div className={cn(
-                                        "w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br",
+                                        "w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br",
                                         theme.id === "none" ? "bg-muted" : theme.bgGradient
                                       )}>
                                         <ThemeIcon className={cn(
-                                          "h-5 w-5",
+                                          "h-4 w-4",
                                           theme.id === "none" ? "text-muted-foreground" : "text-white"
                                         )} />
                                       </div>
