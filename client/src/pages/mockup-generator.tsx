@@ -84,7 +84,11 @@ import {
   Sliders,
   MoreVertical,
   Trash2,
-  Palette as PaletteIcon
+  Palette as PaletteIcon,
+  Gift,
+  Flower,
+  Moon,
+  Leaf
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -172,6 +176,93 @@ type OutputQuality = "standard" | "high" | "ultra";
 type HairStyle = "Short" | "Medium" | "Long" | "Bald";
 type Expression = "Neutral" | "Smiling" | "Serious" | "Candid";
 type PoseSuggestion = "Casual" | "Athletic" | "Professional" | "Lifestyle";
+
+type SeasonalThemeId = "none" | "christmas" | "valentines" | "spring" | "summer" | "halloween" | "autumn" | "new_year";
+
+interface SeasonalTheme {
+  id: SeasonalThemeId;
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+  sceneKeywords: string[];
+  colorPalette: string[];
+  bgGradient: string;
+}
+
+const SEASONAL_THEMES: SeasonalTheme[] = [
+  {
+    id: "none",
+    name: "No Theme",
+    icon: X,
+    description: "Standard mockup without seasonal styling",
+    sceneKeywords: [],
+    colorPalette: [],
+    bgGradient: "from-gray-100 to-gray-200"
+  },
+  {
+    id: "christmas",
+    name: "Christmas",
+    icon: Gift,
+    description: "Cozy winter holiday vibes with festive elements",
+    sceneKeywords: ["christmas tree", "cozy fireplace", "snow", "warm lights", "holiday decorations", "wrapped gifts", "winter cabin"],
+    colorPalette: ["#C41E3A", "#165B33", "#FFD700", "#FFFFFF"],
+    bgGradient: "from-red-600 to-green-700"
+  },
+  {
+    id: "valentines",
+    name: "Valentine's",
+    icon: Heart,
+    description: "Romantic and lovely pink & red aesthetics",
+    sceneKeywords: ["romantic", "rose petals", "soft pink lighting", "hearts", "candles", "elegant dinner setting"],
+    colorPalette: ["#FF1493", "#FF69B4", "#FFB6C1", "#FFFFFF"],
+    bgGradient: "from-pink-500 to-red-500"
+  },
+  {
+    id: "spring",
+    name: "Spring",
+    icon: Flower,
+    description: "Fresh blooms and bright renewal",
+    sceneKeywords: ["blooming flowers", "garden", "fresh greenery", "cherry blossoms", "bright sunny day", "meadow"],
+    colorPalette: ["#90EE90", "#FFB7C5", "#87CEEB", "#FFFACD"],
+    bgGradient: "from-green-400 to-pink-400"
+  },
+  {
+    id: "summer",
+    name: "Summer",
+    icon: Sun,
+    description: "Beach vibes and sunny outdoor scenes",
+    sceneKeywords: ["beach", "palm trees", "tropical", "sunny outdoor", "pool party", "ocean waves", "sunset"],
+    colorPalette: ["#FFD700", "#00CED1", "#FF6347", "#87CEEB"],
+    bgGradient: "from-yellow-400 to-cyan-500"
+  },
+  {
+    id: "halloween",
+    name: "Halloween",
+    icon: Moon,
+    description: "Spooky and mysterious autumn nights",
+    sceneKeywords: ["spooky", "pumpkins", "autumn night", "gothic", "mysterious fog", "haunted house"],
+    colorPalette: ["#FF6600", "#000000", "#800080", "#1C1C1C"],
+    bgGradient: "from-orange-500 to-purple-900"
+  },
+  {
+    id: "autumn",
+    name: "Autumn",
+    icon: Leaf,
+    description: "Warm fall colors and cozy harvest vibes",
+    sceneKeywords: ["fall foliage", "pumpkin patch", "harvest", "warm autumn light", "rustic barn", "golden leaves"],
+    colorPalette: ["#D2691E", "#8B4513", "#FFD700", "#CD853F"],
+    bgGradient: "from-orange-400 to-amber-600"
+  },
+  {
+    id: "new_year",
+    name: "New Year",
+    icon: Sparkles,
+    description: "Glamorous celebration and sparkle",
+    sceneKeywords: ["champagne", "confetti", "sparklers", "midnight party", "gold accents", "celebration", "glamorous"],
+    colorPalette: ["#FFD700", "#C0C0C0", "#000000", "#FFFFFF"],
+    bgGradient: "from-yellow-500 to-slate-800"
+  }
+];
 
 interface ModelCustomization {
   hairStyle?: HairStyle;
@@ -753,6 +844,7 @@ export default function MockupGenerator() {
   const [genderAutoSelected, setGenderAutoSelected] = useState<boolean>(true);
   const [personaHeadshot, setPersonaHeadshot] = useState<string | null>(null);
   const [outputQuality, setOutputQuality] = useState<OutputQuality>("high");
+  const [selectedSeasonalTheme, setSelectedSeasonalTheme] = useState<SeasonalThemeId>("none");
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState<boolean>(false);
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [productSearchQuery, setProductSearchQuery] = useState("");
@@ -1199,7 +1291,15 @@ export default function MockupGenerator() {
     const colors = isAopJourney ? ["White"] : (selectedColors.length > 0 ? selectedColors : ["White"]);
     const sizes = selectedSizes.length > 0 ? selectedSizes : ["M"];
     const angles = selectedAngles.length > 0 ? selectedAngles : ["front"];
-    const scene = environmentPrompt || "studio";
+    
+    const seasonalTheme = SEASONAL_THEMES.find(t => t.id === selectedSeasonalTheme);
+    const seasonalKeywords = seasonalTheme && seasonalTheme.id !== "none" 
+      ? seasonalTheme.sceneKeywords.slice(0, 3).join(", ") 
+      : "";
+    const baseScene = environmentPrompt || "studio";
+    const scene = seasonalKeywords 
+      ? `${baseScene} with ${seasonalTheme?.name} theme: ${seasonalKeywords}` 
+      : baseScene;
     const totalExpected = Math.max(1, angles.length * colors.length);
 
     setIsGenerating(true);
@@ -2168,6 +2268,66 @@ export default function MockupGenerator() {
                                   </>
                                 )}
                               </div>
+
+                            {/* Seasonal Themes */}
+                            <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Sparkles className="h-4 w-4 text-primary" />
+                                <label className="text-sm font-bold text-foreground">Seasonal Theme</label>
+                                <Badge variant="secondary" className="text-xs ml-auto">Optional</Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-3">
+                                Add festive backgrounds and styling for holidays and events
+                              </p>
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {SEASONAL_THEMES.map((theme) => {
+                                  const ThemeIcon = theme.icon;
+                                  const isSelected = selectedSeasonalTheme === theme.id;
+                                  return (
+                                    <button
+                                      key={theme.id}
+                                      onClick={() => setSelectedSeasonalTheme(theme.id)}
+                                      className={cn(
+                                        "relative flex flex-col items-center gap-2 p-3 rounded-xl border transition-all",
+                                        isSelected
+                                          ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                                          : "border-border hover:border-primary/50 hover:bg-muted/50"
+                                      )}
+                                      data-testid={`seasonal-theme-${theme.id}`}
+                                    >
+                                      <div className={cn(
+                                        "w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br",
+                                        theme.id === "none" ? "bg-muted" : theme.bgGradient
+                                      )}>
+                                        <ThemeIcon className={cn(
+                                          "h-5 w-5",
+                                          theme.id === "none" ? "text-muted-foreground" : "text-white"
+                                        )} />
+                                      </div>
+                                      <span className={cn(
+                                        "text-xs font-medium text-center",
+                                        isSelected ? "text-primary" : "text-foreground"
+                                      )}>
+                                        {theme.name}
+                                      </span>
+                                      {isSelected && theme.id !== "none" && (
+                                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
+                                          <Check className="h-2.5 w-2.5 text-white" />
+                                        </div>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {selectedSeasonalTheme !== "none" && (
+                                <div className="mt-3 p-3 rounded-lg bg-muted/50 border border-border">
+                                  <p className="text-xs text-muted-foreground">
+                                    <strong className="text-foreground">{SEASONAL_THEMES.find(t => t.id === selectedSeasonalTheme)?.name}:</strong>{" "}
+                                    {SEASONAL_THEMES.find(t => t.id === selectedSeasonalTheme)?.description}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
 
                           </div>
 
