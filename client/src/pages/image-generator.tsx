@@ -2406,7 +2406,7 @@ export default function ImageGenerator() {
 
                   <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8">
                     {/* Actions */}
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <Button 
                         variant="ghost" 
                         className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
@@ -2416,16 +2416,6 @@ export default function ImageGenerator() {
                       >
                         <FolderInput className={cn("h-5 w-5", isSaving && "animate-pulse")} />
                         <span className="text-[10px]">{isSaving ? "Moving..." : "Folder"}</span>
-                      </Button>
-                      
-                      <Button 
-                        variant="ghost" 
-                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
-                        onClick={() => downloadImage(selectedImage.src, `ugli_${selectedImage.id}.png`)}
-                        data-testid="button-download-detail"
-                      >
-                        <Download className="h-5 w-5" />
-                        <span className="text-[10px]">Download</span>
                       </Button>
                       
                       <Button 
@@ -2447,21 +2437,6 @@ export default function ImageGenerator() {
                       >
                         <RefreshCw className={cn("h-5 w-5", isVarying && "animate-spin")} />
                         <span className="text-[10px]">Vary</span>
-                      </Button>
-
-                      <Button 
-                        variant="ghost" 
-                        className={cn(
-                          "flex flex-col h-16 gap-1 rounded-xl border border-border",
-                          selectedImage.isFavorite 
-                            ? "bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100" 
-                            : "bg-muted/30 hover:bg-muted text-foreground"
-                        )}
-                        onClick={() => toggleFavorite(selectedImage.id)}
-                        data-testid="button-like"
-                      >
-                        <Star className={cn("h-5 w-5", selectedImage.isFavorite && "fill-current")} />
-                        <span className="text-[10px]">Like</span>
                       </Button>
                     </div>
 
