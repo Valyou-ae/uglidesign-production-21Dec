@@ -2443,8 +2443,8 @@ export default function ImageGenerator() {
                         variant="ghost" 
                         className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
                         onClick={() => {
-                          sessionStorage.setItem('mockupDesignImage', selectedImage.src);
-                          setLocation('/mockup');
+                          const route = transferImageToTool({ src: selectedImage.src, name: selectedImage.prompt, id: selectedImage.id }, "mockup");
+                          setLocation(route);
                         }}
                         data-testid="button-use-mockup"
                       >
@@ -2456,8 +2456,8 @@ export default function ImageGenerator() {
                         variant="ghost" 
                         className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
                         onClick={() => {
-                          sessionStorage.setItem('styleTransferImage', selectedImage.src);
-                          setLocation('/style-transfer');
+                          const route = transferImageToTool({ src: selectedImage.src, name: selectedImage.prompt, id: selectedImage.id }, "style-transfer");
+                          setLocation(route);
                         }}
                         data-testid="button-style-transfer"
                       >
@@ -2469,8 +2469,8 @@ export default function ImageGenerator() {
                         variant="ghost" 
                         className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
                         onClick={() => {
-                          sessionStorage.setItem('removeBgImage', selectedImage.src);
-                          setLocation('/background-remover');
+                          const route = transferImageToTool({ src: selectedImage.src, name: selectedImage.prompt, id: selectedImage.id }, "bg-remover");
+                          setLocation(route);
                         }}
                         data-testid="button-remove-bg"
                       >
