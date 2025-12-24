@@ -2163,7 +2163,7 @@ export default function MockupGenerator() {
           // State 2a: Step-by-Step Wizard (DTG/AOP)
           <div className="flex-1 flex flex-col h-full">
             {/* Top Progress Bar - Mobile scrollable, desktop fixed */}
-            <div className="bg-card border-b border-border px-2 sm:px-4 md:px-10 py-3 md:py-6">
+            <div className="bg-card border-b border-border px-2 sm:px-4 md:px-10 py-2 md:py-3">
               <div className="max-w-[1000px] mx-auto">
                 <div className="overflow-x-auto scrollbar-hide -mx-2 px-2 sm:overflow-visible sm:mx-0 sm:px-0">
                   <div className="relative flex justify-between items-center min-w-[340px] sm:min-w-0">
@@ -2220,10 +2220,10 @@ export default function MockupGenerator() {
             </div>
 
             {/* Main Content Card */}
-            <div className="flex-1 p-4 lg:p-10 overflow-hidden flex flex-col">
+            <div className="flex-1 p-3 lg:p-6 overflow-hidden flex flex-col">
               <div className="flex-1 bg-card border border-border rounded-[20px] shadow-sm overflow-hidden flex flex-col relative max-w-[1400px] mx-auto w-full">
                 
-                <div className="flex-1 overflow-y-auto scrollbar-hide p-5 md:p-8 lg:p-12 scroll-smooth">
+                <div className="flex-1 overflow-y-auto scrollbar-hide p-4 md:p-5 lg:p-6 scroll-smooth">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentStep}
