@@ -186,7 +186,12 @@ export interface Product {
   printAreas?: PrintArea[];
   sizes?: ProductSize[];
   promptKeywords?: string[];
+  supportsLifestyle?: boolean;
+  supportsFlatLay?: boolean;
+  supportsModelMockup?: boolean;
 }
+
+export type SceneType = 'lifestyle' | 'flatlay' | 'model';
 
 export interface PrintArea {
   name: string;

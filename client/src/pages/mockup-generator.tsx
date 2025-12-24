@@ -1957,34 +1957,64 @@ export default function MockupGenerator() {
                               </div>
                             </div>
 
-                            {/* Model Options (wearable products only) */}
-                            {!isNonWearableCategory(effectiveActiveCategory) && (
-                              <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
-                                <div className="flex items-center justify-between mb-3">
-                                  <label className="text-sm font-bold text-foreground">Model Display</label>
-                                  <div className="flex gap-2">
-                                    <button
-                                      onClick={() => setUseModel(true)}
-                                      className={cn(
-                                        "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-                                        useModel ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                      )}
-                                    >
-                                      With Model
-                                    </button>
-                                    <button
-                                      onClick={() => setUseModel(false)}
-                                      className={cn(
-                                        "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-                                        !useModel ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                      )}
-                                    >
-                                      Flat Lay
-                                    </button>
-                                  </div>
+                            {/* Scene/Display Options (ALL products) */}
+                            <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
+                              <div className="flex items-center justify-between mb-3">
+                                <label className="text-sm font-bold text-foreground">
+                                  {isNonWearableCategory(effectiveActiveCategory) ? "Scene Type" : "Model Display"}
+                                </label>
+                                <div className="flex gap-2">
+                                  {!isNonWearableCategory(effectiveActiveCategory) ? (
+                                    <>
+                                      <button
+                                        onClick={() => setUseModel(true)}
+                                        className={cn(
+                                          "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                                          useModel ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                        )}
+                                        data-testid="button-with-model"
+                                      >
+                                        With Model
+                                      </button>
+                                      <button
+                                        onClick={() => setUseModel(false)}
+                                        className={cn(
+                                          "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                                          !useModel ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                        )}
+                                        data-testid="button-flat-lay"
+                                      >
+                                        Flat Lay
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        onClick={() => setUseModel(true)}
+                                        className={cn(
+                                          "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                                          useModel ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                        )}
+                                        data-testid="button-lifestyle"
+                                      >
+                                        Lifestyle
+                                      </button>
+                                      <button
+                                        onClick={() => setUseModel(false)}
+                                        className={cn(
+                                          "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                                          !useModel ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                        )}
+                                        data-testid="button-flat-lay-nonwearable"
+                                      >
+                                        Flat Lay
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
+                              </div>
                                 
-                                {useModel && (
+                                {useModel && !isNonWearableCategory(effectiveActiveCategory) && (
                                   <>
                                     {/* Gender Section */}
                                     <div className="mt-3">
@@ -2056,7 +2086,6 @@ export default function MockupGenerator() {
                                   </>
                                 )}
                               </div>
-                            )}
 
                           </div>
 
