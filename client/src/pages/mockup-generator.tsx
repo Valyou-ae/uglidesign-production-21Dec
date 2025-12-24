@@ -2696,22 +2696,6 @@ export default function MockupGenerator() {
                                         </DropdownMenu>
                                       </div>
                                     </motion.div>
-                                      <div className="relative">
-                                        <input
-                                          type="text"
-                                          placeholder="Edit with prompt..."
-                                          className="w-full text-xs px-2 pr-8 py-1.5 rounded-lg border border-border bg-background/80 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                                          onClick={(e) => e.stopPropagation()}
-                                          data-testid={`mockup-edit-prompt-${index}`}
-                                        />
-                                        <button
-                                          className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded bg-primary hover:bg-primary/90 text-white transition-colors"
-                                          onClick={(e) => e.stopPropagation()}
-                                          data-testid={`mockup-edit-submit-${index}`}
-                                        >
-                                          <Rocket className="h-3 w-3" />
-                                        </button>
-                                      </div>
                                     </div>
                                   ))}
                                   
