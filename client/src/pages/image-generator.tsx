@@ -72,7 +72,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Lightbulb,
-  Eye
+  Eye,
+  History as HistoryIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -250,6 +251,11 @@ export default function ImageGenerator() {
   const [linkCopied, setLinkCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [inspirationIndex, setInspirationIndex] = useState(0);
+  
+  // Image editing state
+  const [editPrompt, setEditPrompt] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [imageVersions, setImageVersions] = useState<{ id: string; imageUrl: string; editPrompt: string | null; versionNumber: number; createdAt: string }[]>([]);
   
   interface PromptHistoryItem {
     id: string;
@@ -759,6 +765,105 @@ export default function ImageGenerator() {
     }
   };
 
+  // Edit image with natural language
+  const handleEditImage = async () => {
+    if (!selectedImage || !editPrompt.trim() || isEditing) return;
+    
+    if (!user) {
+      toast({ title: "Please log in", description: "You need to be logged in to edit images.", variant: "destructive" });
+      return;
+    }
+    
+    setIsEditing(true);
+    toast({ title: "Editing Image", description: "Applying your changes..." });
+    
+    try {
+      const response = await fetch(`/api/images/${selectedImage.id}/edit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ editPrompt: editPrompt.trim() })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to edit image");
+      }
+      
+      const { image } = await response.json();
+      
+      // Add new edited image to generations
+      const newImage: GeneratedImage = {
+        id: image.id,
+        src: image.imageUrl,
+        prompt: image.prompt,
+        style: image.style || selectedImage.style,
+        aspectRatio: image.aspectRatio || selectedImage.aspectRatio,
+        timestamp: "Just now",
+        isNew: true,
+        isFavorite: false,
+        isPublic: false
+      };
+      
+      setGenerations(prev => [newImage, ...prev]);
+      setSelectedImage(newImage);
+      setEditPrompt("");
+      
+      // Refresh version history
+      fetchImageVersions(image.id);
+      
+      toast({ title: "Edit Complete", description: "Your edited image is ready!" });
+    } catch (error) {
+      toast({ title: "Edit Failed", description: error instanceof Error ? error.message : "Could not edit image.", variant: "destructive" });
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  // Fetch version history for an image
+  const fetchImageVersions = async (imageId: string) => {
+    try {
+      const response = await fetch(`/api/images/${imageId}/versions`, {
+        credentials: "include"
+      });
+      
+      if (response.ok) {
+        const { versions } = await response.json();
+        setImageVersions(versions || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch image versions:", error);
+    }
+  };
+
+  // Select a version from history
+  const selectImageVersion = (version: { id: string; imageUrl: string; editPrompt: string | null; versionNumber: number }) => {
+    if (!selectedImage) return;
+    
+    // Update selectedImage with version data
+    const updatedImage = {
+      ...selectedImage,
+      id: version.id,
+      src: version.imageUrl
+    };
+    setSelectedImage(updatedImage);
+    
+    // Also update in generations array if the version exists there
+    setGenerations(prev => {
+      const existsInGenerations = prev.some(g => g.id === version.id);
+      if (existsInGenerations) {
+        return prev; // Version already in list
+      }
+      // Check if the original is in the list and we're viewing an edited version
+      const originalIndex = prev.findIndex(g => g.id === selectedImage.id);
+      if (originalIndex >= 0) {
+        // Keep original in place, user is just viewing a version
+        return prev;
+      }
+      return prev;
+    });
+  };
+
   const toggleVoiceInput = () => {
     if (isListening) {
       setIsListening(false);
@@ -862,6 +967,16 @@ export default function ImageGenerator() {
       textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
     }
   }, [prompt]);
+
+  // Fetch version history when an image is selected
+  useEffect(() => {
+    if (selectedImage && selectedImage.id && !selectedImage.id.startsWith("sample-") && !selectedImage.id.startsWith("pending-")) {
+      fetchImageVersions(selectedImage.id);
+    } else {
+      setImageVersions([]);
+    }
+    setEditPrompt("");
+  }, [selectedImage?.id]);
 
   // Generation timer
   useEffect(() => {
@@ -2478,6 +2593,88 @@ export default function ImageGenerator() {
                         <span className="text-[10px]">Remove BG</span>
                       </Button>
                     </div>
+
+                    {/* Edit Image Section */}
+                    {selectedImage.id && !selectedImage.id.startsWith("sample-") && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                          <Wand2 className="h-3 w-3" />
+                          Edit with AI
+                        </label>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Remove background, change color to blue..."
+                            value={editPrompt}
+                            onChange={(e) => setEditPrompt(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleEditImage();
+                              }
+                            }}
+                            disabled={isEditing}
+                            className="flex-1 h-9 text-sm bg-muted/30 border-border"
+                            data-testid="input-edit-prompt"
+                          />
+                          <Button
+                            onClick={handleEditImage}
+                            disabled={!editPrompt.trim() || isEditing}
+                            size="sm"
+                            className="h-9 px-4 bg-[#ed5387] hover:bg-[#d64375] text-white"
+                            data-testid="button-apply-edit"
+                          >
+                            {isEditing ? (
+                              <>
+                                <RefreshCw className="h-4 w-4 mr-1.5 animate-spin" />
+                                Editing...
+                              </>
+                            ) : (
+                              <>
+                                <Wand2 className="h-4 w-4 mr-1.5" />
+                                Apply
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          Describe what you want to change using natural language
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Version History */}
+                    {imageVersions.length > 1 && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                          <HistoryIcon className="h-3 w-3" />
+                          Version History ({imageVersions.length})
+                        </label>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {imageVersions.map((version, index) => (
+                            <button
+                              key={version.id}
+                              onClick={() => selectImageVersion(version)}
+                              className={cn(
+                                "relative shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all hover:opacity-100",
+                                selectedImage.id === version.id 
+                                  ? "border-[#ed5387] ring-2 ring-[#ed5387]/30" 
+                                  : "border-border opacity-70 hover:border-muted-foreground"
+                              )}
+                              data-testid={`version-thumbnail-${index}`}
+                            >
+                              <img 
+                                src={version.imageUrl} 
+                                alt={`Version ${version.versionNumber}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center py-0.5">
+                                {version.versionNumber === 0 ? "Original" : `v${version.versionNumber}`}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Prompt */}
                     <div className="space-y-2">

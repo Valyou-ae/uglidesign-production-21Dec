@@ -74,6 +74,9 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
         aspectRatio: "1:1",
         generationType: "image",
         isPublic: true,
+        parentImageId: null,
+        editPrompt: null,
+        versionNumber: 0,
       });
 
       // Also save to galleryImages for discover page
@@ -180,6 +183,9 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
                 generationType: "image",
                 isFavorite: false,
                 isPublic: Boolean(isPublic),
+                parentImageId: null,
+                editPrompt: null,
+                versionNumber: 0,
               });
 
               // If image is public, also add to galleryImages for discovery page
@@ -328,6 +334,9 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
                 generationType: "image",
                 isFavorite: false,
                 isPublic: Boolean(isPublic),
+                parentImageId: null,
+                editPrompt: null,
+                versionNumber: 0,
               });
 
               // If image is public, also add to galleryImages for discovery page

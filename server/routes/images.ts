@@ -46,10 +46,17 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
         }
       }
 
+      // Strip out version-related fields from client - these are only set by the edit endpoint
+      const { parentImageId, editPrompt, versionNumber, ...safeBody } = req.body;
+      
       const imageData = insertImageSchema.parse({
-        ...req.body,
+        ...safeBody,
         userId,
         folderId: folderId || null,
+        // Force these fields to safe defaults for regular image creation
+        parentImageId: null,
+        editPrompt: null,
+        versionNumber: 0,
       });
 
       const image = await storage.createImage(imageData);
@@ -436,9 +443,24 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
         return res.status(500).json({ message: "Failed to edit image. Please try again." });
       }
 
-      // Determine next version number
-      const rootImageId = originalImage.parentImageId || originalImage.id;
-      const versions = await storage.getImageVersionHistory(rootImageId);
+      // Determine root image - walk the ENTIRE parent chain and verify ownership
+      let rootImageId = originalImage.id;
+      let currentImage = originalImage;
+      let chainDepth = 0;
+      const MAX_CHAIN_DEPTH = 100; // Prevent infinite loops
+      
+      while (currentImage.parentImageId && chainDepth < MAX_CHAIN_DEPTH) {
+        chainDepth++;
+        const parentImage = await storage.getImageById(currentImage.parentImageId, userId);
+        if (!parentImage) {
+          // Parent exists but doesn't belong to this user - security violation
+          return res.status(403).json({ message: "Cannot edit: ancestor image not owned by you" });
+        }
+        currentImage = parentImage;
+        rootImageId = parentImage.id;
+      }
+      
+      const versions = await storage.getImageVersionHistory(rootImageId, userId);
       const nextVersion = versions.length + 1;
 
       // Create new image entry as a child of the original
@@ -483,8 +505,8 @@ export function registerImageRoutes(app: Express, middleware: Middleware) {
       // Find root image ID (either this image if it has no parent, or the parent)
       const rootImageId = image.parentImageId || image.id;
       
-      // Get all versions in the chain
-      const versions = await storage.getImageVersionHistory(rootImageId);
+      // Get all versions in the chain - filtered by user for security
+      const versions = await storage.getImageVersionHistory(rootImageId, userId);
 
       // Return optimized version list
       const optimizedVersions = versions.map(v => ({

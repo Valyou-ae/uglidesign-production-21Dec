@@ -205,7 +205,7 @@ export interface IStorage {
   getOrCreateDefaultFolder(userId: string): Promise<ImageFolder>;
   
   // Image Version History
-  getImageVersionHistory(rootImageId: string): Promise<GeneratedImage[]>;
+  getImageVersionHistory(rootImageId: string, userId: string): Promise<GeneratedImage[]>;
   
   // Mockup Version History
   saveMockupVersion(version: InsertMockupVersion): Promise<MockupVersion>;
@@ -278,10 +278,12 @@ export class DatabaseStorage implements IStorage {
       const result = await pool.query(
         `INSERT INTO generated_images (
           user_id, folder_id, image_url, prompt, style, aspect_ratio, 
-          generation_type, is_favorite, is_public, view_count, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+          generation_type, is_favorite, is_public, view_count, 
+          parent_image_id, edit_prompt, version_number, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
          RETURNING id, user_id, folder_id, image_url, prompt, style, aspect_ratio,
-                   generation_type, is_favorite, is_public, view_count, created_at`,
+                   generation_type, is_favorite, is_public, view_count, 
+                   parent_image_id, edit_prompt, version_number, created_at`,
         [
           image.userId,
           image.folderId ?? null,
@@ -292,7 +294,10 @@ export class DatabaseStorage implements IStorage {
           image.generationType ?? 'image',
           image.isFavorite ?? false,
           image.isPublic ?? false,
-          image.viewCount ?? 0
+          image.viewCount ?? 0,
+          image.parentImageId ?? null,
+          image.editPrompt ?? null,
+          image.versionNumber ?? 0
         ]
       );
       
@@ -314,6 +319,9 @@ export class DatabaseStorage implements IStorage {
         isFavorite: row.is_favorite,
         isPublic: row.is_public,
         viewCount: row.view_count,
+        parentImageId: row.parent_image_id,
+        editPrompt: row.edit_prompt,
+        versionNumber: row.version_number,
         createdAt: row.created_at
       };
     } catch (error) {
@@ -383,6 +391,9 @@ export class DatabaseStorage implements IStorage {
       isFavorite: row.is_favorite,
       isPublic: row.is_public,
       viewCount: row.view_count,
+      parentImageId: row.parent_image_id,
+      editPrompt: row.edit_prompt,
+      versionNumber: row.version_number,
       createdAt: row.created_at,
     }));
     
@@ -437,6 +448,9 @@ export class DatabaseStorage implements IStorage {
       isFavorite: row.is_favorite,
       isPublic: row.is_public,
       viewCount: row.view_count,
+      parentImageId: row.parent_image_id,
+      editPrompt: row.edit_prompt,
+      versionNumber: row.version_number,
       createdAt: row.created_at,
     };
   }
@@ -1282,6 +1296,9 @@ export class DatabaseStorage implements IStorage {
       isFavorite: row.is_favorite,
       isPublic: row.is_public,
       viewCount: row.view_count,
+      parentImageId: row.parent_image_id,
+      editPrompt: row.edit_prompt,
+      versionNumber: row.version_number,
       createdAt: row.created_at,
     };
     
@@ -1838,13 +1855,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Image Version History
-  async getImageVersionHistory(rootImageId: string): Promise<GeneratedImage[]> {
-    // Get the original image and all its children (edited versions)
+  async getImageVersionHistory(rootImageId: string, userId: string): Promise<GeneratedImage[]> {
+    // Get the original image and all its children (edited versions) - only for this user
     const versions = await db
       .select()
       .from(generatedImages)
       .where(
-        sql`${generatedImages.id} = ${rootImageId} OR ${generatedImages.parentImageId} = ${rootImageId}`
+        and(
+          eq(generatedImages.userId, userId),
+          sql`(${generatedImages.id} = ${rootImageId} OR ${generatedImages.parentImageId} = ${rootImageId})`
+        )
       )
       .orderBy(generatedImages.versionNumber);
     
