@@ -2438,6 +2438,45 @@ export default function ImageGenerator() {
                         <RefreshCw className={cn("h-5 w-5", isVarying && "animate-spin")} />
                         <span className="text-[10px]">Vary</span>
                       </Button>
+                      
+                      <Button 
+                        variant="ghost" 
+                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                        onClick={() => {
+                          sessionStorage.setItem('mockupDesignImage', selectedImage.src);
+                          setLocation('/mockup');
+                        }}
+                        data-testid="button-use-mockup"
+                      >
+                        <Shirt className="h-5 w-5" />
+                        <span className="text-[10px]">Mockup</span>
+                      </Button>
+                      
+                      <Button 
+                        variant="ghost" 
+                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                        onClick={() => {
+                          sessionStorage.setItem('styleTransferImage', selectedImage.src);
+                          setLocation('/style-transfer');
+                        }}
+                        data-testid="button-style-transfer"
+                      >
+                        <Palette className="h-5 w-5" />
+                        <span className="text-[10px]">Style</span>
+                      </Button>
+                      
+                      <Button 
+                        variant="ghost" 
+                        className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                        onClick={() => {
+                          sessionStorage.setItem('removeBgImage', selectedImage.src);
+                          setLocation('/background-remover');
+                        }}
+                        data-testid="button-remove-bg"
+                      >
+                        <Scissors className="h-5 w-5" />
+                        <span className="text-[10px]">Remove BG</span>
+                      </Button>
                     </div>
 
                     {/* Prompt */}
