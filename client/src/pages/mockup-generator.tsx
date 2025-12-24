@@ -1647,18 +1647,18 @@ export default function MockupGenerator() {
               <div className="w-full max-w-[900px] mt-3 md:mt-6">
                 <div 
                   onClick={() => handleJourneySelect("TEXT_TO_MOCKUP")}
-                  className="bg-gradient-to-br from-card to-card/80 border-2 border-border rounded-[20px] md:rounded-[24px] p-5 md:p-8 text-left cursor-pointer transition-all duration-300 hover:border-[#E3B436] hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#E3B436]/15 group relative overflow-hidden"
+                  className="bg-gradient-to-br from-card to-card/80 border-2 border-border rounded-[20px] md:rounded-[24px] p-5 md:p-8 text-left cursor-pointer transition-all duration-300 hover:border-[#A78BFA] hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#A78BFA]/15 group relative overflow-hidden"
                   data-testid="button-text-to-mockup"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#E3B436]/5 via-transparent to-[#ed5387]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <Badge className="absolute top-3 right-3 md:top-5 md:right-5 bg-gradient-to-r from-[#E3B436] to-[#ed5387] text-white text-[10px] md:text-[11px]">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#A78BFA]/5 via-transparent to-[#C4B5FD]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Badge className="absolute top-3 right-3 md:top-5 md:right-5 bg-gradient-to-r from-[#A78BFA] to-[#C4B5FD] text-white text-[10px] md:text-[11px]">
                     <Sparkles className="h-3 w-3 mr-1" />
                     AI Magic
                   </Badge>
                   
                   <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 relative">
-                    <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl bg-gradient-to-br from-[#E3B436]/20 to-[#ed5387]/20 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                      <Wand2 className="h-6 w-6 md:h-8 md:w-8 text-[#E3B436]" />
+                    <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl bg-gradient-to-br from-[#A78BFA]/20 to-[#C4B5FD]/20 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                      <Wand2 className="h-6 w-6 md:h-8 md:w-8 text-[#A78BFA]" />
                     </div>
                     
                     <div className="flex-1">
@@ -1668,7 +1668,7 @@ export default function MockupGenerator() {
                       </p>
                     </div>
                     
-                    <span className="text-xs md:text-sm font-bold text-[#E3B436] group-hover:underline flex items-center shrink-0">
+                    <span className="text-xs md:text-sm font-bold text-[#A78BFA] group-hover:underline flex items-center shrink-0">
                       Try it <ChevronRight className="h-3 w-3 md:h-4 md:w-4 ml-1" />
                     </span>
                   </div>
@@ -1724,12 +1724,12 @@ export default function MockupGenerator() {
               
               <div className="flex flex-wrap items-center gap-3 mb-2">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#E3B436] to-[#ed5387] bg-clip-text text-transparent">
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#A78BFA] to-[#C4B5FD] bg-clip-text text-transparent">
                     Text-to-Mockup
                   </h1>
-                  <Wand2 className="h-5 w-5 md:h-6 md:w-6 text-[#E3B436]" />
+                  <Wand2 className="h-5 w-5 md:h-6 md:w-6 text-[#A78BFA]" />
                 </div>
-                <Badge className="bg-gradient-to-r from-[#E3B436] to-[#ed5387] text-white rounded-full px-2 py-0.5 text-[11px]">
+                <Badge className="bg-gradient-to-r from-[#A78BFA] to-[#C4B5FD] text-white rounded-full px-2 py-0.5 text-[11px]">
                   <Sparkles className="h-3 w-3 mr-1" />
                   AI Magic
                 </Badge>
@@ -1744,7 +1744,7 @@ export default function MockupGenerator() {
               {/* Prompt Input Card */}
               <div className="bg-card border border-border rounded-2xl p-5 md:p-8">
                 <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="h-5 w-5 text-[#E3B436]" />
+                  <Sparkles className="h-5 w-5 text-[#A78BFA]" />
                   <h2 className="text-lg font-bold text-foreground">Describe Your Mockup</h2>
                 </div>
                 
@@ -1790,7 +1790,7 @@ export default function MockupGenerator() {
                       className={cn(
                         "gap-2 px-6",
                         textToMockupPrompt.trim() && !isTextToMockupGenerating
-                          ? "bg-gradient-to-r from-[#E3B436] to-[#ed5387] hover:opacity-90 text-white"
+                          ? "bg-gradient-to-r from-[#A78BFA] to-[#C4B5FD] hover:opacity-90 text-white"
                           : ""
                       )}
                       data-testid="button-generate-text-to-mockup"
@@ -1819,7 +1819,7 @@ export default function MockupGenerator() {
                     </div>
                     <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                       <motion.div
-                        className="bg-gradient-to-r from-[#E3B436] to-[#ed5387] h-full rounded-full"
+                        className="bg-gradient-to-r from-[#A78BFA] to-[#C4B5FD] h-full rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${textToMockupProgress}%` }}
                         transition={{ duration: 0.3 }}
