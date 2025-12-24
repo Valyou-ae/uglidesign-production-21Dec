@@ -251,6 +251,36 @@ export default function ImageGenerator() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [inspirationIndex, setInspirationIndex] = useState(0);
   
+  interface PromptHistoryItem {
+    id: string;
+    prompt: string;
+    timestamp: number;
+  }
+  
+  const [promptHistory, setPromptHistory] = useState<PromptHistoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('ugli_prompt_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  
+  const addToPromptHistory = (promptText: string) => {
+    if (!promptText.trim()) return;
+    const newItem: PromptHistoryItem = {
+      id: `ph-${Date.now()}`,
+      prompt: promptText.trim(),
+      timestamp: Date.now()
+    };
+    setPromptHistory(prev => {
+      const filtered = prev.filter(p => p.prompt !== promptText.trim());
+      const updated = [newItem, ...filtered].slice(0, 20);
+      localStorage.setItem('ugli_prompt_history', JSON.stringify(updated));
+      return updated;
+    });
+  };
+  
   const { 
     isOpen: isTutorialOpen, 
     hasCompleted: tutorialCompleted,
@@ -859,6 +889,8 @@ export default function ImageGenerator() {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
+    
+    addToPromptHistory(prompt);
     
     // Use user-selected quality (no auto-upgrade to premium)
     const effectiveQuality = settings.quality;
@@ -2273,6 +2305,59 @@ export default function ImageGenerator() {
             </div>
               );
             })()}
+
+            {/* Prompt History Section */}
+            {promptHistory.length > 0 && (
+              <div className="p-4 border-t border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="font-semibold text-sm text-foreground">Prompt History</h3>
+                </div>
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-2 pr-3">
+                    {promptHistory.map((item) => {
+                      const timeAgo = (() => {
+                        const diff = Date.now() - item.timestamp;
+                        const mins = Math.floor(diff / 60000);
+                        const hours = Math.floor(diff / 3600000);
+                        const days = Math.floor(diff / 86400000);
+                        if (mins < 1) return 'Just now';
+                        if (mins < 60) return `${mins}m ago`;
+                        if (hours < 24) return `${hours}h ago`;
+                        return `${days}d ago`;
+                      })();
+                      
+                      return (
+                        <div 
+                          key={item.id}
+                          className="group bg-muted/30 hover:bg-muted/50 rounded-lg p-3 transition-colors"
+                          data-testid={`prompt-history-${item.id}`}
+                        >
+                          <p className="text-xs text-foreground/80 line-clamp-2 mb-2">
+                            {item.prompt}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-muted-foreground">
+                              {timeAgo}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs text-[#ed5387] hover:text-[#ed5387] hover:bg-[#ed5387]/10"
+                              onClick={() => setPrompt(item.prompt)}
+                              data-testid={`reuse-prompt-${item.id}`}
+                            >
+                              <RefreshCcw className="h-3 w-3 mr-1" />
+                              Reuse
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
 
           </div>
         </div>
