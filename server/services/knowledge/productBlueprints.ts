@@ -1,4 +1,4 @@
-import { Product, ProductColor, SizeChartEntry, PrintSpecification, ProductSize } from '../../../shared/mockupTypes';
+import { Product, ProductColor, SizeChartEntry, PrintSpecification, ProductSize, AOPSpecification } from '../../../shared/mockupTypes';
 
 export const STANDARD_SIZE_CHART: SizeChartEntry[] = [
   { size: 'XS', chest: 34, length: 27, sleeve: 8 },
@@ -1323,17 +1323,60 @@ export const AOP_PRODUCTS: Product[] = [
     sizes: PRODUCT_SIZES.MENS,
     sizeChart: STANDARD_SIZE_CHART,
     printSpec: {
-      printAreaWidth: 38,
-      printAreaHeight: 42,
-      printAreaWidthPixels: 5700,
-      printAreaHeightPixels: 6300,
-      dpi: 150,
+      printAreaWidth: 46,
+      printAreaHeight: 52,
+      printAreaWidthPixels: 13800,
+      printAreaHeightPixels: 15600,
+      dpi: 300,
       placement: 'full-surface',
       placementDescription: 'Edge-to-edge seamless sublimation covering entire garment including hood',
-      bleed: 0.25,
+      bleed: 0.125,
       wrapAround: true,
       surfaceType: 'flexible',
-      notes: 'Pattern must align at hood seams and across panels'
+      notes: 'Pattern must align at hood seams and across panels. Full print layout includes all panels arranged for cut-and-sew.'
+    },
+    aopSpec: {
+      constructionType: 'cut_and_sew',
+      constructionNotes: 'Fabric printed flat, then cut into pattern pieces and sewn together. Allows true edge-to-edge coverage.',
+      panels: [
+        { name: 'Front Left Panel', widthInches: 12, heightInches: 26, widthPixels: 3600, heightPixels: 7800, notes: 'Includes partial hood attachment' },
+        { name: 'Front Right Panel', widthInches: 12, heightInches: 26, widthPixels: 3600, heightPixels: 7800, notes: 'Mirror of front left' },
+        { name: 'Back Panel', widthInches: 22, heightInches: 26, widthPixels: 6600, heightPixels: 7800, notes: 'Full back with shoulder seams' },
+        { name: 'Left Sleeve', widthInches: 9, heightInches: 24, widthPixels: 2700, heightPixels: 7200, notes: 'Tubular construction' },
+        { name: 'Right Sleeve', widthInches: 9, heightInches: 24, widthPixels: 2700, heightPixels: 7200, notes: 'Mirror of left sleeve' },
+        { name: 'Hood Left', widthInches: 10, heightInches: 14, widthPixels: 3000, heightPixels: 4200, notes: 'Pattern must align at center seam' },
+        { name: 'Hood Right', widthInches: 10, heightInches: 14, widthPixels: 3000, heightPixels: 4200, notes: 'Mirror of hood left' },
+        { name: 'Kangaroo Pocket', widthInches: 16, heightInches: 8, widthPixels: 4800, heightPixels: 2400, notes: 'Optional pocket panel' }
+      ],
+      totalPrintFile: { widthPixels: 13800, heightPixels: 15600, widthInches: 46, heightInches: 52 },
+      dpi: 300,
+      bleedInches: 0.125,
+      bleedPixels: 38,
+      seamAlignments: [
+        { location: 'Hood center seam', requirement: 'critical', notes: 'Pattern must match perfectly at center seam' },
+        { location: 'Shoulder seams', requirement: 'critical', notes: 'Front panels must align with back panel' },
+        { location: 'Sleeve attachment', requirement: 'recommended', notes: 'Armhole seams less visible due to construction' },
+        { location: 'Side seams', requirement: 'recommended', notes: 'Front and back panels should align' }
+      ],
+      trimAreas: [
+        { name: 'Cuffs', defaultColor: 'Matching dominant color', colorSource: 'auto', notes: 'Ribbed cuffs typically solid' },
+        { name: 'Waistband', defaultColor: 'Matching dominant color', colorSource: 'auto', notes: 'Ribbed waistband solid' },
+        { name: 'Drawstring', defaultColor: 'White or Black', colorSource: 'manual', notes: 'Hood drawstring contrast' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 4, height: 4 },
+        recommendedTilePixels: { width: 1200, height: 1200 },
+        minScale: '2" tile (small intricate patterns)',
+        maxScale: '12" tile (large bold patterns)',
+        notes: 'Medium patterns (4-6") work best for hoodies'
+      },
+      patternTips: [
+        'Use seamless tileable patterns for best results',
+        'Avoid placing focal elements at seam lines',
+        'Consider pattern direction - should flow naturally',
+        'Test pattern at multiple scales before final selection',
+        'Hood area benefits from smaller pattern scales'
+      ]
     }
   },
   {
@@ -1353,17 +1396,54 @@ export const AOP_PRODUCTS: Product[] = [
     sizes: PRODUCT_SIZES.LEGGINGS,
     sizeChart: STANDARD_SIZE_CHART,
     printSpec: {
-      printAreaWidth: 36,
+      printAreaWidth: 32,
       printAreaHeight: 42,
-      printAreaWidthPixels: 5400,
-      printAreaHeightPixels: 6300,
-      dpi: 150,
+      printAreaWidthPixels: 9600,
+      printAreaHeightPixels: 12600,
+      dpi: 300,
       placement: 'full-surface',
       placementDescription: 'Edge-to-edge seamless sublimation covering entire garment',
-      bleed: 0.25,
+      bleed: 0.125,
       wrapAround: true,
       surfaceType: 'flexible',
-      notes: 'Pattern must tile seamlessly across panels and seams'
+      notes: 'Pattern must tile seamlessly across panels and seams; account for stretch distortion. Full print layout includes front and back panels side-by-side.'
+    },
+    aopSpec: {
+      constructionType: 'cut_and_sew',
+      constructionNotes: 'Two-panel construction (front/back). High-stretch fabric requires pattern compensation.',
+      panels: [
+        { name: 'Front Panel (both legs)', widthInches: 16, heightInches: 42, widthPixels: 4800, heightPixels: 12600, notes: 'Continuous front from waist to ankles' },
+        { name: 'Back Panel (both legs)', widthInches: 16, heightInches: 42, widthPixels: 4800, heightPixels: 12600, notes: 'Continuous back from waist to ankles' }
+      ],
+      totalPrintFile: { widthPixels: 9600, heightPixels: 12600, widthInches: 32, heightInches: 42 },
+      dpi: 300,
+      bleedInches: 0.125,
+      bleedPixels: 38,
+      seamAlignments: [
+        { location: 'Inner leg seam', requirement: 'critical', notes: 'Front and back panels meet here' },
+        { location: 'Outer leg seam', requirement: 'critical', notes: 'Pattern must align when worn' },
+        { location: 'Waistband', requirement: 'recommended', notes: 'Elastic waistband may obscure some pattern' },
+        { location: 'Crotch gusset', requirement: 'not_required', notes: 'Small panel, alignment less critical' }
+      ],
+      trimAreas: [
+        { name: 'Waistband', defaultColor: 'Matching dominant color', colorSource: 'auto', notes: 'Wide elastic waistband' },
+        { name: 'Ankle hem', defaultColor: 'None (printed to edge)', colorSource: 'none', notes: 'Pattern extends to edge' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 3, height: 3 },
+        recommendedTilePixels: { width: 900, height: 900 },
+        minScale: '1.5" tile (fine textures)',
+        maxScale: '6" tile (bold statements)',
+        notes: 'Smaller patterns (2-4") work best due to body contours and stretch'
+      },
+      patternTips: [
+        'Design at 85% vertical scale to compensate for stretch',
+        'Avoid horizontal stripes (will distort at curves)',
+        'Test pattern on curved surfaces before finalizing',
+        'Consider how pattern looks at hip vs ankle width',
+        'Organic patterns hide seams better than geometric'
+      ],
+      stretchDistortion: 'Vertical stretch 15-20% when worn. Design patterns slightly compressed vertically (85% scale) for accurate appearance when stretched on body.'
     }
   },
   {
@@ -1383,17 +1463,53 @@ export const AOP_PRODUCTS: Product[] = [
     sizes: PRODUCT_SIZES.MENS,
     sizeChart: STANDARD_SIZE_CHART,
     printSpec: {
-      printAreaWidth: 34,
-      printAreaHeight: 40,
-      printAreaWidthPixels: 5100,
-      printAreaHeightPixels: 6000,
-      dpi: 150,
+      printAreaWidth: 44,
+      printAreaHeight: 38,
+      printAreaWidthPixels: 13200,
+      printAreaHeightPixels: 11400,
+      dpi: 300,
       placement: 'full-surface',
       placementDescription: 'Edge-to-edge cut and sew sublimation with panel construction',
-      bleed: 0.25,
+      bleed: 0.125,
       wrapAround: true,
       surfaceType: 'flexible',
-      notes: 'Cut and sew construction allows seamless pattern alignment across panels'
+      notes: 'Cut and sew construction allows seamless pattern alignment across panels. Layout: Front+Back side-by-side (44×28"), sleeves below (20×10").'
+    },
+    aopSpec: {
+      constructionType: 'cut_and_sew',
+      constructionNotes: 'Four-panel construction (front, back, two sleeves). Fabric printed then cut and sewn.',
+      panels: [
+        { name: 'Front Panel', widthInches: 22, heightInches: 28, widthPixels: 6600, heightPixels: 8400, notes: 'Includes shoulder area' },
+        { name: 'Back Panel', widthInches: 22, heightInches: 28, widthPixels: 6600, heightPixels: 8400, notes: 'Includes shoulder area' },
+        { name: 'Left Sleeve', widthInches: 10, heightInches: 10, widthPixels: 3000, heightPixels: 3000, notes: 'Short sleeve' },
+        { name: 'Right Sleeve', widthInches: 10, heightInches: 10, widthPixels: 3000, heightPixels: 3000, notes: 'Short sleeve' }
+      ],
+      totalPrintFile: { widthPixels: 13200, heightPixels: 11400, widthInches: 44, heightInches: 38 },
+      dpi: 300,
+      bleedInches: 0.125,
+      bleedPixels: 38,
+      seamAlignments: [
+        { location: 'Shoulder seams', requirement: 'critical', notes: 'Front and back must align at shoulders' },
+        { location: 'Side seams', requirement: 'critical', notes: 'Pattern continuity from front to back' },
+        { location: 'Sleeve attachment', requirement: 'recommended', notes: 'Less critical due to armhole curve' }
+      ],
+      trimAreas: [
+        { name: 'Collar', defaultColor: 'Matching dominant color', colorSource: 'auto', notes: 'Ribbed collar band' },
+        { name: 'Hem', defaultColor: 'None (printed to edge)', colorSource: 'none', notes: 'Pattern extends to hem' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 4, height: 4 },
+        recommendedTilePixels: { width: 1200, height: 1200 },
+        minScale: '2" tile (detailed patterns)',
+        maxScale: '8" tile (statement pieces)',
+        notes: 'Medium patterns (3-5") work best for t-shirts'
+      },
+      patternTips: [
+        'Consider chest as primary focal area',
+        'Patterns should flow naturally across seams',
+        'Test visibility of pattern details at different scales',
+        'Account for garment movement when selecting pattern type'
+      ]
     }
   },
   {
@@ -1413,17 +1529,53 @@ export const AOP_PRODUCTS: Product[] = [
     sizes: PRODUCT_SIZES.WOMENS,
     sizeChart: STANDARD_SIZE_CHART,
     printSpec: {
-      printAreaWidth: 30,
-      printAreaHeight: 36,
-      printAreaWidthPixels: 4500,
-      printAreaHeightPixels: 5400,
-      dpi: 150,
+      printAreaWidth: 36,
+      printAreaHeight: 28,
+      printAreaWidthPixels: 10800,
+      printAreaHeightPixels: 8400,
+      dpi: 300,
       placement: 'full-surface',
       placementDescription: 'Edge-to-edge seamless sublimation with fitted silhouette',
-      bleed: 0.25,
+      bleed: 0.125,
       wrapAround: true,
       surfaceType: 'flexible',
-      notes: 'Fitted feminine silhouette with shorter sleeves'
+      notes: 'Fitted feminine silhouette with shorter sleeves. Layout: Front+Back side-by-side (36×20"), sleeves below (16×8").'
+    },
+    aopSpec: {
+      constructionType: 'cut_and_sew',
+      constructionNotes: 'Fitted cut with shorter body length. Four-panel construction.',
+      panels: [
+        { name: 'Front Panel', widthInches: 18, heightInches: 20, widthPixels: 5400, heightPixels: 6000, notes: 'Fitted front with darts' },
+        { name: 'Back Panel', widthInches: 18, heightInches: 20, widthPixels: 5400, heightPixels: 6000, notes: 'Fitted back' },
+        { name: 'Left Sleeve', widthInches: 8, heightInches: 8, widthPixels: 2400, heightPixels: 2400, notes: 'Cap sleeve' },
+        { name: 'Right Sleeve', widthInches: 8, heightInches: 8, widthPixels: 2400, heightPixels: 2400, notes: 'Cap sleeve' }
+      ],
+      totalPrintFile: { widthPixels: 10800, heightPixels: 8400, widthInches: 36, heightInches: 28 },
+      dpi: 300,
+      bleedInches: 0.125,
+      bleedPixels: 38,
+      seamAlignments: [
+        { location: 'Shoulder seams', requirement: 'critical', notes: 'Critical for fitted look' },
+        { location: 'Side seams', requirement: 'critical', notes: 'Must align for body-conscious fit' },
+        { location: 'Bust darts', requirement: 'recommended', notes: 'Pattern may need adjustment around darts' }
+      ],
+      trimAreas: [
+        { name: 'Collar', defaultColor: 'Matching dominant color', colorSource: 'auto', notes: 'Ribbed neckline' },
+        { name: 'Cropped hem', defaultColor: 'None (raw edge)', colorSource: 'none', notes: 'Cropped length' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 3, height: 3 },
+        recommendedTilePixels: { width: 900, height: 900 },
+        minScale: '1.5" tile (delicate patterns)',
+        maxScale: '6" tile (bold statements)',
+        notes: 'Smaller patterns (2-4") complement fitted silhouette'
+      },
+      patternTips: [
+        'Consider bust area as primary focal point',
+        'Smaller patterns work better with fitted cuts',
+        'Account for body curves when selecting pattern',
+        'Avoid busy patterns that may overwhelm smaller canvas'
+      ]
     }
   },
   {
@@ -1443,17 +1595,54 @@ export const AOP_PRODUCTS: Product[] = [
     sizes: PRODUCT_SIZES.MENS,
     sizeChart: STANDARD_SIZE_CHART,
     printSpec: {
-      printAreaWidth: 36,
-      printAreaHeight: 40,
-      printAreaWidthPixels: 5400,
-      printAreaHeightPixels: 6000,
-      dpi: 150,
+      printAreaWidth: 44,
+      printAreaHeight: 50,
+      printAreaWidthPixels: 13200,
+      printAreaHeightPixels: 15000,
+      dpi: 300,
       placement: 'full-surface',
       placementDescription: 'Edge-to-edge seamless sublimation covering entire garment',
-      bleed: 0.25,
+      bleed: 0.125,
       wrapAround: true,
       surfaceType: 'flexible',
-      notes: 'Pattern must align at seams, solid color ribbing at collar, cuffs, and waistband'
+      notes: 'Pattern must align at seams, solid color ribbing at collar, cuffs, and waistband. Layout: Front+Back side-by-side (44×26"), sleeves below (18×24").'
+    },
+    aopSpec: {
+      constructionType: 'cut_and_sew',
+      constructionNotes: 'Similar to hoodie without hood. Four main panels plus sleeves.',
+      panels: [
+        { name: 'Front Panel', widthInches: 22, heightInches: 26, widthPixels: 6600, heightPixels: 7800, notes: 'Full front torso' },
+        { name: 'Back Panel', widthInches: 22, heightInches: 26, widthPixels: 6600, heightPixels: 7800, notes: 'Full back torso' },
+        { name: 'Left Sleeve', widthInches: 9, heightInches: 24, widthPixels: 2700, heightPixels: 7200, notes: 'Long sleeve' },
+        { name: 'Right Sleeve', widthInches: 9, heightInches: 24, widthPixels: 2700, heightPixels: 7200, notes: 'Long sleeve' }
+      ],
+      totalPrintFile: { widthPixels: 13200, heightPixels: 15000, widthInches: 44, heightInches: 50 },
+      dpi: 300,
+      bleedInches: 0.125,
+      bleedPixels: 38,
+      seamAlignments: [
+        { location: 'Shoulder seams', requirement: 'critical', notes: 'Front and back panels must align' },
+        { location: 'Side seams', requirement: 'critical', notes: 'Pattern continuity essential' },
+        { location: 'Sleeve attachment', requirement: 'recommended', notes: 'Armhole construction allows some flexibility' }
+      ],
+      trimAreas: [
+        { name: 'Collar ribbing', defaultColor: 'Matching dominant color', colorSource: 'auto', notes: 'Solid ribbed collar' },
+        { name: 'Cuffs', defaultColor: 'Matching dominant color', colorSource: 'auto', notes: 'Solid ribbed cuffs' },
+        { name: 'Waistband', defaultColor: 'Matching dominant color', colorSource: 'auto', notes: 'Solid ribbed waistband' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 4, height: 4 },
+        recommendedTilePixels: { width: 1200, height: 1200 },
+        minScale: '2" tile (intricate designs)',
+        maxScale: '10" tile (bold graphics)',
+        notes: 'Medium patterns (4-6") work best for sweatshirts'
+      },
+      patternTips: [
+        'Larger canvas allows for bolder patterns',
+        'Consider sleeve area when designing',
+        'Ribbing color should complement pattern',
+        'Patterns should work well with relaxed fit'
+      ]
     }
   },
   {
@@ -1462,6 +1651,7 @@ export const AOP_PRODUCTS: Product[] = [
     category: 'Apparel',
     subcategory: 'Swimwear',
     productType: 'aop-apparel',
+    printMethod: 'aop',
     isWearable: true,
     availableColors: AOP_BASE_COLORS,
     defaultPlacement: 'full-coverage',
@@ -1476,16 +1666,53 @@ export const AOP_PRODUCTS: Product[] = [
     ],
     printSpec: {
       printAreaWidth: 28,
-      printAreaHeight: 32,
-      printAreaWidthPixels: 4200,
-      printAreaHeightPixels: 4800,
-      dpi: 150,
+      printAreaHeight: 36,
+      printAreaWidthPixels: 8400,
+      printAreaHeightPixels: 10800,
+      dpi: 300,
       placement: 'full-surface',
       placementDescription: 'Edge-to-edge seamless sublimation on chlorine-resistant fabric',
-      bleed: 0.25,
+      bleed: 0.125,
       wrapAround: true,
       surfaceType: 'flexible',
-      notes: '82% polyester/18% spandex blend, UPF 38+, four-way stretch'
+      notes: '82% polyester/18% spandex blend, UPF 38+, four-way stretch. Layout: Front+Back side-by-side (28×24"), lining below (10×12").'
+    },
+    aopSpec: {
+      constructionType: 'cut_and_sew',
+      constructionNotes: 'High-stretch chlorine-resistant fabric. Pattern must account for significant stretch.',
+      panels: [
+        { name: 'Front Body', widthInches: 14, heightInches: 24, widthPixels: 4200, heightPixels: 7200, notes: 'Main front panel including straps' },
+        { name: 'Back Body', widthInches: 14, heightInches: 24, widthPixels: 4200, heightPixels: 7200, notes: 'Main back panel' },
+        { name: 'Lining', widthInches: 10, heightInches: 12, widthPixels: 3000, heightPixels: 3600, notes: 'Inner lining (solid color typically)' }
+      ],
+      totalPrintFile: { widthPixels: 8400, heightPixels: 10800, widthInches: 28, heightInches: 36 },
+      dpi: 300,
+      bleedInches: 0.125,
+      bleedPixels: 38,
+      seamAlignments: [
+        { location: 'Side seams', requirement: 'critical', notes: 'Front and back must align at sides' },
+        { location: 'Leg openings', requirement: 'recommended', notes: 'Pattern should flow naturally at leg cut' },
+        { location: 'Neckline/straps', requirement: 'recommended', notes: 'Strap attachment points' }
+      ],
+      trimAreas: [
+        { name: 'Lining', defaultColor: 'Matching dominant color', colorSource: 'auto', notes: 'Inner lining typically solid' },
+        { name: 'Elastic edges', defaultColor: 'Clear/invisible', colorSource: 'none', notes: 'Elastic at leg and back' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 2, height: 2 },
+        recommendedTilePixels: { width: 600, height: 600 },
+        minScale: '1" tile (delicate prints)',
+        maxScale: '4" tile (bold patterns)',
+        notes: 'Smaller patterns (1.5-3") work best due to high stretch'
+      },
+      patternTips: [
+        'Design at 80% scale to compensate for stretch',
+        'Avoid geometric patterns that show stretch distortion',
+        'Consider pattern visibility when wet',
+        'Test chlorine resistance of color choices',
+        'Organic/abstract patterns hide stretch best'
+      ],
+      stretchDistortion: 'Four-way stretch 20-25%. Design patterns compressed at 80% scale for accurate appearance when worn.'
     }
   },
   {
@@ -1494,6 +1721,7 @@ export const AOP_PRODUCTS: Product[] = [
     category: 'Accessories',
     subcategory: 'Bags',
     productType: 'aop-accessory',
+    printMethod: 'sublimation',
     isWearable: false,
     availableColors: AOP_BASE_COLORS,
     defaultPlacement: 'full-coverage',
@@ -1510,6 +1738,41 @@ export const AOP_PRODUCTS: Product[] = [
       wrapAround: true,
       surfaceType: 'flexible',
       notes: 'Pattern covers both front and back panels, solid color handles'
+    },
+    aopSpec: {
+      constructionType: 'sublimation_on_blank',
+      constructionNotes: 'Flat panels printed then assembled. Two main panels plus gusset.',
+      panels: [
+        { name: 'Front Panel', widthInches: 16, heightInches: 16, widthPixels: 4800, heightPixels: 4800, notes: 'Main front surface' },
+        { name: 'Back Panel', widthInches: 16, heightInches: 16, widthPixels: 4800, heightPixels: 4800, notes: 'Main back surface (can mirror front)' },
+        { name: 'Bottom Gusset', widthInches: 16, heightInches: 4, widthPixels: 4800, heightPixels: 1200, notes: 'Optional gusset panel' }
+      ],
+      totalPrintFile: { widthPixels: 4800, heightPixels: 4800, widthInches: 16, heightInches: 16 },
+      dpi: 300,
+      bleedInches: 0.25,
+      bleedPixels: 75,
+      seamAlignments: [
+        { location: 'Side seams', requirement: 'recommended', notes: 'Front and back meet at sides' },
+        { location: 'Bottom seam', requirement: 'not_required', notes: 'Bottom fold or gusset obscures pattern' },
+        { location: 'Handle attachment', requirement: 'not_required', notes: 'Handle covers small area' }
+      ],
+      trimAreas: [
+        { name: 'Handles', defaultColor: 'Black or White', colorSource: 'manual', notes: 'Solid color woven handles' },
+        { name: 'Top hem', defaultColor: 'Matching pattern', colorSource: 'auto', notes: 'Folded and stitched edge' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 4, height: 4 },
+        recommendedTilePixels: { width: 1200, height: 1200 },
+        minScale: '2" tile (detailed patterns)',
+        maxScale: '8" tile (bold statement)',
+        notes: 'Medium patterns (3-5") work well for tote visibility'
+      },
+      patternTips: [
+        'Consider pattern orientation (upright when bag carried)',
+        'Bold patterns stand out in busy environments',
+        'Pattern should work well mirrored on back',
+        'Account for natural bag creases/folds'
+      ]
     }
   },
   {
@@ -1539,6 +1802,38 @@ export const AOP_PRODUCTS: Product[] = [
       wrapAround: true,
       surfaceType: 'flexible',
       notes: '100% polyester cover, hidden zipper, pillow insert included'
+    },
+    aopSpec: {
+      constructionType: 'sublimation_on_blank',
+      constructionNotes: 'Square or rectangular panels printed flat. Hidden zipper closure.',
+      panels: [
+        { name: 'Front Face', widthInches: 18, heightInches: 18, widthPixels: 5400, heightPixels: 5400, notes: 'Main display surface' },
+        { name: 'Back Face', widthInches: 18, heightInches: 18, widthPixels: 5400, heightPixels: 5400, notes: 'Back panel (optional print)' }
+      ],
+      totalPrintFile: { widthPixels: 5400, heightPixels: 5400, widthInches: 18, heightInches: 18 },
+      dpi: 300,
+      bleedInches: 0.5,
+      bleedPixels: 150,
+      seamAlignments: [
+        { location: 'Edge seams', requirement: 'not_required', notes: 'Seams at pillow edges, not visible from front' },
+        { location: 'Zipper line', requirement: 'not_required', notes: 'Hidden zipper on back' }
+      ],
+      trimAreas: [
+        { name: 'Zipper', defaultColor: 'Matching fabric', colorSource: 'auto', notes: 'Hidden zipper on back panel' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 4.5, height: 4.5 },
+        recommendedTilePixels: { width: 1350, height: 1350 },
+        minScale: '2" tile (intricate patterns)',
+        maxScale: '9" tile (single focal element)',
+        notes: 'Quarter of pillow size creates balanced repeat'
+      },
+      patternTips: [
+        'Center focal elements on front face',
+        'Consider how pattern looks when pillow is fluffed',
+        'Symmetrical patterns work well for pillows',
+        'Account for 0.5" bleed wrapping to sides'
+      ]
     }
   },
   {
@@ -1547,22 +1842,55 @@ export const AOP_PRODUCTS: Product[] = [
     category: 'Home & Living',
     subcategory: 'Blankets',
     productType: 'aop-home',
+    printMethod: 'sublimation',
     isWearable: false,
     availableColors: AOP_BASE_COLORS,
     defaultPlacement: 'full-coverage',
     genderTarget: 'unisex',
+    sizes: PRODUCT_SIZES.BLANKET,
     printSpec: {
       printAreaWidth: 60,
       printAreaHeight: 80,
-      printAreaWidthPixels: 6000,
-      printAreaHeightPixels: 8000,
-      dpi: 100,
+      printAreaWidthPixels: 9000,
+      printAreaHeightPixels: 12000,
+      dpi: 150,
       placement: 'full-surface',
       placementDescription: 'Edge-to-edge seamless sublimation on ultra-soft fleece',
       bleed: 0.5,
       wrapAround: false,
       surfaceType: 'flexible',
-      notes: '100% polyester fleece, double-sided print, hemmed edges'
+      notes: '100% polyester fleece, printed top with solid sherpa back, hemmed edges'
+    },
+    aopSpec: {
+      constructionType: 'sublimation_on_blank',
+      constructionNotes: 'Large format single-panel print. Printed polyester top with solid sherpa back.',
+      panels: [
+        { name: 'Top Surface', widthInches: 60, heightInches: 80, widthPixels: 9000, heightPixels: 12000, notes: 'Full printed surface (60x80 throw size)' }
+      ],
+      totalPrintFile: { widthPixels: 9000, heightPixels: 12000, widthInches: 60, heightInches: 80 },
+      dpi: 150,
+      bleedInches: 0.5,
+      bleedPixels: 75,
+      seamAlignments: [
+        { location: 'None', requirement: 'not_required', notes: 'Single panel construction' }
+      ],
+      trimAreas: [
+        { name: 'Edge binding', defaultColor: 'White or matching', colorSource: 'auto', notes: 'Hemmed or serged edges' },
+        { name: 'Sherpa back', defaultColor: 'White or cream', colorSource: 'manual', notes: 'Solid sherpa fleece backing' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 10, height: 10 },
+        recommendedTilePixels: { width: 1500, height: 1500 },
+        minScale: '5" tile (detailed repeats)',
+        maxScale: '30" tile (large statements)',
+        notes: 'Large patterns (8-15") work well for blanket scale'
+      },
+      patternTips: [
+        'Consider how blanket looks folded on couch',
+        'Pattern should work at both full and folded view',
+        'Photo blankets: center image, add border',
+        'Repeating patterns: ensure even tiling at 60x80"'
+      ]
     }
   },
   {
@@ -1583,15 +1911,46 @@ export const AOP_PRODUCTS: Product[] = [
     printSpec: {
       printAreaWidth: 30,
       printAreaHeight: 60,
-      printAreaWidthPixels: 4500,
-      printAreaHeightPixels: 9000,
-      dpi: 150,
+      printAreaWidthPixels: 9000,
+      printAreaHeightPixels: 18000,
+      dpi: 300,
       placement: 'full-surface',
       placementDescription: 'Edge-to-edge seamless sublimation on microfiber towel',
       bleed: 0.5,
       wrapAround: false,
       surfaceType: 'flexible',
       notes: '100% polyester microfiber, quick-dry, lightweight and absorbent'
+    },
+    aopSpec: {
+      constructionType: 'sublimation_on_blank',
+      constructionNotes: 'Single-panel microfiber construction. Printed top surface, terry loop back.',
+      panels: [
+        { name: 'Top Surface', widthInches: 30, heightInches: 60, widthPixels: 9000, heightPixels: 18000, notes: 'Full printed surface' }
+      ],
+      totalPrintFile: { widthPixels: 9000, heightPixels: 18000, widthInches: 30, heightInches: 60 },
+      dpi: 300,
+      bleedInches: 0.5,
+      bleedPixels: 150,
+      seamAlignments: [
+        { location: 'None', requirement: 'not_required', notes: 'Single panel construction' }
+      ],
+      trimAreas: [
+        { name: 'Edge hem', defaultColor: 'Matching pattern', colorSource: 'auto', notes: 'Double-stitched hem' },
+        { name: 'Back loops', defaultColor: 'White', colorSource: 'none', notes: 'Terry loop absorbent backing' }
+      ],
+      patternScale: {
+        recommendedTileInches: { width: 6, height: 6 },
+        recommendedTilePixels: { width: 1800, height: 1800 },
+        minScale: '3" tile (detailed patterns)',
+        maxScale: '15" tile (bold beach designs)',
+        notes: 'Medium-large patterns (5-10") work well for beach visibility'
+      },
+      patternTips: [
+        'Consider pattern orientation when towel laid flat',
+        'Bold, bright colors show best on beach',
+        'Pattern should be identifiable from distance',
+        'Account for 2:1 aspect ratio in design'
+      ]
     }
   }
 ];
@@ -3301,4 +3660,116 @@ export function getProductBlueprintPrompt(product: Product): string | null {
   }
   
   return prompt;
+}
+
+// ============================================================================
+// AOP PATTERN SCALE QUICK REFERENCE
+// ============================================================================
+
+export interface AOPPatternScaleGuide {
+  productCategory: string;
+  products: string[];
+  recommendedTileSize: string;
+  minTileSize: string;
+  maxTileSize: string;
+  notes: string;
+}
+
+export const AOP_PATTERN_SCALE_GUIDE: AOPPatternScaleGuide[] = [
+  {
+    productCategory: 'Fitted Apparel',
+    products: ['Leggings', 'Swimsuit', 'Crop Top'],
+    recommendedTileSize: '2-3 inches',
+    minTileSize: '1 inch',
+    maxTileSize: '4-6 inches',
+    notes: 'Smaller patterns compensate for stretch distortion. Avoid geometric patterns that reveal stretching.'
+  },
+  {
+    productCategory: 'Relaxed Apparel',
+    products: ['Hoodie', 'Sweatshirt', 'T-Shirt'],
+    recommendedTileSize: '4-6 inches',
+    minTileSize: '2 inches',
+    maxTileSize: '8-12 inches',
+    notes: 'Medium patterns work well for casual wear. Consider seam alignment at shoulder/side.'
+  },
+  {
+    productCategory: 'Accessories',
+    products: ['Tote Bag', 'Backpack'],
+    recommendedTileSize: '3-5 inches',
+    minTileSize: '2 inches',
+    maxTileSize: '8 inches',
+    notes: 'Pattern should be visible and distinctive. Consider orientation when carried.'
+  },
+  {
+    productCategory: 'Home Textiles (Small)',
+    products: ['Throw Pillow', 'Coasters'],
+    recommendedTileSize: '3-4 inches',
+    minTileSize: '2 inches',
+    maxTileSize: '6-9 inches',
+    notes: 'Quarter of product size creates balanced repeat. Center focal elements.'
+  },
+  {
+    productCategory: 'Home Textiles (Large)',
+    products: ['Blanket', 'Beach Towel', 'Curtains'],
+    recommendedTileSize: '8-12 inches',
+    minTileSize: '5 inches',
+    maxTileSize: '24-30 inches',
+    notes: 'Large patterns work well at room scale. Consider folded/displayed views.'
+  }
+];
+
+export interface AOPConstructionGuide {
+  type: 'cut_and_sew' | 'sublimation_on_blank';
+  description: string;
+  advantages: string[];
+  considerations: string[];
+  typicalProducts: string[];
+}
+
+export const AOP_CONSTRUCTION_TYPES: AOPConstructionGuide[] = [
+  {
+    type: 'cut_and_sew',
+    description: 'Fabric is printed flat in large sheets, then cut into pattern pieces and sewn together. Creates true edge-to-edge coverage.',
+    advantages: [
+      'True all-over coverage including seams',
+      'Pattern can extend to every edge',
+      'Higher quality sublimation saturation',
+      'Better color vibrancy and detail'
+    ],
+    considerations: [
+      'Requires careful seam alignment planning',
+      'Pattern matching at seams is critical',
+      'Slightly higher production cost',
+      'Longer production time'
+    ],
+    typicalProducts: ['Hoodie', 'T-Shirt', 'Sweatshirt', 'Leggings', 'Swimsuit']
+  },
+  {
+    type: 'sublimation_on_blank',
+    description: 'Pre-constructed blank garment/product is printed directly. Simpler process but may have limitations at seams.',
+    advantages: [
+      'Faster production time',
+      'Lower production cost',
+      'Good for flat items',
+      'Consistent sizing'
+    ],
+    considerations: [
+      'Seams may show white lines',
+      'Pattern may not reach all edges',
+      'Less suitable for complex garments',
+      'Print may not cover under seams'
+    ],
+    typicalProducts: ['Pillow', 'Blanket', 'Beach Towel', 'Tote Bag', 'Mousepad']
+  }
+];
+
+export function getAOPScaleGuide(productName: string): AOPPatternScaleGuide | undefined {
+  const name = productName.toLowerCase();
+  return AOP_PATTERN_SCALE_GUIDE.find(guide => 
+    guide.products.some(p => name.includes(p.toLowerCase()))
+  );
+}
+
+export function getAOPConstructionGuide(constructionType: 'cut_and_sew' | 'sublimation_on_blank'): AOPConstructionGuide | undefined {
+  return AOP_CONSTRUCTION_TYPES.find(guide => guide.type === constructionType);
 }
