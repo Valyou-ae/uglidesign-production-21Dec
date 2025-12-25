@@ -36,7 +36,6 @@ import {
   Loader2,
   Share2,
   Shirt,
-  Palette,
   Rocket,
   History as HistoryIcon
 } from "lucide-react";
@@ -1012,15 +1011,6 @@ export default function MyCreations() {
                           >
                             <Scissors className="h-4 w-4 mr-2" /> Remove Background
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => {
-                              const route = transferImageToTool(item, "style-transfer");
-                              setLocation(route);
-                            }} 
-                            className="hover:bg-[#2A2A30] cursor-pointer"
-                          >
-                            <Palette className="h-4 w-4 mr-2" /> Apply Style Transfer
-                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -1135,15 +1125,6 @@ export default function MyCreations() {
                                     className="hover:bg-[#2A2A30] cursor-pointer"
                                   >
                                     <Scissors className="h-4 w-4 mr-2" /> Remove Background
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => {
-                                      const route = transferImageToTool(item, "style-transfer");
-                                      setLocation(route);
-                                    }} 
-                                    className="hover:bg-[#2A2A30] cursor-pointer"
-                                  >
-                                    <Palette className="h-4 w-4 mr-2" /> Apply Style Transfer
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -1410,18 +1391,6 @@ export default function MyCreations() {
                       <span className="text-[9px]">Mockup</span>
                     </Button>
                     
-                    <Button 
-                      variant="ghost" 
-                      className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
-                      onClick={() => {
-                        const route = transferImageToTool(selectedItem, "style-transfer");
-                        setLocation(route);
-                      }}
-                      data-testid="button-style-transfer-creations"
-                    >
-                      <Palette className="h-4 w-4" />
-                      <span className="text-[9px]">Style</span>
-                    </Button>
                     
                     <Button 
                       variant="ghost" 

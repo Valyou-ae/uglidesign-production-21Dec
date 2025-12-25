@@ -84,7 +84,6 @@ import {
   Sliders,
   MoreVertical,
   Trash2,
-  Palette as PaletteIcon,
   TreePine,
   Flower2,
   Ghost,
@@ -3208,22 +3207,6 @@ export default function MockupGenerator() {
                                             >
                                               <Download className="h-4 w-4 mr-2" />
                                               Download
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem 
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                const route = transferImageToTool({
-                                                  id: `mockup-${Date.now()}`,
-                                                  src: mockup.src,
-                                                  name: `${selectedProductType} mockup`,
-                                                  type: "mockup"
-                                                }, "style-transfer");
-                                                setLocation(route);
-                                              }}
-                                              data-testid={`mockup-menu-change-style-${index}`}
-                                            >
-                                              <PaletteIcon className="h-4 w-4 mr-2" />
-                                              Change Style
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem 

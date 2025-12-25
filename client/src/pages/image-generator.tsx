@@ -2264,16 +2264,6 @@ export default function ImageGenerator() {
                               >
                                 <Scissors className="h-4 w-4 mr-2" /> Remove Background
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={(e) => { 
-                                  e.stopPropagation(); 
-                                  const route = transferImageToTool({ src: gen.src, name: gen.prompt, id: gen.id }, "style-transfer");
-                                  setLocation(route);
-                                }} 
-                                className="hover:bg-[#2A2A30] cursor-pointer"
-                              >
-                                <Palette className="h-4 w-4 mr-2" /> Apply Style Transfer
-                              </DropdownMenuItem>
                               <DropdownMenuSeparator className="bg-[#2A2A30]" />
                               <DropdownMenuItem 
                                 onClick={(e) => { e.stopPropagation(); setImageToDelete(gen); }} 
@@ -2708,18 +2698,6 @@ export default function ImageGenerator() {
                         <span className="text-[9px]">Mockup</span>
                       </Button>
                       
-                      <Button 
-                        variant="ghost" 
-                        className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
-                        onClick={() => {
-                          const route = transferImageToTool({ src: selectedImage.src, name: selectedImage.prompt, id: selectedImage.id }, "style-transfer");
-                          setLocation(route);
-                        }}
-                        data-testid="button-style-transfer"
-                      >
-                        <Palette className="h-4 w-4" />
-                        <span className="text-[9px]">Style</span>
-                      </Button>
                       
                       <Button 
                         variant="ghost" 

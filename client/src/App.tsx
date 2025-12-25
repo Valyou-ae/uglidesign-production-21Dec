@@ -27,7 +27,6 @@ import RandomPrompt from "@/pages/random-prompt";
 import AffiliateProgram from "@/pages/affiliate-program";
 import Pricing from "@/pages/pricing";
 import Landing from "@/pages/landing";
-import StyleTransfer from "@/pages/style-transfer";
 import ImageEditor from "@/pages/image-editor";
 import AdminDashboard from "@/pages/admin/index";
 import AdminUsers from "@/pages/admin/users";
@@ -80,11 +79,6 @@ function Router() {
       <Route path="/mockup-generator">
         <AuthGuard>
           <MockupGenerator />
-        </AuthGuard>
-      </Route>
-      <Route path="/style-transfer">
-        <AuthGuard>
-          <StyleTransfer />
         </AuthGuard>
       </Route>
       <Route path="/image-editor">

@@ -1070,53 +1070,6 @@ export const promptsApi = {
     fetchApi<{ recommendations: PromptRecommendation[]; analysis: { profileCompleteness: number } }>("/prompts/recommendations"),
 };
 
-// Style Transfer API
-export interface StylePreset {
-  id: string;
-  name: string;
-  description: string;
-  stylePrompt: string;
-  category: string;
-}
-
-export interface StyleTransferOptions {
-  styleStrength: number;
-  preserveContent: number;
-  outputQuality: "standard" | "high" | "ultra";
-}
-
-export const styleTransferApi = {
-  getPresets: () =>
-    fetchApi<{ presets: StylePreset[]; byCategory: Record<string, StylePreset[]> }>("/style-transfer/presets"),
-
-  transferWithPreset: async (
-    contentImage: string,
-    presetId: string,
-    options?: Partial<StyleTransferOptions>
-  ): Promise<{ success: boolean; image?: string; message?: string }> => {
-    const response = await fetch("/api/style-transfer/preset", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ contentImage, presetId, options }),
-    });
-    return response.json();
-  },
-
-  transferWithCustomStyle: async (
-    contentImage: string,
-    styleImage: string,
-    options?: Partial<StyleTransferOptions>
-  ): Promise<{ success: boolean; image?: string; message?: string }> => {
-    const response = await fetch("/api/style-transfer/custom", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ contentImage, styleImage, options }),
-    });
-    return response.json();
-  },
-};
 
 // Background Removal API
 export const backgroundRemovalApi = {
