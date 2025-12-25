@@ -642,7 +642,7 @@ export default function ImageEditor() {
                     
                     <div
                       ref={versionScrollRef}
-                      className="flex gap-3 overflow-x-auto py-1 px-0.5"
+                      className="flex gap-3 overflow-x-auto py-2 px-1"
                       style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                     >
                       {isLoadingVersions ? (
