@@ -1,4 +1,6 @@
 import { pool } from './db';
+import type { PoolClient } from 'pg';
+import { logger } from './logger';
 import { 
   users, 
   generatedImages, 
@@ -217,6 +219,28 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  /**
+   * Execute a function within a database transaction.
+   * Automatically handles BEGIN, COMMIT, and ROLLBACK.
+   * @param fn Function to execute within the transaction
+   * @returns Result of the function
+   */
+  async withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const result = await fn(client);
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error('Transaction rolled back', error, { source: 'storage' });
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
@@ -456,15 +480,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteImage(imageId: string, userId: string): Promise<boolean> {
-    // Use pool directly to avoid Neon HTTP driver caching issues
-    const { pool } = await import("./db");
-    
-    const result = await pool.query(
-      `DELETE FROM generated_images WHERE id = $1 AND user_id = $2 RETURNING id`,
-      [imageId, userId]
-    );
-    
-    return result.rows.length > 0;
+    // Use transaction to ensure atomicity of image deletion + gallery cleanup
+    return this.withTransaction(async (client) => {
+      // First get the image to check ownership and get details for gallery cleanup
+      const checkResult = await client.query(
+        `SELECT id, image_url, prompt FROM generated_images WHERE id = $1 AND user_id = $2`,
+        [imageId, userId]
+      );
+      
+      if (checkResult.rows.length === 0) return false;
+      const image = checkResult.rows[0];
+      
+      // Delete from gallery first (if exists)
+      await client.query(
+        `DELETE FROM gallery_images WHERE source_image_id = $1 OR (image_url = $2 AND prompt = $3)`,
+        [imageId, image.image_url, image.prompt || '']
+      );
+      
+      // Delete any likes on this image
+      await client.query(
+        `DELETE FROM image_likes WHERE image_id = $1`,
+        [imageId]
+      );
+      
+      // Delete the image
+      const result = await client.query(
+        `DELETE FROM generated_images WHERE id = $1 AND user_id = $2 RETURNING id`,
+        [imageId, userId]
+      );
+      
+      return result.rows.length > 0;
+    });
   }
 
   async getUserStats(userId: string): Promise<{ images: number; mockups: number; bgRemoved: number; total: number }> {
@@ -1264,70 +1310,85 @@ export class DatabaseStorage implements IStorage {
   }
 
   async setImageVisibility(imageId: string, userId: string, isPublic: boolean): Promise<GeneratedImage | undefined> {
-    // Use pool directly to avoid Neon HTTP driver caching issues
-    const { pool } = await import("./db");
-    
-    // First check if image exists and belongs to user
-    const checkResult = await pool.query(
-      `SELECT * FROM generated_images WHERE id = $1 AND user_id = $2`,
-      [imageId, userId]
-    );
-    
-    if (checkResult.rows.length === 0) return undefined;
-    const image = checkResult.rows[0];
+    // Use transaction to ensure atomicity of visibility change + gallery sync
+    return this.withTransaction(async (client) => {
+      // First check if image exists and belongs to user
+      const checkResult = await client.query(
+        `SELECT * FROM generated_images WHERE id = $1 AND user_id = $2`,
+        [imageId, userId]
+      );
+      
+      if (checkResult.rows.length === 0) return undefined;
+      const image = checkResult.rows[0];
 
-    // Update the visibility
-    const updateResult = await pool.query(
-      `UPDATE generated_images SET is_public = $1 WHERE id = $2 RETURNING *`,
-      [isPublic, imageId]
-    );
-    
-    if (updateResult.rows.length === 0) return undefined;
-    const row = updateResult.rows[0];
-    const updated: GeneratedImage = {
-      id: row.id,
-      userId: row.user_id,
-      folderId: row.folder_id,
-      imageUrl: row.image_url,
-      prompt: row.prompt,
-      style: row.style,
-      aspectRatio: row.aspect_ratio,
-      generationType: row.generation_type,
-      isFavorite: row.is_favorite,
-      isPublic: row.is_public,
-      viewCount: row.view_count,
-      parentImageId: row.parent_image_id,
-      editPrompt: row.edit_prompt,
-      versionNumber: row.version_number,
-      createdAt: row.created_at,
-    };
-    
-    // Handle gallery sync
-    if (isPublic) {
-      // Check if already in gallery
-      const existingGalleryImage = await this.getGalleryImageBySourceId(imageId);
-      if (!existingGalleryImage) {
-        // Get user info for creator name
-        const user = await this.getUser(userId);
-        const creatorName = user?.displayName || user?.username || "UGLI User";
+      // Update the visibility
+      const updateResult = await client.query(
+        `UPDATE generated_images SET is_public = $1 WHERE id = $2 RETURNING *`,
+        [isPublic, imageId]
+      );
+      
+      if (updateResult.rows.length === 0) return undefined;
+      const row = updateResult.rows[0];
+      const updated: GeneratedImage = {
+        id: row.id,
+        userId: row.user_id,
+        folderId: row.folder_id,
+        imageUrl: row.image_url,
+        prompt: row.prompt,
+        style: row.style,
+        aspectRatio: row.aspect_ratio,
+        generationType: row.generation_type,
+        isFavorite: row.is_favorite,
+        isPublic: row.is_public,
+        viewCount: row.view_count,
+        parentImageId: row.parent_image_id,
+        editPrompt: row.edit_prompt,
+        versionNumber: row.version_number,
+        createdAt: row.created_at,
+      };
+      
+      // Handle gallery sync within the same transaction
+      if (isPublic) {
+        // Check if already in gallery
+        const existingResult = await client.query(
+          `SELECT id FROM gallery_images WHERE source_image_id = $1`,
+          [imageId]
+        );
         
-        // Add to gallery - use snake_case from raw database row
-        await this.createGalleryImage({
-          sourceImageId: imageId,
-          title: image.prompt?.slice(0, 100) || "AI Generated Image",
-          imageUrl: image.image_url,
-          creator: creatorName,
-          category: image.style || "ai-generated",
-          aspectRatio: image.aspect_ratio || "1:1",
-          prompt: image.prompt || "",
-        });
+        if (existingResult.rows.length === 0) {
+          // Get user info for creator name
+          const userResult = await client.query(
+            `SELECT display_name, username FROM users WHERE id = $1`,
+            [userId]
+          );
+          const user = userResult.rows[0];
+          const creatorName = user?.display_name || user?.username || "UGLI User";
+          
+          // Add to gallery within transaction
+          await client.query(
+            `INSERT INTO gallery_images (source_image_id, title, image_url, creator, category, aspect_ratio, prompt)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [
+              imageId,
+              image.prompt?.slice(0, 100) || "AI Generated Image",
+              image.image_url,
+              creatorName,
+              image.style || "ai-generated",
+              image.aspect_ratio || "1:1",
+              image.prompt || ""
+            ]
+          );
+        }
+      } else {
+        // Remove from gallery within transaction
+        await client.query(
+          `DELETE FROM gallery_images WHERE source_image_id = $1 OR (image_url = $2 AND prompt = $3)`,
+          [imageId, image.image_url, image.prompt || '']
+        );
       }
-    } else {
-      // Remove from gallery - use snake_case from raw database row
-      await this.deleteGalleryImageBySourceId(imageId, image.image_url, image.prompt || undefined);
-    }
-    
-    return updated;
+      
+      return updated;
+    });
   }
 
   async getLeaderboard(period: 'weekly' | 'monthly' | 'all-time', limit: number = 50): Promise<{ userId: string; username: string | null; displayName: string | null; profileImageUrl: string | null; imageCount: number; likeCount: number; viewCount: number; rank: number }[]> {
