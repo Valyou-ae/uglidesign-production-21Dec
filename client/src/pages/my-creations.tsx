@@ -1,8 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { 
   Search, 
   Filter, 
   ChevronDown, 
+  ChevronLeft,
+  ChevronRight,
   LayoutGrid, 
   List, 
   MoreVertical, 
@@ -34,7 +36,9 @@ import {
   Loader2,
   Share2,
   Shirt,
-  Palette
+  Palette,
+  Rocket,
+  History as HistoryIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -108,6 +112,11 @@ export default function MyCreations() {
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [itemToMove, setItemToMove] = useState<ItemType | null>(null);
+  const [editPrompt, setEditPrompt] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [imageVersions, setImageVersions] = useState<Array<{id: string; imageUrl: string; versionNumber: number; editPrompt: string}>>([]);
+  const [rootImageId, setRootImageId] = useState<string | null>(null);
+  const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -197,6 +206,123 @@ export default function MyCreations() {
         setSelectedItem(prev => prev ? { ...prev, isPublic: currentIsPublic } : null);
       }
       toast({ variant: "destructive", title: "Failed", description: "Could not update visibility." });
+    }
+  };
+
+  // Open item popup and fetch versions
+  const openItemPopup = async (item: ItemType) => {
+    setSelectedItem(item);
+    setRootImageId(item.id);
+    setCurrentVersionId(item.id);
+    setImageVersions([]);
+    setEditPrompt("");
+    
+    // Fetch versions for this item
+    try {
+      const response = await fetch(`/api/images/${item.id}/versions`, {
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setImageVersions(data.versions.map((v: any) => ({
+          id: v.id,
+          imageUrl: `/api/images/${v.id}/image`,
+          versionNumber: v.versionNumber ?? 0,
+          editPrompt: v.editPrompt || "Original",
+        })));
+      }
+    } catch (error) {
+      console.error("Failed to fetch versions:", error);
+    }
+  };
+
+  // Close item popup
+  const closeItemPopup = () => {
+    setSelectedItem(null);
+    setRootImageId(null);
+    setCurrentVersionId(null);
+    setImageVersions([]);
+    setEditPrompt("");
+  };
+
+  // Fetch image versions (helper for refreshing after edit)
+  const fetchImageVersions = async (imageId: string) => {
+    try {
+      const response = await fetch(`/api/images/${imageId}/versions`, {
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setImageVersions(data.versions.map((v: any) => ({
+          id: v.id,
+          imageUrl: `/api/images/${v.id}/image`,
+          versionNumber: v.versionNumber ?? 0,
+          editPrompt: v.editPrompt || "Original",
+        })));
+      }
+    } catch (error) {
+      console.error("Failed to fetch versions:", error);
+    }
+  };
+
+  // Handle AI edit
+  const handleEditImage = async () => {
+    if (!currentVersionId || !editPrompt.trim() || !rootImageId) return;
+    
+    setIsEditing(true);
+    try {
+      const response = await fetch("/api/image-editor/edit", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageId: currentVersionId,
+          prompt: editPrompt.trim(),
+        }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || "Edit failed");
+      }
+      
+      const data = await response.json();
+      toast({ title: "Edit Complete", description: "Your image has been edited!" });
+      setEditPrompt("");
+      
+      // Refresh versions using root image ID
+      await fetchImageVersions(rootImageId);
+      
+      // Update current version to the new edit
+      if (data.imageId) {
+        setCurrentVersionId(data.imageId);
+        setSelectedItem(prev => prev ? {
+          ...prev,
+          src: `/api/images/${data.imageId}/image`,
+        } : null);
+      }
+      
+      // Invalidate images query
+      queryClient.invalidateQueries({ queryKey: ["/api/images"] });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Edit Failed",
+        description: error.message || "Could not edit the image",
+      });
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  // Select a version (doesn't change rootImageId, only currentVersionId)
+  const selectImageVersion = (version: { id: string; imageUrl: string }) => {
+    setCurrentVersionId(version.id);
+    if (selectedItem) {
+      setSelectedItem({
+        ...selectedItem,
+        src: version.imageUrl,
+      });
     }
   };
 
@@ -307,7 +433,7 @@ export default function MyCreations() {
 
   const handleAction = (action: string, item: ItemType) => {
     if (action === "Open") {
-      setSelectedItem(item);
+      openItemPopup(item);
       return;
     }
 
@@ -802,7 +928,7 @@ export default function MyCreations() {
                 {filteredItems.map((item) => (
                   <div 
                     key={item.id}
-                    onClick={() => selectMode ? toggleSelection(item.id) : setSelectedItem(item)}
+                    onClick={() => selectMode ? toggleSelection(item.id) : openItemPopup(item)}
                     className={cn(
                       "grid grid-cols-[40px_80px_2fr_1fr_1fr_1fr_100px] gap-4 px-6 py-3 border-b border-[#E4E4E7] dark:border-[#1F1F23] items-center hover:bg-[#F9FAFB] dark:hover:bg-[#1A1A1F] transition-colors cursor-pointer group last:border-0",
                       selectedItems.includes(item.id) && "bg-[#F59E0B]/5 dark:bg-[#F59E0B]/10"
@@ -912,7 +1038,7 @@ export default function MyCreations() {
                     <motion.div
                       layoutId={item.id}
                       key={item.id}
-                      onClick={() => selectMode ? toggleSelection(item.id) : setSelectedItem(item)}
+                      onClick={() => selectMode ? toggleSelection(item.id) : openItemPopup(item)}
                       className={cn(
                         "break-inside-avoid mb-3 relative group rounded-xl overflow-hidden cursor-pointer bg-card border border-border transition-all duration-200",
                         !selectMode && "hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]",
@@ -1064,7 +1190,7 @@ export default function MyCreations() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
-            onClick={() => setSelectedItem(null)}
+            onClick={() => closeItemPopup()}
           >
             <div 
               className="bg-card rounded-2xl overflow-hidden flex flex-col md:flex-row border border-border shadow-2xl w-full max-w-6xl max-h-[90vh]"
@@ -1088,140 +1214,248 @@ export default function MyCreations() {
               <div className="w-full md:w-[400px] bg-card border-t md:border-t-0 md:border-l border-border flex flex-col h-[50vh] md:h-auto">
                 <div className="p-4 md:p-6 border-b border-border flex justify-between items-center shrink-0">
                   <h3 className="font-bold text-foreground">Creation Details</h3>
-                  <Button variant="ghost" size="icon" onClick={() => setSelectedItem(null)} className="text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="icon" onClick={() => closeItemPopup()} className="text-muted-foreground hover:text-foreground">
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8">
-                  {/* Actions - Row 1 */}
-                  <div className="grid grid-cols-5 gap-2">
+                <div className="flex-1 overflow-y-auto p-4 md:p-5 space-y-4">
+                  {/* Prompt - at top */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Prompt</label>
+                    <div className="bg-muted/30 rounded-lg p-3 text-sm text-muted-foreground leading-relaxed border border-border relative group">
+                      {selectedItem.prompt || "No prompt available"}
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => {
+                           navigator.clipboard.writeText(selectedItem.prompt);
+                           toast({ title: "Copied" });
+                        }}
+                        data-testid="button-copy-prompt"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Edit Image Section - prominent styling */}
+                  <div className="space-y-2 bg-gradient-to-br from-[#ed5387]/10 to-[#ed5387]/5 rounded-lg p-3 border border-[#ed5387]/20">
+                    <label className="text-xs font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
+                      <Wand2 className="h-4 w-4 text-[#ed5387]" />
+                      Edit with UGLI AI
+                    </label>
+                    <div className="relative w-full">
+                      <Input
+                        placeholder="Remove background, change color to blue..."
+                        value={editPrompt}
+                        onChange={(e) => setEditPrompt(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleEditImage();
+                          }
+                        }}
+                        disabled={isEditing}
+                        className="w-full h-11 text-sm bg-background/80 border-border pr-12"
+                        data-testid="input-edit-prompt-creations"
+                      />
+                      <button
+                        onClick={handleEditImage}
+                        disabled={!editPrompt.trim() || isEditing}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#ed5387] hover:bg-[#d64375] text-white flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        data-testid="button-apply-edit-creations"
+                      >
+                        {isEditing ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Rocket className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Describe what you want to change using natural language
+                    </p>
+                  </div>
+
+                  {/* Version History - horizontal row with arrows */}
+                  {imageVersions.length > 1 && (
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                        <HistoryIcon className="h-3 w-3" />
+                        Version History ({imageVersions.length})
+                      </label>
+                      <div className="relative">
+                        {/* Left arrow */}
+                        {imageVersions.length > 5 && (
+                          <button 
+                            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-background/90 border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const container = e.currentTarget.parentElement?.querySelector('.version-scroll-container');
+                              if (container) container.scrollBy({ left: -200, behavior: 'smooth' });
+                            }}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+                        )}
+                        
+                        {/* Thumbnails row */}
+                        <div className="version-scroll-container flex gap-2 overflow-x-auto pb-2 px-1 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                          {imageVersions.map((version, index) => (
+                            <button
+                              key={version.id}
+                              onClick={() => selectImageVersion(version)}
+                              className={cn(
+                                "relative shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all hover:opacity-100",
+                                currentVersionId === version.id 
+                                  ? "border-[#ed5387] ring-2 ring-[#ed5387]/30" 
+                                  : "border-border opacity-70 hover:border-muted-foreground"
+                              )}
+                              data-testid={`version-thumbnail-creations-${index}`}
+                            >
+                              <img 
+                                src={version.imageUrl} 
+                                alt={`Version ${version.versionNumber}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center py-0.5">
+                                {version.versionNumber === 0 ? "Orig" : `v${version.versionNumber}`}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                        
+                        {/* Right arrow */}
+                        {imageVersions.length > 5 && (
+                          <button 
+                            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-background/90 border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const container = e.currentTarget.parentElement?.querySelector('.version-scroll-container');
+                              if (container) container.scrollBy({ left: 200, behavior: 'smooth' });
+                            }}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Selected version info below thumbnails */}
+                      {(() => {
+                        const selectedVersion = imageVersions.find(v => v.id === currentVersionId);
+                        if (!selectedVersion) return null;
+                        return (
+                          <div className="bg-muted/30 rounded-md p-2 border border-border">
+                            <div className="text-[11px] font-medium text-foreground">
+                              {selectedVersion.versionNumber === 0 ? "Original" : `Version ${selectedVersion.versionNumber}`}
+                              <span className="font-normal text-muted-foreground ml-2">
+                                {selectedVersion.editPrompt || (selectedVersion.versionNumber === 0 ? "Original creation" : "Edited version")}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Actions - 6 buttons in a row */}
+                  <div className="grid grid-cols-6 gap-1.5">
                     <Button 
                       variant="ghost" 
-                      className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
-                      onClick={() => handleAction("Move", selectedItem)}
+                      className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
+                      onClick={() => {
+                        if (rootImageId) {
+                          const rootItem = items.find(i => i.id === rootImageId);
+                          if (rootItem) handleAction("Move", rootItem);
+                        }
+                      }}
                       data-testid="button-folder-detail"
                     >
-                      <FolderInput className="h-5 w-5" />
-                      <span className="text-[10px]">Folder</span>
+                      <FolderInput className="h-4 w-4" />
+                      <span className="text-[9px]">Folder</span>
                     </Button>
                     
                     <Button 
                       variant="ghost" 
-                      className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
-                      onClick={() => handleAction("Download", selectedItem)}
-                      data-testid="button-download-detail"
-                    >
-                      <Download className="h-5 w-5" />
-                      <span className="text-[10px]">Download</span>
-                    </Button>
-                    
-                    <Button 
-                      variant="ghost" 
-                      className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
-                      onClick={() => handleAction("Copy", selectedItem)}
+                      className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
+                      onClick={() => copyImageToClipboard(selectedItem.src)}
                       data-testid="button-copy-detail"
                     >
-                      <ClipboardCopy className="h-5 w-5" />
-                      <span className="text-[10px]">Copy</span>
+                      <ClipboardCopy className="h-4 w-4" />
+                      <span className="text-[9px]">Copy</span>
                     </Button>
                     
                     <Button 
                       variant="ghost" 
-                      className="flex flex-col h-16 gap-1 bg-muted/30 hover:bg-muted text-foreground rounded-xl border border-border"
+                      className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
                       onClick={() => handleAction("Duplicate", selectedItem)}
                       data-testid="button-vary-detail"
                     >
-                      <RefreshCw className="h-5 w-5" />
-                      <span className="text-[10px]">Vary</span>
-                    </Button>
-
-                    <Button 
-                      variant="ghost" 
-                      className={cn(
-                        "flex flex-col h-16 gap-1 rounded-xl border border-border",
-                        selectedItem.favorite 
-                          ? "bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100" 
-                          : "bg-muted/30 hover:bg-muted text-foreground"
-                      )}
-                      onClick={() => toggleFavorite(selectedItem.id)}
-                      data-testid="button-like-detail"
-                    >
-                      <Star className={cn("h-5 w-5", selectedItem.favorite && "fill-current")} />
-                      <span className="text-[10px]">Like</span>
-                    </Button>
-                  </div>
-
-                  {/* Actions - Row 2 */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button 
-                      variant="ghost" 
-                      className="flex items-center justify-center gap-2 h-10 bg-gradient-to-r from-[#ed5387]/10 to-[#9C27B0]/10 hover:from-[#ed5387]/20 hover:to-[#9C27B0]/20 text-foreground rounded-xl border border-[#ed5387]/30"
-                      onClick={() => {
-                        const route = transferImageToTool(selectedItem, "image-editor");
-                        setLocation(route);
-                      }}
-                      data-testid="button-edit-detail"
-                    >
-                      <Wand2 className="h-4 w-4 text-[#ed5387]" />
-                      <span className="text-xs font-medium">Edit in Editor</span>
+                      <RefreshCw className="h-4 w-4" />
+                      <span className="text-[9px]">Vary</span>
                     </Button>
                     
                     <Button 
                       variant="ghost" 
-                      className="flex items-center justify-center gap-2 h-10 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl border border-red-500/30"
-                      onClick={() => handleAction("Delete", selectedItem)}
-                      data-testid="button-delete-detail"
+                      className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
+                      onClick={() => {
+                        const route = transferImageToTool(selectedItem, "mockup");
+                        setLocation(route);
+                      }}
+                      data-testid="button-use-mockup-creations"
                     >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="text-xs font-medium">Delete</span>
+                      <Shirt className="h-4 w-4" />
+                      <span className="text-[9px]">Mockup</span>
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
+                      onClick={() => {
+                        const route = transferImageToTool(selectedItem, "style-transfer");
+                        setLocation(route);
+                      }}
+                      data-testid="button-style-transfer-creations"
+                    >
+                      <Palette className="h-4 w-4" />
+                      <span className="text-[9px]">Style</span>
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      className="flex flex-col h-12 gap-0.5 bg-muted/30 hover:bg-muted text-foreground rounded-lg border border-border"
+                      onClick={() => {
+                        const route = transferImageToTool(selectedItem, "bg-remover");
+                        setLocation(route);
+                      }}
+                      data-testid="button-remove-bg-creations"
+                    >
+                      <Scissors className="h-4 w-4" />
+                      <span className="text-[9px]">Remove BG</span>
                     </Button>
                   </div>
 
-                  {/* Prompt */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Prompt</label>
-                      {selectedItem.prompt && (
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
-                          onClick={() => {
-                             navigator.clipboard.writeText(selectedItem.prompt);
-                             toast({ title: "Prompt Copied!" });
-                          }}
-                          data-testid="button-copy-prompt"
-                        >
-                          <Copy className="h-3 w-3" />
-                          Copy
-                        </Button>
-                      )}
-                    </div>
-                    <div className="bg-muted/30 rounded-xl p-4 text-sm text-muted-foreground leading-relaxed border border-border">
-                      {selectedItem.prompt || "No prompt available"}
-                    </div>
-                  </div>
-
                   {/* Details */}
-                  <div className="space-y-4">
-                    <div className="flex justify-between py-2 border-b border-border">
+                  <div className="space-y-1">
+                    <div className="flex justify-between py-1.5 border-b border-border">
                       <span className="text-xs text-muted-foreground">Style</span>
                       <span className="text-xs font-medium text-foreground capitalize">{selectedItem.style}</span>
                     </div>
-                    <div className="flex justify-between py-2 border-b border-border">
+                    <div className="flex justify-between py-1.5 border-b border-border">
                       <span className="text-xs text-muted-foreground">Dimensions</span>
                       <span className="text-xs font-medium text-foreground">{selectedItem.dimensions}</span>
                     </div>
-                    <div className="flex justify-between py-2 border-b border-border">
+                    <div className="flex justify-between py-1.5 border-b border-border">
                       <span className="text-xs text-muted-foreground">Ratio</span>
                       <span className="text-xs font-medium text-foreground">{selectedItem.aspectRatio}</span>
                     </div>
-                    <div className="flex justify-between py-2 border-b border-border">
+                    <div className="flex justify-between py-1.5 border-b border-border">
                       <span className="text-xs text-muted-foreground">Date Created</span>
                       <span className="text-xs font-medium text-foreground">{selectedItem.date} at {selectedItem.time}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-border">
+                    <div className="flex justify-between items-center py-1.5 border-b border-border">
                       <span className="text-xs text-muted-foreground">Visibility</span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-foreground">
@@ -1237,14 +1471,14 @@ export default function MyCreations() {
                     </div>
                     {selectedItem.isPublic && (
                       <div className="flex justify-between items-center py-2">
-                        <span className="text-xs text-muted-foreground">Share Link</span>
-                        <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Share</span>
+                        <div className="flex gap-2">
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-7 text-xs gap-1.5"
+                                className="h-7 text-xs gap-1.5 cursor-pointer"
                                 data-testid="button-quick-share-creations"
                               >
                                 <Share2 className="h-3.5 w-3.5" />
@@ -1258,11 +1492,12 @@ export default function MyCreations() {
                                   className="w-full justify-start gap-3 h-10"
                                   onClick={() => {
                                     const shareUrl = `${window.location.origin}/share/${selectedItem.id}`;
-                                    const text = `Check out this AI-generated image!`;
-                                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+                                    const shareText = `Check out this AI-generated image!`;
+                                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'width=550,height=420');
                                   }}
+                                  data-testid="button-share-twitter-creations"
                                 >
-                                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                                   </svg>
                                   Share on X
@@ -1272,10 +1507,11 @@ export default function MyCreations() {
                                   className="w-full justify-start gap-3 h-10"
                                   onClick={() => {
                                     const shareUrl = `${window.location.origin}/share/${selectedItem.id}`;
-                                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+                                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank', 'width=550,height=420');
                                   }}
+                                  data-testid="button-share-facebook-creations"
                                 >
-                                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                                   </svg>
                                   Share on Facebook
@@ -1285,11 +1521,12 @@ export default function MyCreations() {
                                   className="w-full justify-start gap-3 h-10"
                                   onClick={() => {
                                     const shareUrl = `${window.location.origin}/share/${selectedItem.id}`;
-                                    const text = `Check out this AI-generated image!`;
-                                    window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`, '_blank');
+                                    const shareText = `Check out this AI-generated image!`;
+                                    window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
                                   }}
+                                  data-testid="button-share-whatsapp-creations"
                                 >
-                                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                                   </svg>
                                   Share on WhatsApp
@@ -1318,16 +1555,44 @@ export default function MyCreations() {
                     )}
                   </div>
 
-                  {/* Tags */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Tags</label>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedItem.tags.map(tag => (
-                        <span key={tag} className="px-2.5 py-1 rounded-md bg-muted/50 border border-border text-xs text-muted-foreground">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                  {/* Additional Actions - Download, Favorite, Delete */}
+                  <div className="flex gap-2 pt-2 border-t border-border">
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-9 gap-1.5"
+                      onClick={() => handleAction("Download", selectedItem)}
+                      data-testid="button-download-detail"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      Download
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "h-9 gap-1.5",
+                        selectedItem.favorite && "text-yellow-500 border-yellow-500/30"
+                      )}
+                      onClick={() => rootImageId && toggleFavorite(rootImageId)}
+                      data-testid="button-like-detail"
+                    >
+                      <Star className={cn("h-3.5 w-3.5", selectedItem.favorite && "fill-current")} />
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="h-9 gap-1.5 text-red-500 border-red-500/30 hover:bg-red-500/10"
+                      onClick={() => {
+                        if (rootImageId) {
+                          const rootItem = items.find(i => i.id === rootImageId);
+                          if (rootItem) handleAction("Delete", rootItem);
+                        }
+                      }}
+                      data-testid="button-delete-detail"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </div>
               </div>
