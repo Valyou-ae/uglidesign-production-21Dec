@@ -613,8 +613,8 @@ export default function ImageEditor() {
               <div className="w-80 border-l border-border flex flex-col min-h-0">
                 {/* Version History */}
                 {versions.length > 0 && (
-                  <div className="flex-shrink-0 p-3 border-b border-border">
-                    <div className="flex items-center justify-between mb-2">
+                  <div className="flex-shrink-0 p-4 border-b border-border">
+                    <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                         Versions ({versions.length})
                       </span>
@@ -642,7 +642,7 @@ export default function ImageEditor() {
                     
                     <div
                       ref={versionScrollRef}
-                      className="flex gap-2 overflow-x-auto pb-1"
+                      className="flex gap-3 overflow-x-auto py-1 px-0.5"
                       style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                     >
                       {isLoadingVersions ? (
@@ -651,31 +651,44 @@ export default function ImageEditor() {
                         </div>
                       ) : (
                         versions.map((version, index) => (
-                          <motion.div
-                            key={version.id}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: index * 0.03 }}
-                            className={cn(
-                              "flex-shrink-0 w-14 cursor-pointer transition-all",
-                              selectedVersionIndex === index 
-                                ? "ring-2 ring-primary ring-offset-1 ring-offset-background rounded-md" 
-                                : "opacity-60 hover:opacity-100"
-                            )}
-                            onClick={() => selectVersion(index)}
-                            data-testid={`version-${index}`}
-                          >
-                            <div className="aspect-square rounded-md overflow-hidden bg-muted">
-                              <img
-                                src={version.imageUrl}
-                                alt={`V${version.versionNumber}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <p className="text-[10px] text-center mt-1 text-muted-foreground truncate">
-                              V{version.versionNumber}
-                            </p>
-                          </motion.div>
+                          <TooltipProvider key={version.id}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: index * 0.03 }}
+                                  className={cn(
+                                    "flex-shrink-0 w-16 cursor-pointer transition-all",
+                                    selectedVersionIndex === index 
+                                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg" 
+                                      : "opacity-60 hover:opacity-100"
+                                  )}
+                                  onClick={() => selectVersion(index)}
+                                  data-testid={`version-${index}`}
+                                >
+                                  <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                                    <img
+                                      src={version.imageUrl}
+                                      alt={`V${version.versionNumber}`}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <p className="text-[10px] text-center mt-1.5 text-muted-foreground truncate font-medium">
+                                    V{version.versionNumber}
+                                  </p>
+                                </motion.div>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" className="max-w-[280px]">
+                                <p className="text-xs font-medium mb-1">
+                                  {version.versionNumber === 0 ? "Original" : `Edit ${version.versionNumber}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground whitespace-normal break-words">
+                                  {version.prompt === "Original" ? "Uploaded image" : version.prompt}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         ))
                       )}
                     </div>
