@@ -11,6 +11,10 @@ interface CacheEntry<T> {
 const cache = new Map<string, CacheEntry<unknown>>();
 const MAX_CACHE_ENTRIES = 1000;
 
+// Statistics tracking
+let cacheHits = 0;
+let cacheMisses = 0;
+
 /**
  * Get data from cache or fetch it using the provided function
  */
@@ -23,8 +27,11 @@ export async function getFromCache<T>(
   const cached = cache.get(key) as CacheEntry<T> | undefined;
 
   if (cached && cached.expires > now) {
+    cacheHits++;
     return cached.data;
   }
+
+  cacheMisses++;
 
   // Fetch fresh data
   const data = await fetcher();
@@ -209,13 +216,19 @@ export const imageCache = new ImageBufferCache(imageCacheMaxMB, 500);
  * Get combined cache statistics for monitoring
  */
 export function getCacheStats(): {
-  general: { entries: number; maxEntries: number };
+  general: { entries: number; maxEntries: number; hits: number; misses: number; hitRate: number };
   images: { entries: number; sizeMB: number; maxSizeMB: number };
 } {
+  const total = cacheHits + cacheMisses;
+  const hitRate = total > 0 ? Math.round((cacheHits / total) * 10000) / 100 : 0;
+  
   return {
     general: {
       entries: cache.size,
       maxEntries: MAX_CACHE_ENTRIES,
+      hits: cacheHits,
+      misses: cacheMisses,
+      hitRate,
     },
     images: imageCache.getStats(),
   };

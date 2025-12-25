@@ -1,6 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { pool } from "../db";
 import { getRateLimitConfig } from "../rateLimiter";
+import { getCacheStats } from "../cache";
+import { logger } from "../logger";
 
 export function registerHealthRoutes(app: Express) {
   /**
@@ -53,5 +55,25 @@ export function registerHealthRoutes(app: Express) {
    */
   app.get("/api/ping", (_req: Request, res: Response) => {
     res.status(200).json({ pong: true, timestamp: Date.now() });
+  });
+
+  /**
+   * Cache statistics endpoint for monitoring cache effectiveness
+   */
+  app.get("/api/cache/stats", (_req: Request, res: Response) => {
+    try {
+      const stats = getCacheStats();
+      res.status(200).json({
+        success: true,
+        stats,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error("Failed to get cache stats", error, { source: "health" });
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to get cache stats" 
+      });
+    }
   });
 }

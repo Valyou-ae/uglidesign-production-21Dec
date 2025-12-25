@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
-import { invalidateCache } from "../cache";
+import { invalidateCache, getFromCache } from "../cache";
+import { isSimplePrompt, classifyPrompt } from "../utils/prompt-classifier";
 import { generationRateLimiter, guestGenerationLimiter } from "../rateLimiter";
 import type { Middleware } from "./middleware";
 import type { AuthenticatedRequest } from "../types";
@@ -217,24 +218,93 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
         res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
       };
 
-      sendEvent("status", { agent: "Text Sentinel", status: "working", message: "Analyzing prompt..." });
+      // Performance tracking
+      const perfStart = Date.now();
+      let perfAnalysisEnd = 0;
+      let perfEnhancementEnd = 0;
 
-      const analysis = await analyzePrompt(prompt);
-      sendEvent("analysis", { analysis });
-      sendEvent("status", { agent: "Text Sentinel", status: "complete", message: "Analysis complete" });
+      // Phase 3: Classify the prompt
+      const classification = classifyPrompt(prompt);
+      const simple = classification.isSimple;
 
-      sendEvent("status", { agent: "Style Architect", status: "working", message: "Enhancing prompt..." });
+      logger.info('Prompt classification', {
+        source: 'generation',
+        prompt: prompt.slice(0, 50),
+        isSimple: simple,
+        reason: classification.reason,
+      });
 
-      const { enhancedPrompt, negativePrompts } = await enhancePrompt(
-        prompt,
-        analysis,
-        "draft",
-        stylePreset,
-        "draft",
-        detail
-      );
-      sendEvent("enhancement", { enhancedPrompt, negativePrompts });
-      sendEvent("status", { agent: "Style Architect", status: "complete", message: "Prompt enhanced" });
+      let analysis: any;
+      let enhancedPrompt: string;
+      let negativePrompts: string[];
+
+      if (simple) {
+        // Phase 3: Fast-track for simple prompts
+        sendEvent("status", { 
+          message: `Fast-track generation (${classification.reason})`,
+          agent: "System",
+          status: "working"
+        });
+        
+        analysis = {
+          isSimple: true,
+          hasTextRequest: false,
+          complexity: 'low',
+        };
+        enhancedPrompt = prompt;
+        negativePrompts = ["blurry", "low quality", "distorted"];
+        
+        sendEvent("analysis", { analysis, cached: false, skipped: true });
+        sendEvent("enhancement", { enhancedPrompt, negativePrompts, cached: false, skipped: true });
+        perfAnalysisEnd = Date.now();
+        perfEnhancementEnd = Date.now();
+        
+      } else {
+        // Phase 2: Full pipeline with caching
+        
+        // Analysis with cache
+        const analysisCacheKey = `analysis:${prompt}`;
+        let analysisCached = false;
+        
+        analysis = await getFromCache(
+          analysisCacheKey,
+          3600 * 1000, // 1 hour
+          async () => {
+            sendEvent("status", { agent: "Text Sentinel", status: "working", message: "Analyzing prompt..." });
+            return await analyzePrompt(prompt);
+          }
+        );
+        
+        // Check if it was cached by seeing if we have the analysis immediately
+        analysisCached = Date.now() - perfStart < 100;
+        
+        sendEvent("analysis", { analysis, cached: analysisCached });
+        sendEvent("status", { agent: "Text Sentinel", status: "complete", message: analysisCached ? "Analysis complete (cached)" : "Analysis complete" });
+        perfAnalysisEnd = Date.now();
+        
+        // Enhancement with cache
+        const enhancementCacheKey = `enhance:${prompt}:${stylePreset}`;
+        let enhancementCached = false;
+        const enhancementStart = Date.now();
+        
+        const enhancement = await getFromCache<{ enhancedPrompt: string; negativePrompts: string[] }>(
+          enhancementCacheKey,
+          1800 * 1000, // 30 minutes
+          async () => {
+            sendEvent("status", { agent: "Style Architect", status: "working", message: "Enhancing prompt..." });
+            return await enhancePrompt(prompt, analysis, "draft", stylePreset, "draft", detail);
+          }
+        );
+        
+        enhancementCached = Date.now() - enhancementStart < 100;
+        
+        sendEvent("enhancement", { ...enhancement, cached: enhancementCached });
+        sendEvent("status", { agent: "Style Architect", status: "complete", message: enhancementCached ? "Prompt enhanced (cached)" : "Prompt enhanced" });
+        perfEnhancementEnd = Date.now();
+        
+        enhancedPrompt = enhancement.enhancedPrompt;
+        negativePrompts = enhancement.negativePrompts;
+      }
 
       sendEvent("status", { agent: "Visual Synthesizer", status: "working", message: `Generating ${count} image${count > 1 ? 's' : ''} in parallel...` });
       sendEvent("progress", { completed: 0, total: count });
@@ -268,19 +338,21 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
                 versionNumber: 0,
               });
 
-              // If image is public, also add to galleryImages for discovery page
+              // Phase 3: Parallelize database operations
               if (isPublic) {
                 try {
-                  await storage.createGalleryImage({
-                    sourceImageId: savedImage.id,
-                    title: prompt.substring(0, 100),
-                    imageUrl,
-                    creator: userId,
-                    category: stylePreset !== "auto" ? stylePreset : "General",
-                    aspectRatio,
-                    prompt,
-                  });
-                  await invalidateCache('gallery:images');
+                  await Promise.all([
+                    storage.createGalleryImage({
+                      sourceImageId: savedImage.id,
+                      title: prompt.substring(0, 100),
+                      imageUrl,
+                      creator: userId,
+                      category: stylePreset !== "auto" ? stylePreset : "General",
+                      aspectRatio,
+                      prompt,
+                    }),
+                    invalidateCache('gallery:images')
+                  ]);
                 } catch (galleryError) {
                   logger.error("Failed to add draft image to gallery", galleryError, { source: "generation" });
                 }
@@ -316,8 +388,11 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
         }
       };
 
+      const perfGenerationStart = Date.now();
       const promises = Array.from({ length: count }, (_, i) => generateImage(i));
       const results = await Promise.all(promises);
+      const perfGenerationEnd = Date.now();
+      
       const successCount = results.filter(r => r.success).length;
       const failedCount = count - successCount;
 
@@ -330,6 +405,35 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
 
       sendEvent("status", { agent: "Visual Synthesizer", status: "complete", message: "Generation complete" });
       sendEvent("complete", { message: "Draft generation complete", totalImages: successCount, creditsUsed: creditCost });
+
+      // Performance logging
+      const perfEnd = Date.now();
+      const totalDuration = perfEnd - perfStart;
+      const analysisDuration = perfAnalysisEnd - perfStart;
+      const enhancementDuration = perfEnhancementEnd - perfAnalysisEnd;
+      const generationDuration = perfGenerationEnd - perfEnhancementEnd;
+      const dbDuration = perfEnd - perfGenerationEnd;
+
+      logger.info('Generation performance metrics', {
+        source: 'generation',
+        totalDuration,
+        analysisDuration,
+        enhancementDuration,
+        generationDuration,
+        dbDuration,
+        isSimple: simple,
+        imageCount: count,
+        quality: 'draft',
+      });
+
+      // Alert on slow generations
+      if (totalDuration > 20000) {
+        logger.warn('Slow generation detected', {
+          source: 'generation',
+          duration: totalDuration,
+          prompt: prompt.slice(0, 50),
+        });
+      }
 
       res.end();
     } catch (error) {
