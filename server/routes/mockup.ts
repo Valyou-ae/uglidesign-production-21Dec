@@ -1,6 +1,26 @@
 import type { Express, Request, Response } from "express";
 import type { Middleware } from "./middleware";
 import { logger } from "../logger";
+import { storage } from "../storage";
+import { generationRateLimiter } from "../rateLimiter";
+
+// Credit costs for mockup generation
+const MOCKUP_CREDIT_COSTS = {
+  standard: 1,  // 512px
+  high: 2,      // 1024px
+  ultra: 3,     // 2048px
+  textToMockup: 4  // AI text-to-mockup
+};
+
+// Helper function to check and deduct credits
+async function checkAndDeductCredits(userId: string, credits: number): Promise<boolean> {
+  const user = await storage.getUserById(userId);
+  if (!user || user.credits < credits) {
+    return false;
+  }
+  await storage.updateUserCredits(userId, user.credits - credits);
+  return true;
+}
 
 export async function registerMockupRoutes(app: Express, middleware: Middleware) {
   const { requireAuth } = middleware;
@@ -30,8 +50,15 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
     }
   });
 
-  app.post("/api/mockup/generate", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/mockup/generate", requireAuth, generationRateLimiter, async (req: Request, res: Response) => {
     try {
+      const authReq = req as any;
+      const userId = authReq.user?.claims?.sub;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const {
         designImage,
         productType = "t-shirt",
@@ -39,10 +66,22 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
         scene = "studio",
         angle = "front",
         style = "minimal",
+        quality = "high",
       } = req.body;
 
       if (!designImage || typeof designImage !== "string") {
         return res.status(400).json({ message: "Design image is required" });
+      }
+
+      // Determine credit cost based on quality
+      const creditCost = MOCKUP_CREDIT_COSTS[quality as keyof typeof MOCKUP_CREDIT_COSTS] || MOCKUP_CREDIT_COSTS.high;
+      
+      // Check and deduct credits
+      const hasCredits = await checkAndDeductCredits(userId, creditCost);
+      if (!hasCredits) {
+        return res.status(402).json({ 
+          message: `Insufficient credits. This mockup requires ${creditCost} credits.` 
+        });
       }
 
       res.setHeader("Content-Type", "text/event-stream");
@@ -75,7 +114,16 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
 
       sendEvent("status", { stage: "generating", message: "Generating mockup image..." });
 
-      const result = await generateMockup(base64Data, prompt, negativePrompts);
+      // Add 60-second timeout for generation
+      const GENERATION_TIMEOUT = 60000; // 60 seconds
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Generation timeout')), GENERATION_TIMEOUT)
+      );
+
+      const result = await Promise.race([
+        generateMockup(base64Data, prompt, negativePrompts),
+        timeoutPromise
+      ]) as Awaited<ReturnType<typeof generateMockup>>;
 
       if (result) {
         sendEvent("image", {
@@ -84,19 +132,37 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
         });
         sendEvent("complete", { success: true, message: "Mockup generated successfully" });
       } else {
-        sendEvent("error", { message: "Failed to generate mockup" });
+        // Refund credits on failure
+        await storage.addCredits(userId, creditCost);
+        sendEvent("error", { message: "Failed to generate mockup. Credits refunded." });
       }
 
       res.end();
     } catch (error) {
+      // Refund credits on error
+      try {
+        await storage.addCredits(userId, creditCost);
+      } catch (refundError) {
+        logger.error("Failed to refund credits", refundError, { source: "mockup" });
+      }
       logger.error("Mockup generation error", error, { source: "mockup" });
-      res.write(`event: error\ndata: ${JSON.stringify({ message: "Mockup generation failed" })}\n\n`);
+      const errorMessage = (error as Error).message === 'Generation timeout' 
+        ? "Mockup generation timed out after 60 seconds. Credits refunded."
+        : "Mockup generation failed. Credits refunded.";
+      res.write(`event: error\ndata: ${JSON.stringify({ message: errorMessage })}\n\n`);
       res.end();
     }
   });
 
-  app.post("/api/mockup/generate-batch", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/mockup/generate-batch", requireAuth, generationRateLimiter, async (req: Request, res: Response) => {
     try {
+      const authReq = req as any;
+      const userId = authReq.user?.claims?.sub;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const {
         designImage,
         productType = "t-shirt",
@@ -117,10 +183,32 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
         return res.status(400).json({ message: "Design image is required" });
       }
 
+      // Calculate total mockups and enforce batch limit
+      const totalMockups = productColors.length * angles.length;
+      const MAX_BATCH_SIZE = 10;
+      
+      if (totalMockups > MAX_BATCH_SIZE) {
+        return res.status(400).json({ 
+          message: `Batch size too large. Maximum ${MAX_BATCH_SIZE} mockups per request. You requested ${totalMockups}.` 
+        });
+      }
+
+      // Determine credit cost per mockup based on quality
       const validOutputQualities = ['standard', 'high', 'ultra'] as const;
       const outputQuality = validOutputQualities.includes(rawOutputQuality)
         ? rawOutputQuality as 'standard' | 'high' | 'ultra'
         : 'high';
+      
+      const creditCostPerMockup = MOCKUP_CREDIT_COSTS[outputQuality];
+      const totalCreditCost = creditCostPerMockup * totalMockups;
+      
+      // Check and deduct credits
+      const hasCredits = await checkAndDeductCredits(userId, totalCreditCost);
+      if (!hasCredits) {
+        return res.status(402).json({ 
+          message: `Insufficient credits. This batch requires ${totalCreditCost} credits (${totalMockups} mockups × ${creditCostPerMockup} credits each).` 
+        });
+      }
 
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -695,8 +783,15 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
   // ============== TEXT-TO-MOCKUP ROUTES ==============
   const { orchestrateTextToMockup, parseTextToMockupPrompt } = await import("../services/textToMockupOrchestrator");
 
-  app.post("/api/mockup/text-to-mockup", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/mockup/text-to-mockup", requireAuth, generationRateLimiter, async (req: Request, res: Response) => {
     try {
+      const authReq = req as any;
+      const userId = authReq.user?.claims?.sub;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const { prompt, outputQuality = "high", overrides } = req.body;
 
       if (!prompt || typeof prompt !== "string") {
@@ -709,6 +804,15 @@ export async function registerMockupRoutes(app: Express, middleware: Middleware)
 
       if (prompt.length > 2000) {
         return res.status(400).json({ message: "Prompt is too long. Please keep it under 2000 characters" });
+      }
+
+      // Text-to-mockup is premium AI feature - costs 4 credits
+      const creditCost = MOCKUP_CREDIT_COSTS.textToMockup;
+      const hasCredits = await checkAndDeductCredits(userId, creditCost);
+      if (!hasCredits) {
+        return res.status(402).json({ 
+          message: `Insufficient credits. AI text-to-mockup requires ${creditCost} credits.` 
+        });
       }
 
       res.setHeader("Content-Type", "text/event-stream");
