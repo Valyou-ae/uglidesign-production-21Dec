@@ -165,6 +165,64 @@ export interface PrintSpecification {
   notes?: string;
 }
 
+// ============================================================================
+// AOP (ALL-OVER PRINT) SPECIFIC TYPES
+// ============================================================================
+
+export type AOPConstructionType = 'cut_and_sew' | 'sublimation_on_blank';
+
+export type SeamRequirement = 'critical' | 'recommended' | 'not_required';
+
+export interface AOPPanel {
+  name: string;
+  widthInches: number;
+  heightInches: number;
+  widthPixels: number;
+  heightPixels: number;
+  notes: string;
+}
+
+export interface AOPSeamAlignment {
+  location: string;
+  requirement: SeamRequirement;
+  notes: string;
+}
+
+export interface AOPTrimArea {
+  name: string;
+  defaultColor: string;
+  colorSource: string;
+  notes: string;
+}
+
+export interface AOPPatternScale {
+  recommendedTileInches: { width: number; height: number };
+  recommendedTilePixels: { width: number; height: number };
+  minScale: string;
+  maxScale: string;
+  notes: string;
+}
+
+export interface AOPSpecification {
+  constructionType: AOPConstructionType;
+  constructionNotes: string;
+  panels: AOPPanel[];
+  totalPrintFile: {
+    widthPixels: number;
+    heightPixels: number;
+    widthInches: number;
+    heightInches: number;
+  };
+  dpi: number;
+  bleedInches: number;
+  bleedPixels: number;
+  seamAlignments: AOPSeamAlignment[];
+  trimAreas: AOPTrimArea[];
+  patternScale: AOPPatternScale;
+  patternTips: string[];
+  stretchDistortion?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -177,6 +235,7 @@ export interface Product {
   genderTarget: GenderTarget;
   sizeChart?: SizeChartEntry[];
   printSpec?: PrintSpecification;
+  aopSpec?: AOPSpecification;
   silhouettePath?: string;
   thumbnailSvg?: string;
   frontendName?: string;
