@@ -41,26 +41,29 @@ export async function registerGenerationRoutes(app: Express, middleware: Middlew
       // Use direct SQL via pool to avoid Neon HTTP driver null response issues
       const { pool } = await import("../db");
 
-      // Check if guest has already generated
-      const existingResult = await pool.query(
-        'SELECT id FROM guest_generations WHERE guest_id = $1 LIMIT 1',
+      // SECURITY FIX: Use atomic INSERT with RETURNING to prevent race condition
+      // This ensures only one concurrent request can claim the guest slot
+      // The unique constraint on guest_id prevents duplicates at the database level
+      const insertResult = await pool.query(
+        `INSERT INTO guest_generations (guest_id) 
+         VALUES ($1) 
+         ON CONFLICT (guest_id) DO NOTHING 
+         RETURNING id`,
         [guestId]
       );
 
-      if (existingResult.rows.length > 0) {
+      // If no row was returned, the guest_id already exists (quota used)
+      if (insertResult.rows.length === 0) {
         return res.status(403).json({ message: "Free generation already used. Please login for more." });
       }
 
+      // Now safe to generate - we have atomically claimed the slot
       const result = await generateGeminiImage(prompt, [], "quality", "1:1", "draft", false);
       if (!result) {
+        // Generation failed - remove the guest record so they can try again
+        await pool.query('DELETE FROM guest_generations WHERE guest_id = $1', [guestId]);
         return res.status(500).json({ message: "Image generation failed. Please try again." });
       }
-
-      // Insert guest generation record using pool
-      await pool.query(
-        'INSERT INTO guest_generations (guest_id) VALUES ($1) ON CONFLICT (guest_id) DO NOTHING',
-        [guestId]
-      );
 
       await ensureGuestGalleryUser();
       const imageUrl = `data:${result.mimeType};base64,${result.imageData}`;
